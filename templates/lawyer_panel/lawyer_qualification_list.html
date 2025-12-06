@@ -1,0 +1,221 @@
+{% extends 'lawyer_panel/base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if lawyer_profile %}{{ lawyer_profile.full_name }} - Qualifications{% else %}Lawyer Qualifications{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        {% if lawyer_profile %}{{ lawyer_profile.full_name }} - Qualifications{% else %}Lawyer Qualifications{% endif %}
+    </h1>
+    <div>
+        {% if lawyer_profile %}
+        <a href="{% url 'lawyer_panel:lawyer_profile_detail' lawyer_profile.pk %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Profile
+        </a>
+        {% else %}
+        <a href="{% url 'lawyer_panel:lawyer_profile_list' %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Profiles
+        </a>
+        {% endif %}
+        <a href="{% url 'lawyer_panel:lawyer_qualification_create' lawyer_profile.pk|default:0 %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Add Qualification
+        </a>
+    </div>
+</div>
+
+{% if lawyer_profile %}
+<!-- Lawyer Profile Summary -->
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <div class="d-flex align-items-center">
+            <div class="flex-grow-1">
+                <h5 class="card-title mb-1">{{ lawyer_profile.full_name }}</h5>
+                <p class="text-muted mb-0">{{ lawyer_profile.user.email }}</p>
+            </div>
+            <div class="text-right">
+                <span class="badge badge-info">{{ qualifications.count }} Qualification{{ qualifications.count|pluralize }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-certificate"></i> 
+            {% if lawyer_profile %}{{ lawyer_profile.full_name }}'s{% else %}All{% endif %} Qualifications
+        </h6>
+    </div>
+    <div class="card-body">
+        {% if qualifications %}
+        <div class="timeline">
+            {% for qualification in qualifications %}
+            <div class="timeline-item">
+                <div class="timeline-marker bg-primary"></div>
+                <div class="timeline-content">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center mb-2">
+                                <h6 class="mb-0 mr-3">{{ qualification.title }}</h6>
+                                <span class="badge badge-info">{{ qualification.get_qualification_type_display }}</span>
+                            </div>
+                            
+                            <div class="row mb-2">
+                                <div class="col-md-6">
+                                    <strong>Institution:</strong> {{ qualification.institution }}
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Year Obtained:</strong> {{ qualification.year_obtained }}
+                                </div>
+                            </div>
+                            
+                            {% if qualification.description %}
+                            <div class="mb-2">
+                                <strong>Description:</strong>
+                                <p class="text-muted mb-0">{{ qualification.description|linebreaks }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if qualification.certificate_file %}
+                            <div class="mb-2">
+                                <strong>Certificate:</strong>
+                                <a href="{{ qualification.certificate_file.url }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-file-pdf"></i> View Certificate
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'lawyer_panel:lawyer_qualification_update' qualification.pk %}" class="btn btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="text-muted small mt-2">
+                        Added on {{ qualification.created_at|date:"M d, Y" }}
+                        {% if qualification.updated_at != qualification.created_at %}
+                        • Updated {{ qualification.updated_at|date:"M d, Y" }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-certificate fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">
+                {% if lawyer_profile %}No Qualifications Found{% else %}No Qualifications Found{% endif %}
+            </h4>
+            <p class="text-muted">
+                {% if lawyer_profile %}
+                    Add qualifications to showcase {{ lawyer_profile.full_name }}'s credentials and expertise.
+                {% else %}
+                    No lawyer qualifications have been added yet.
+                {% endif %}
+            </p>
+            <a href="{% url 'lawyer_panel:lawyer_qualification_create' lawyer_profile.pk|default:0 %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Qualification
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} qualifications
+    </div>
+    <nav>
+        <ul class="pagination justify-content-end mb-0">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #e3e6f0;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -22px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+}
+
+.timeline-content {
+    background-color: #f8f9fc;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 3px solid #4e73df;
+}
+</style>
+{% endblock %}

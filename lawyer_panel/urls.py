@@ -38,4 +38,25 @@ urlpatterns = [
     
     # Search
     path('search/', views.quick_search, name='quick_search'),
+    
+    # Lawyer Profiles
+    path('lawyers/', views.LawyerProfileListView.as_view(), name='lawyer_profile_list'),
+    path('lawyers/<int:pk>/', views.LawyerProfileDetailView.as_view(), name='lawyer_profile_detail'),
+    path('lawyers/create/', views.LawyerProfileCreateView.as_view(), name='lawyer_profile_create'),
+    path('lawyers/<int:pk>/edit/', views.LawyerProfileUpdateView.as_view(), name='lawyer_profile_update'),
+    path('lawyers/<int:pk>/availability/', views.LawyerAvailabilityUpdateView.as_view(), name='lawyer_availability_update'),
+    path('lawyers/<int:lawyer_profile_id>/update-case-load/', views.update_case_load, name='lawyer_update_case_load'),
+    path('lawyers/export/', views.export_lawyer_profiles, name='lawyer_profile_export'),
+    
+    # Practice Areas
+    path('practice-areas/', views.PracticeAreaListView.as_view(), name='practice_area_list'),
+    path('practice-areas/create/', views.PracticeAreaCreateView.as_view(), name='practice_area_create'),
+    path('practice-areas/<int:pk>/edit/', views.PracticeAreaUpdateView.as_view(), name='practice_area_update'),
+    
+    # Lawyer Qualifications
+    path('qualifications/', views.LawyerQualificationListView.as_view(), name='lawyer_qualification_list'),
+    path('qualifications/create/', views.LawyerQualificationCreateView.as_view(), name='lawyer_qualification_create'),
+    path('qualifications/<int:pk>/edit/', views.LawyerQualificationUpdateView.as_view(), name='lawyer_qualification_update'),
+    path('lawyers/<int:lawyer_profile_id>/qualifications/', views.LawyerQualificationListView.as_view(), name='lawyer_qualification_list'),
+    path('lawyers/<int:lawyer_profile_id>/qualifications/create/', views.LawyerQualificationCreateView.as_view(), name='lawyer_qualification_create'),
 ]

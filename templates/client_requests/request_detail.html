@@ -1,0 +1,505 @@
+{% extends "_base.html" %}
+{% load static %}
+
+{% block title %}{{ request.title }} - {{ tenant.name }} - Lithium{% endblock title %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">{{ request.title }}</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <a href="{% url 'client_requests:update' request.pk %}" class="btn btn-warning">
+        <i class="fas fa-edit"></i> Edit Request
+      </a>
+      <a href="{% url 'client_requests:delete' request.pk %}" class="btn btn-danger">
+        <i class="fas fa-trash"></i> Delete
+      </a>
+      <a href="{% url 'client_requests:list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to List
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Request Status and Priority -->
+<div class="row mb-4">
+  <div class="col-md-6">
+    <div class="card border-left-primary shadow h-100 py-2 fade-in-up">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Status</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ request.get_status_display_with_icon|safe }}</div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-info-circle fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card border-left-warning shadow h-100 py-2 fade-in-up" style="animation-delay: 0.1s;">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Priority</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ request.get_priority_display_with_icon|safe }}</div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Request Information Cards -->
+<div class="row">
+  <!-- Basic Information -->
+  <div class="col-lg-6 mb-4">
+    <div class="card fade-in-up" style="animation-delay: 0.2s;">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">Request Information</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-sm-4"><strong>Title:</strong></div>
+          <div class="col-sm-8">{{ request.title }}</div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-4"><strong>Description:</strong></div>
+          <div class="col-sm-8">{{ request.description|linebreaks }}</div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-4"><strong>Request Type:</strong></div>
+          <div class="col-sm-8">{{ request.get_request_type_display }}</div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-4"><strong>Budget Range:</strong></div>
+          <div class="col-sm-8">{{ request.get_budget_range_display }}</div>
+        </div>
+        {% if request.urgency_details %}
+        <hr>
+        <div class="row">
+          <div class="col-sm-4"><strong>Urgency Details:</strong></div>
+          <div class="col-sm-8">{{ request.urgency_details|linebreaks }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Client Information -->
+  <div class="col-lg-6 mb-4">
+    <div class="card fade-in-up" style="animation-delay: 0.3s;">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-success">Client Information</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-sm-4"><strong>Name:</strong></div>
+          <div class="col-sm-8">{{ request.client_name }}</div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-4"><strong>Email:</strong></div>
+          <div class="col-sm-8">
+            <a href="mailto:{{ request.client_email }}">{{ request.client_email }}</a>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-4"><strong>Phone:</strong></div>
+          <div class="col-sm-8">{{ request.client_phone|default:"Not provided" }}</div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-4"><strong>Company:</strong></div>
+          <div class="col-sm-8">{{ request.client_company|default:"Not provided" }}</div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-4"><strong>Contact Method:</strong></div>
+          <div class="col-sm-8">{{ request.get_preferred_contact_method_display }}</div>
+        </div>
+        {% if request.preferred_contact_time %}
+        <hr>
+        <div class="row">
+          <div class="col-sm-4"><strong>Preferred Time:</strong></div>
+          <div class="col-sm-8">{{ request.preferred_contact_time|linebreaks }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Workflow Information -->
+<div class="row">
+  <!-- Assignment Information -->
+  <div class="col-lg-6 mb-4">
+    <div class="card fade-in-up" style="animation-delay: 0.4s;">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-info">Assignment Information</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-sm-4"><strong>Assigned Lawyer:</strong></div>
+          <div class="col-sm-8">
+            {% if request.assigned_lawyer %}
+              {{ request.assigned_lawyer.get_full_name|default:request.assigned_lawyer.email }}
+            {% else %}
+              <span class="text-muted">Not assigned</span>
+            {% endif %}
+          </div>
+        </div>
+        {% if request.reviewed_by %}
+        <hr>
+        <div class="row">
+          <div class="col-sm-4"><strong>Reviewed By:</strong></div>
+          <div class="col-sm-8">{{ request.reviewed_by.get_full_name|default:request.reviewed_by.email }}</div>
+        </div>
+        {% endif %}
+        {% if request.review_date %}
+        <hr>
+        <div class="row">
+          <div class="col-sm-4"><strong>Review Date:</strong></div>
+          <div class="col-sm-8">{{ request.review_date|date:"F d, Y" }} at {{ request.review_date|time:"g:i A" }}</div>
+        </div>
+        {% endif %}
+        {% if request.approval_date %}
+        <hr>
+        <div class="row">
+          <div class="col-sm-4"><strong>Approval Date:</strong></div>
+          <div class="col-sm-8">{{ request.approval_date|date:"F d, Y" }} at {{ request.approval_date|time:"g:i A" }}</div>
+        </div>
+        {% endif %}
+        {% if request.converted_to_client %}
+        <hr>
+        <div class="row">
+          <div class="col-sm-4"><strong>Converted to Client:</strong></div>
+          <div class="col-sm-8">
+            <a href="{{ request.converted_to_client.get_absolute_url }}">{{ request.converted_to_client.full_name }}</a>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Audit Information -->
+  <div class="col-lg-6 mb-4">
+    <div class="card fade-in-up" style="animation-delay: 0.5s;">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-secondary">Audit Information</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-sm-4"><strong>Created:</strong></div>
+          <div class="col-sm-8">{{ request.created_at|date:"F d, Y" }} at {{ request.created_at|time:"g:i A" }}</div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-4"><strong>Last Updated:</strong></div>
+          <div class="col-sm-8">{{ request.updated_at|date:"F d, Y" }} at {{ request.updated_at|time:"g:i A" }}</div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-4"><strong>Created By:</strong></div>
+          <div class="col-sm-8">
+            {% if request.created_by %}
+              {{ request.created_by.get_full_name|default:request.created_by.email }}
+            {% else %}
+              System
+            {% endif %}
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-4"><strong>Status:</strong></div>
+          <div class="col-sm-8">{{ request.get_status_display_with_icon|safe }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Workflow Actions -->
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card fade-in-up" style="animation-delay: 0.6s;">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">Workflow Actions</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <!-- Assignment Form -->
+          <div class="col-md-6 mb-3">
+            <h6 class="text-secondary mb-3">Assign Lawyer</h6>
+            <form method="post" action="{% url 'client_requests:assign_lawyer' request.pk %}">
+              {% csrf_token %}
+              <div class="row g-3">
+                <div class="col-8">
+                  {{ assign_form.assigned_lawyer }}
+                </div>
+                <div class="col-4">
+                  <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-user-plus me-2"></i>Assign
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Review Form -->
+          {% if request.can_be_approved %}
+          <div class="col-md-6 mb-3">
+            <h6 class="text-secondary mb-3">Review Request</h6>
+            <form method="post" action="{% url 'client_requests:review_request' request.pk %}">
+              {% csrf_token %}
+              <div class="mb-3">
+                {{ review_form.action }}
+              </div>
+              <div class="mb-3" id="rejection_reason_field" style="display: none;">
+                {{ review_form.rejection_reason }}
+              </div>
+              <div class="mb-3">
+                {{ review_form.notes }}
+              </div>
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">
+                  <i class="fas fa-check me-2"></i>Submit Review
+                </button>
+                {% if request.can_be_reviewed %}
+                <button type="submit" formaction="{% url 'client_requests:submit_for_review' request.pk %}" class="btn btn-info">
+                  <i class="fas fa-search me-2"></i>Submit for Review
+                </button>
+                {% endif %}
+              </div>
+            </form>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notes Section -->
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card fade-in-up" style="animation-delay: 0.7s;">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-warning d-flex align-items-center justify-content-between">
+          <span>
+            <i class="fas fa-sticky-note me-2"></i>
+            Notes & Comments
+          </span>
+          <span class="badge bg-primary">{{ notes|length }} notes</span>
+        </h6>
+      </div>
+      <div class="card-body">
+        <!-- Add Note Form -->
+        <div class="mb-4">
+          <h6 class="text-secondary mb-3">Add Note</h6>
+          <form method="post" action="{% url 'client_requests:add_note' request.pk %}">
+            {% csrf_token %}
+            <div class="row g-3">
+              <div class="col-12">
+                {{ note_form.note }}
+              </div>
+              <div class="col-md-8">
+                <div class="form-check">
+                  {{ note_form.is_internal }}
+                  <label class="form-check-label" for="{{ note_form.is_internal.id_for_label }}">
+                    {{ note_form.is_internal.help_text }}
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">
+                  <i class="fas fa-plus me-2"></i>Add Note
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Notes List -->
+        {% if notes %}
+        <div class="notes-list">
+          {% for note in notes %}
+          <div class="note-item {% if note.is_internal %}internal-note{% else %}public-note{% endif %} fade-in-up" style="animation-delay: {{ forloop.counter0|add:8 }}0s;">
+            <div class="note-header">
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-user-circle me-2"></i>
+                  <strong>{{ note.get_created_by_display }}</strong>
+                  {% if note.is_internal %}
+                  <span class="badge bg-warning ms-2">Internal</span>
+                  {% endif %}
+                </div>
+                <small class="text-muted">{{ note.created_at|date:"M d, Y" }} at {{ note.created_at|time:"g:i A" }}</small>
+              </div>
+            </div>
+            <div class="note-body">
+              {{ note.note|linebreaks }}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+          <i class="fas fa-sticky-note fa-3x text-muted mb-3"></i>
+          <p class="text-muted">No notes have been added yet.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Rejection Reason Display -->
+{% if request.rejection_reason %}
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card border-danger fade-in-up" style="animation-delay: 0.8s;">
+      <div class="card-header bg-danger text-white">
+        <h6 class="m-0">
+          <i class="fas fa-times-circle me-2"></i>
+          Rejection Reason
+        </h6>
+      </div>
+      <div class="card-body">
+        {{ request.rejection_reason|linebreaks }}
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock content %}
+
+{% block javascript %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show/hide rejection reason field based on action selection
+    const actionRadios = document.querySelectorAll('input[name="action"]');
+    const rejectionReasonField = document.getElementById('rejection_reason_field');
+    
+    if (actionRadios.length > 0 && rejectionReasonField) {
+        function toggleRejectionReason() {
+            const selectedAction = document.querySelector('input[name="action"]:checked').value;
+            rejectionReasonField.style.display = selectedAction === 'reject' ? 'block' : 'none';
+        }
+        
+        actionRadios.forEach(radio => {
+            radio.addEventListener('change', toggleRejectionReason);
+        });
+        
+        // Initial state
+        toggleRejectionReason();
+    }
+    
+    // Auto-save draft functionality for note form
+    const noteForm = document.querySelector('form[action*="add-note"]');
+    if (noteForm) {
+        let autoSaveTimer;
+        const noteTextarea = noteForm.querySelector('textarea[name="note"]');
+        
+        if (noteTextarea) {
+            noteTextarea.addEventListener('input', function() {
+                clearTimeout(autoSaveTimer);
+                autoSaveTimer = setTimeout(function() {
+                    // Show auto-save indicator
+                    const saveIndicator = document.createElement('div');
+                    saveIndicator.className = 'auto-save-indicator';
+                    saveIndicator.innerHTML = '<i class="fas fa-save me-2"></i>Note draft saved...';
+                    saveIndicator.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: #28a745; color: white; padding: 10px 20px; border-radius: 5px; z-index: 9999; animation: fadeInUp 0.3s ease;';
+                    document.body.appendChild(saveIndicator);
+                    
+                    // Remove indicator after 2 seconds
+                    setTimeout(() => {
+                        saveIndicator.remove();
+                    }, 2000);
+                }, 2000);
+            });
+        });
+    }
+    
+    // Character counter for note textarea
+    const noteTextarea = document.querySelector('textarea[name="note"]');
+    if (noteTextarea) {
+        const maxLength = noteTextarea.getAttribute('maxlength');
+        if (maxLength) {
+            const counter = document.createElement('div');
+            counter.className = 'character-counter text-muted small mt-1';
+            counter.textContent = `0 / ${maxLength} characters`;
+            noteTextarea.parentNode.appendChild(counter);
+            
+            noteTextarea.addEventListener('input', function() {
+                const currentLength = this.value.length;
+                counter.textContent = `${currentLength} / ${maxLength} characters`;
+                
+                if (currentLength > maxLength * 0.9) {
+                    counter.classList.add('text-warning');
+                } else {
+                    counter.classList.remove('text-warning');
+                }
+            });
+        }
+    }
+});
+</script>
+
+<style>
+.note-item {
+    border: 1px solid #e3e6f0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background: #f8f9fc;
+}
+
+.note-item.internal-note {
+    border-left: 4px solid #ffc107;
+    background: #fff3cd;
+}
+
+.note-item.public-note {
+    border-left: 4px solid #28a745;
+    background: #d4edda;
+}
+
+.note-header {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.note-body {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.auto-save-indicator {
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+{% endblock javascript %}

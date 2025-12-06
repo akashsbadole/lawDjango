@@ -28,17 +28,8 @@ class CustomLoginView(BaseLoginView):
         # Check if user has a role attribute
         if hasattr(user, 'role'):
             if user.role == 'lawyer':
-                # Check if lawyer has a tenant before redirecting to lawyer panel
-                if hasattr(user, 'tenant') and user.tenant:
-                    return reverse_lazy('lawyer_panel:dashboard')
-                else:
-                    # Lawyer without tenant - show error and redirect to home
-                    messages.error(
-                        self.request,
-                        "Your account is not associated with any law firm. "
-                        "Please contact your administrator."
-                    )
-                    return reverse_lazy('home')
+                # Redirect to lawyer panel without tenant requirement
+                return reverse_lazy('lawyer_panel:dashboard')
                     
             elif user.role == 'admin':
                 # Check if user has a tenant, redirect to tenant dashboard
@@ -50,6 +41,10 @@ class CustomLoginView(BaseLoginView):
                     
             elif user.role == 'platform_admin':
                 return reverse_lazy('platform_admin:dashboard')
+            else:
+                # For all other roles (paralegal, assistant, accountant), redirect to home
+                # They can access tenant features from the home page
+                return reverse_lazy('home')
         
         # Default fallback
         return reverse_lazy('home')

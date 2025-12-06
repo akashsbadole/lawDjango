@@ -1,0 +1,399 @@
+{% extends 'lawyer_panel/base.html' %}
+{% load static %}
+
+{% block title %}{{ lawyer_profile.full_name }} - Lawyer Profile{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">{{ lawyer_profile.full_name }}</h1>
+    <div>
+        <a href="{% url 'lawyer_panel:lawyer_profile_list' %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Profiles
+        </a>
+        {% if request.user.is_staff or request.user == lawyer_profile.user %}
+        <a href="{% url 'lawyer_panel:lawyer_profile_update' lawyer_profile.pk %}" class="btn btn-warning btn-sm">
+            <i class="fas fa-edit fa-sm text-white-50"></i> Edit Profile
+        </a>
+        <a href="{% url 'lawyer_panel:lawyer_availability_update' lawyer_profile.pk %}" class="btn btn-info btn-sm">
+            <i class="fas fa-calendar-check fa-sm text-white-50"></i> Update Availability
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Profile Header -->
+<div class="row">
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    {% if lawyer_profile.user.get_avatar %}
+                        <img src="{{ lawyer_profile.user.get_avatar }}" class="rounded-circle" width="120" height="120" alt="Profile">
+                    {% else %}
+                        <div class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
+                            <i class="fas fa-user-tie fa-3x text-white"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <h4 class="card-title">{{ lawyer_profile.full_name }}</h4>
+                <p class="text-muted">{{ lawyer_profile.user.email }}</p>
+                
+                <div class="mb-3">
+                    {% if lawyer_profile.is_available %}
+                        <span class="badge badge-success badge-lg">Available</span>
+                    {% else %}
+                        <span class="badge badge-secondary badge-lg">Unavailable</span>
+                    {% endif %}
+                </div>
+                
+                {% if lawyer_profile.experience_level %}
+                <div class="mb-2">
+                    <strong>Experience Level:</strong> {{ lawyer_profile.get_experience_level_display }}
+                </div>
+                {% endif %}
+                
+                {% if lawyer_profile.years_of_experience %}
+                <div class="mb-2">
+                    <strong>Years of Experience:</strong> {{ lawyer_profile.years_of_experience }}
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <strong>Profile Completion:</strong>
+                    <div class="progress mt-1" style="height: 20px;">
+                        <div class="progress-bar bg-info" 
+                             style="width: {{ profile_completion }}%;"
+                             role="progressbar">
+                            {{ profile_completion }}%
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                {% if request.user.is_staff or request.user == lawyer_profile.user %}
+                <div class="d-grid gap-2">
+                    <a href="{% url 'lawyer_panel:lawyer_profile_update' lawyer_profile.pk %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </a>
+                    <a href="{% url 'lawyer_panel:lawyer_qualification_create' lawyer_profile.pk %}" class="btn btn-info btn-sm">
+                        <i class="fas fa-certificate"></i> Add Qualification
+                    </a>
+                    <a href="{% url 'lawyer_panel:lawyer_update_case_load' lawyer_profile.pk %}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-sync"></i> Update Case Load
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Availability Card -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-calendar-check"></i> Availability
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Case Load</span>
+                        <strong>{{ lawyer_profile.current_case_load }} / {{ lawyer_profile.max_cases }}</strong>
+                    </div>
+                    <div class="progress" style="height: 15px;">
+                        <div class="progress-bar" 
+                             style="width: {{ availability_percentage }}%;"
+                             role="progressbar">
+                            {{ availability_percentage|floatformat:0 }}%
+                        </div>
+                    </div>
+                </div>
+                
+                {% if lawyer_profile.is_at_capacity %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    This lawyer is at maximum capacity.
+                </div>
+                {% elif lawyer_profile.can_accept_new_case %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    Available for new cases.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-8 col-lg-7">
+        <!-- Professional Information -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-user-tie"></i> Professional Information
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <strong>Bar Number:</strong>
+                        <p>{{ lawyer_profile.bar_number|default:"Not specified" }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>Law School:</strong>
+                        <p>{{ lawyer_profile.law_school|default:"Not specified" }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>Graduation Year:</strong>
+                        <p>{{ lawyer_profile.graduation_year|default:"Not specified" }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>Experience Level:</strong>
+                        <p>{{ lawyer_profile.get_experience_level_display|default:"Not specified" }}</p>
+                    </div>
+                </div>
+                
+                {% if lawyer_profile.bio %}
+                <div class="mb-3">
+                    <strong>Professional Bio:</strong>
+                    <p>{{ lawyer_profile.bio|linebreaks }}</p>
+                </div>
+                {% endif %}
+                
+                {% if lawyer_profile.languages %}
+                <div class="mb-3">
+                    <strong>Languages:</strong>
+                    <div>
+                        {% for language in lawyer_profile.get_languages_list %}
+                            <span class="badge badge-info mr-1">{{ language }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if lawyer_profile.website or lawyer_profile.linkedin_profile %}
+                <div class="mb-3">
+                    <strong>Professional Links:</strong>
+                    <div class="mt-2">
+                        {% if lawyer_profile.website %}
+                        <a href="{{ lawyer_profile.website }}" target="_blank" class="btn btn-outline-primary btn-sm mr-2">
+                            <i class="fas fa-globe"></i> Website
+                        </a>
+                        {% endif %}
+                        {% if lawyer_profile.linkedin_profile %}
+                        <a href="{{ lawyer_profile.linkedin_profile }}" target="_blank" class="btn btn-outline-info btn-sm">
+                            <i class="fab fa-linkedin"></i> LinkedIn
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Practice Areas -->
+        {% if lawyer_profile.practice_areas.exists %}
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-briefcase"></i> Practice Areas
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for area in lawyer_profile.practice_areas.all %}
+                    <div class="col-md-6 mb-2">
+                        <span class="badge badge-primary p-2">{{ area.name }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                {% if lawyer_profile.specializations %}
+                <div class="mt-3">
+                    <strong>Specializations:</strong>
+                    <div class="mt-2">
+                        {% for specialization in lawyer_profile.get_specializations_list %}
+                            <span class="badge badge-secondary mr-1">{{ specialization }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Billing Information -->
+        {% if lawyer_profile.billing_method %}
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-dollar-sign"></i> Billing Information
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <strong>Billing Method:</strong>
+                        <p>{{ lawyer_profile.get_billing_method_display }}</p>
+                    </div>
+                    {% if lawyer_profile.hourly_rate %}
+                    <div class="col-md-6 mb-3">
+                        <strong>Hourly Rate:</strong>
+                        <p>${{ lawyer_profile.hourly_rate }}</p>
+                    </div>
+                    {% endif %}
+                    {% if lawyer_profile.consultation_fee %}
+                    <div class="col-md-6 mb-3">
+                        <strong>Consultation Fee:</strong>
+                        <p>${{ lawyer_profile.consultation_fee }}</p>
+                    </div>
+                    {% endif %}
+                    {% if lawyer_profile.retainer_fee %}
+                    <div class="col-md-6 mb-3">
+                        <strong>Retainer Fee:</strong>
+                        <p>${{ lawyer_profile.retainer_fee }}</p>
+                    </div>
+                    {% endif %}
+                    {% if lawyer_profile.contingency_percentage %}
+                    <div class="col-md-6 mb-3">
+                        <strong>Contingency:</strong>
+                        <p>{{ lawyer_profile.contingency_percentage }}%</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Qualifications -->
+        {% if lawyer_profile.qualifications.exists %}
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-certificate"></i> Qualifications
+                </h6>
+                {% if request.user.is_staff or request.user == lawyer_profile.user %}
+                <a href="{% url 'lawyer_panel:lawyer_qualification_create' lawyer_profile.pk %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Add Qualification
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    {% for qualification in lawyer_profile.qualifications.all %}
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-primary"></div>
+                        <div class="timeline-content">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ qualification.title }}</h6>
+                                    <p class="text-muted mb-1">
+                                        <strong>{{ qualification.institution }}</strong> • {{ qualification.year_obtained }}
+                                    </p>
+                                    <span class="badge badge-info">{{ qualification.get_qualification_type_display }}</span>
+                                    {% if qualification.description %}
+                                    <p class="mt-2 mb-0">{{ qualification.description|linebreaks }}</p>
+                                    {% endif %}
+                                </div>
+                                {% if request.user.is_staff or request.user == lawyer_profile.user %}
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'lawyer_panel:lawyer_qualification_update' qualification.pk %}" class="btn btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if qualification.certificate_file %}
+                            <div class="mt-2">
+                                <a href="{{ qualification.certificate_file.url }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-file-pdf"></i> View Certificate
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Recent Cases -->
+        {% if recent_cases %}
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-briefcase"></i> Recent Cases
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for case in recent_cases %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">
+                                    <a href="{% url 'lawyer_panel:case_detail' case.pk %}" class="text-decoration-none">
+                                        {{ case.title }}
+                                    </a>
+                                </h6>
+                                <p class="text-muted mb-0">
+                                    {{ case.client.full_name }} • {{ case.status|title }}
+                                </p>
+                            </div>
+                            <small class="text-muted">{{ case.updated_at|date:"M d, Y" }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'lawyer_panel:case_list' %}?assigned_lawyers={{ lawyer_profile.user.pk }}" class="btn btn-outline-primary">
+                        View All Cases
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #e3e6f0;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -22px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+}
+
+.timeline-content {
+    background-color: #f8f9fc;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 3px solid #4e73df;
+}
+</style>
+{% endblock %}

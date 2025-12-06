@@ -243,3 +243,115 @@ Give a ⭐️ if this project helped you!
 ---
 
 > This project was formerly known as _DjangoX_ but was renamed to _LawFlow_ to reflect its focus on law practice management.
+
+Law Management
+Key Features:
+
+Client Request Process
+Matter Process
+Lawyer create Process
+Client Create Process
+Invoice Management
+Using this module you can handle every type of law matters. "Law ERP" includes: * Client Requests, * Manage Matters, * Manage Customers, * Law Practice Area, * Document management, * Trial Management, * Lawyer Information, * Opposition Lawyers and Parties Details, * Judge Information, * Act/Article Management, * Victim Information, * Results, * Courts, * Invoice Management, * Case/Matter PDF Report.
+
+Law Management app
+
+Feature 1: Client Request Process
+*Overview:*
+
+A lawyer,Help desk officer and Law admin users can be create all configuration
+
+A lawyer,Help desk officer can add the client request.
+
+Law admin can request, approve and reject client requests.
+
+Only law admin user can approve and reject client requests also create matter,lawyer,client
+
+Client is created automatically in client menu after approved the client request
+*Purpose*
+
+The Client can request from the listed legal services.
+*Flow Chart*
+
+
+
+
+Feature 2: Matter Process
+*Overview*
+
+Law admin user can create,approve,reject and reopen the client matter details
+Invoice is created from view option from InProgress, Approved and Closed stage
+*Purpose*
+
+The matter is used to manage the acts,articles,opposition lawyer and documents details
+*Flow Chart*
+
+
+
+
+Feature 3: Lawyer create Process
+*Overview:*
+
+Law admin can create Lawyer.
+Lawyers can specify the practice area and fees based on an hour,trial or fixed.
+The lawyer will have many other details such as their Experience, Qualification and Personal Information.
+
+
+Feature 4: Client create Process
+*Overview:*
+
+Client is created automatically in client menu after approved the client request. Also manual created from client menu using Is Client checkbox
+
+
+Feature 5: Invoice Management
+*Overview:*
+
+Invoice created from view option under the matter.
+Invoice form view is open up while click on "Create Sales invoice" button
+Customer and Payment type auto appear with sale invoice form view.
+Just add matter,qty and price details of the matter and confirm the sale invoice.
+Make payment once confirm the invoice
+
+------------
+Generated Test Credentials
+Default Password for ALL users: password123
+
+Tenant 1: Gonzalez Law Office
+Admin: aaron.ford.8@example.com / password123
+Lawyer: deborah.miller.8@example.com / password123
+
+
+--
+Problem Fixed
+The issue was that lawyers couldn't access their panel because the TenantContextMiddleware wasn't properly retrieving tenant context from the session when accessing URLs without tenant slugs.
+
+Solution Implemented
+Enhanced TenantContextMiddleware: Updated the middleware to properly handle tenant detection from session and user relationships when tenant is not set in the URL.
+
+Fixed Import Issues: Resolved Tenant model import problems in the middleware.
+
+Updated Login Guide: Added the correct lawyer credentials from the seed data.
+
+Key Changes Made
+1. Middleware Fix (core/middleware.py)
+Enhanced tenant detection logic to check session first, then user relationship
+Added proper error handling for invalid tenant sessions
+Fixed import issues with Tenant model
+2. Updated Credentials (SIMPLE_LOGIN_GUIDE.md)
+Added newly created lawyer credentials: emily.bryant.8@example.com / password123
+Added accountant and assistant credentials from the same tenant
+Provided clear testing scenarios
+Working Credentials
+The following credentials now work properly:
+
+Lawyer: emily.bryant.8@example.com / password123
+Accountant: joshua.rivera.8@example.com / password123
+
+Assistant: jeffrey.bennett.8@example.com / password123
+
+Verification
+Seed data command successfully creates tenants, users, clients, cases, and billing data
+Lawyers can now log in and access their panel at /lawyer-panel/ without tenant slug requirements
+The middleware properly sets tenant context from session data
+Role-based redirects work correctly for all user types
+The login system is now fully functional with simplified URLs that don't require tenant slugs, while maintaining proper tenant isolation and security.

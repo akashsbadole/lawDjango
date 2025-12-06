@@ -13,22 +13,22 @@ from django.core.paginator import Paginator
 from datetime import timedelta, date
 from permissions.mixins import RoleRequiredMixin, TenantPermissionRequiredMixin
 
+from core.types import TenantHttpRequest
 from clients.models import Client
 from cases.models import Case, CaseEvent
 from documents.models import Document
 from billing.models import TimeEntry, Expense, Invoice, Payment
 from .forms import (
-    ClientForm, CaseForm, CaseEventForm, DocumentForm, 
-    TimeEntryForm, ExpenseForm, QuickSearchForm
+    ClientForm, CaseForm, CaseEventForm, DocumentForm,
+    TimeEntryForm, ExpenseForm, QuickSearchForm, LawyerProfileForm,
+    PracticeAreaForm, LawyerQualificationForm, LawyerProfileSearchForm,
+    LawyerAvailabilityForm
 )
+from .models import LawyerProfile, PracticeArea, LawyerQualification
 
 if TYPE_CHECKING:
     from tenants.models import Tenant
     from accounts.models import CustomUser
-
-# Type hints for request object with tenant attribute
-class TenantHttpRequest(HttpRequest):
-    tenant: 'Tenant'
 
 # Type hints for model instances with relationships
 class CaseWithRelations(Case):
@@ -63,14 +63,14 @@ class LawyerPanelRequiredMixin(RoleRequiredMixin, LoginRequiredMixin):
             return redirect(f'/accounts/login/?{REDIRECT_FIELD_NAME}={request.get_full_path()}')
         
         # Also allow admins to access lawyer panel
-        if not hasattr(request.user, 'role') or request.user.role.lower() not in ['lawyer', 'admin']:
+        if not hasattr(request.user, 'role') or request.user.role.lower() not in ['lawyer', 'admin']:  # type: ignore
             messages.error(request, "You don't have permission to access lawyer panel.")
             return redirect('home')
         
         # Get tenant - either from request.tenant (set by middleware) or from user.tenant
         tenant = getattr(request, 'tenant', None)
-        if not tenant and hasattr(request.user, 'tenant'):
-            tenant = request.user.tenant
+        if not tenant and hasattr(request.user, 'tenant'):  # type: ignore
+            tenant = request.user.tenant  # type: ignore
         
         if not tenant:
             # Instead of redirecting to home (which might cause a loop),
@@ -101,14 +101,14 @@ class DashboardView(LawyerPanelRequiredMixin, ListView):
     def get_queryset(self):
         # Get recent cases assigned to the lawyer
         return Case.objects.filter(
-            tenant=self.request.tenant,
+            tenant=self.request.tenant,  # type: ignore
             assigned_lawyers=self.request.user,
             deleted_at__isnull=True
         ).order_by('-updated_at')[:5]
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        tenant = self.request.tenant
+        tenant = self.request.tenant  # type: ignore
         user = self.request.user
         
         # Get counts and summaries
@@ -157,7 +157,7 @@ class CaseListView(LawyerPanelRequiredMixin, ListView):
     
     def get_queryset(self):
         queryset = Case.objects.filter(
-            tenant=self.request.tenant,
+            tenant=self.request.tenant,  # type: ignore
             assigned_lawyers=self.request.user,
             deleted_at__isnull=True
         )
@@ -193,7 +193,7 @@ class CaseListView(LawyerPanelRequiredMixin, ListView):
             'status_choices': Case.STATUS_CHOICES,
             'case_type_choices': Case.CASE_TYPE_CHOICES,
             'clients': Client.objects.filter(
-                tenant=self.request.tenant, deleted_at__isnull=True
+                tenant=self.request.tenant, deleted_at__isnull=True  # type: ignore
             ),
             'search_form': QuickSearchForm(self.request.GET),
         })
@@ -208,7 +208,7 @@ class CaseDetailView(LawyerPanelRequiredMixin, DetailView):
     
     def get_queryset(self):
         return Case.objects.filter(
-            tenant=self.request.tenant,
+            tenant=self.request.tenant,  # type: ignore
             assigned_lawyers=self.request.user,
             deleted_at__isnull=True
         )
@@ -218,10 +218,10 @@ class CaseDetailView(LawyerPanelRequiredMixin, DetailView):
         case = self.get_object()
         
         context.update({
-            'events': case.events.order_by('-event_date'),
-            'documents': case.documents.filter(deleted_at__isnull=True),
-            'time_entries': case.time_entries.filter(lawyer=self.request.user).order_by('-date'),
-            'expenses': case.expenses.filter(created_by=self.request.user).order_by('-date'),
+            'events': case.events.order_by('-event_date'),  # type: ignore
+            'documents': case.documents.filter(deleted_at__isnull=True),  # type: ignore
+            'time_entries': case.time_entries.filter(lawyer=self.request.user).order_by('-date'),  # type: ignore
+            'expenses': case.expenses.filter(created_by=self.request.user).order_by('-date'),  # type: ignore
             'event_form': CaseEventForm(initial={'case': case}),
         })
         return context
@@ -240,7 +240,7 @@ class CaseCreateView(LawyerPanelRequiredMixin, CreateView):
         return kwargs
     
     def form_valid(self, form):
-        form.instance.tenant = self.request.tenant
+        form.instance.tenant = self.request.tenant  # type: ignore
         form.instance.created_by = self.request.user
         messages.success(self.request, f'Case "{form.instance.title}" has been created successfully.')
         return super().form_valid(form)
@@ -255,7 +255,7 @@ class CaseUpdateView(LawyerPanelRequiredMixin, UpdateView):
     
     def get_queryset(self):
         return Case.objects.filter(
-            tenant=self.request.tenant,
+            tenant=self.request.tenant,  # type: ignore
             assigned_lawyers=self.request.user,
             deleted_at__isnull=True
         )
@@ -279,7 +279,7 @@ class ClientListView(LawyerPanelRequiredMixin, ListView):
     
     def get_queryset(self):
         queryset = Client.objects.filter(
-            tenant=self.request.tenant,
+            tenant=self.request.tenant,  # type: ignore
             deleted_at__isnull=True
         )
         
@@ -309,7 +309,7 @@ class ClientDetailView(LawyerPanelRequiredMixin, DetailView):
     
     def get_queryset(self):
         return Client.objects.filter(
-            tenant=self.request.tenant,
+            tenant=self.request.tenant,  # type: ignore
             deleted_at__isnull=True
         )
     
@@ -318,11 +318,11 @@ class ClientDetailView(LawyerPanelRequiredMixin, DetailView):
         client = self.get_object()
         
         context.update({
-            'cases': client.cases.filter(
+            'cases': client.cases.filter(  # type: ignore
                 assigned_lawyers=self.request.user,
                 deleted_at__isnull=True
             ).order_by('-updated_at'),
-            'documents': client.documents.filter(
+            'documents': client.documents.filter(  # type: ignore
                 uploaded_by=self.request.user,
                 deleted_at__isnull=True
             ).order_by('-created_at'),
@@ -338,7 +338,7 @@ class ClientCreateView(LawyerPanelRequiredMixin, CreateView):
     success_url = reverse_lazy('lawyer_panel:client_list')
     
     def form_valid(self, form):
-        form.instance.tenant = self.request.tenant
+        form.instance.tenant = self.request.tenant  # type: ignore
         form.instance.created_by = self.request.user
         messages.success(self.request, f'Client "{form.instance.full_name}" has been created successfully.')
         return super().form_valid(form)
@@ -353,7 +353,7 @@ class ClientUpdateView(LawyerPanelRequiredMixin, UpdateView):
     
     def get_queryset(self):
         return Client.objects.filter(
-            tenant=self.request.tenant,
+            tenant=self.request.tenant,  # type: ignore
             deleted_at__isnull=True
         )
     
@@ -371,7 +371,7 @@ class DocumentListView(LawyerPanelRequiredMixin, ListView):
     
     def get_queryset(self):
         queryset = Document.objects.filter(
-            tenant=self.request.tenant,
+            tenant=self.request.tenant,  # type: ignore
             uploaded_by=self.request.user,
             deleted_at__isnull=True
         )
@@ -505,7 +505,7 @@ class TimeEntryListView(LawyerPanelRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context.update({
             'cases': Case.objects.filter(
-                tenant=self.request.tenant,
+                tenant=self.request.tenant,  # type: ignore
                 assigned_lawyers=self.request.user,
                 deleted_at__isnull=True
             ),
@@ -532,7 +532,7 @@ class TimeEntryCreateView(LawyerPanelRequiredMixin, CreateView):
         return kwargs
     
     def form_valid(self, form):
-        form.instance.tenant = self.request.tenant
+        form.instance.tenant = self.request.tenant  # type: ignore
         form.instance.lawyer = self.request.user
         form.instance.created_by = self.request.user
         messages.success(self.request, f'Time entry has been logged successfully.')
@@ -548,7 +548,7 @@ class ExpenseListView(LawyerPanelRequiredMixin, ListView):
     
     def get_queryset(self):
         queryset = Expense.objects.filter(
-            tenant=self.request.tenant,
+            tenant=self.request.tenant,  # type: ignore
             created_by=self.request.user,
             deleted_at__isnull=True
         )
@@ -577,7 +577,7 @@ class ExpenseListView(LawyerPanelRequiredMixin, ListView):
         context.update({
             'category_choices': Expense.CATEGORY_CHOICES,
             'cases': Case.objects.filter(
-                tenant=self.request.tenant,
+                tenant=self.request.tenant,  # type: ignore
                 assigned_lawyers=self.request.user,
                 deleted_at__isnull=True
             ),
@@ -601,7 +601,7 @@ class ExpenseCreateView(LawyerPanelRequiredMixin, CreateView):
         return kwargs
     
     def form_valid(self, form):
-        form.instance.tenant = self.request.tenant
+        form.instance.tenant = self.request.tenant  # type: ignore
         form.instance.created_by = self.request.user
         messages.success(self.request, f'Expense has been added successfully.')
         return super().form_valid(form)
@@ -617,14 +617,14 @@ class BillingDashboardView(LawyerPanelRequiredMixin, ListView):
     def get_queryset(self):
         # Get recent time entries
         return TimeEntry.objects.filter(
-            tenant=self.request.tenant,
+            tenant=self.request.tenant,  # type: ignore
             lawyer=self.request.user,
             deleted_at__isnull=True
         ).order_by('-date', '-created_at')[:10]
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        tenant = self.request.tenant
+        tenant = self.request.tenant  # type: ignore
         user = self.request.user
         
         # Get billing statistics
@@ -659,7 +659,7 @@ class BillingDashboardView(LawyerPanelRequiredMixin, ListView):
 @login_required
 def add_case_event(request: TenantHttpRequest, case_id: int):
     """Add an event to a case."""
-    if not hasattr(request.user, 'role') or request.user.role.lower() not in ['lawyer', 'admin']:
+    if not hasattr(request.user, 'role') or request.user.role.lower() not in ['lawyer', 'admin']:  # type: ignore
         return HttpResponseForbidden()
     
     case = get_object_or_404(
@@ -692,7 +692,7 @@ def add_case_event(request: TenantHttpRequest, case_id: int):
 @login_required
 def quick_search(request: TenantHttpRequest):
     """Quick search across different modules."""
-    if not hasattr(request.user, 'role') or request.user.role.lower() not in ['lawyer', 'admin']:
+    if not hasattr(request.user, 'role') or request.user.role.lower() not in ['lawyer', 'admin']:  # type: ignore
         return HttpResponseForbidden()
     
     form = QuickSearchForm(request.GET)
@@ -731,3 +731,374 @@ def quick_search(request: TenantHttpRequest):
         'form': form,
         'results': results,
     })
+
+
+# Lawyer Profile Views
+
+class LawyerProfileListView(LawyerPanelRequiredMixin, ListView):
+    """List view for lawyer profiles with filtering capabilities."""
+    model = LawyerProfile
+    template_name = 'lawyer_panel/lawyer_profile_list.html'
+    context_object_name = 'lawyer_profiles'
+    paginate_by = 12
+    
+    def get_queryset(self):
+        queryset = LawyerProfile.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            deleted_at__isnull=True
+        ).select_related('user').prefetch_related('practice_areas', 'qualifications')
+        
+        # Apply search filter
+        search_form = LawyerProfileSearchForm(self.request.GET, request=self.request)
+        if search_form.is_valid():
+            cleaned_data = search_form.cleaned_data
+            
+            # Text search
+            search_query = cleaned_data.get('search')
+            if search_query:
+                queryset = queryset.filter(
+                    Q(user__first_name__icontains=search_query) |
+                    Q(user__last_name__icontains=search_query) |
+                    Q(user__email__icontains=search_query) |
+                    Q(bar_number__icontains=search_query) |
+                    Q(law_school__icontains=search_query) |
+                    Q(specializations__icontains=search_query)
+                )
+            
+            # Experience level filter
+            experience_levels = cleaned_data.get('experience_level')
+            if experience_levels:
+                queryset = queryset.filter(experience_level__in=experience_levels)
+            
+            # Practice areas filter
+            practice_areas = cleaned_data.get('practice_areas')
+            if practice_areas:
+                queryset = queryset.filter(practice_areas__in=practice_areas).distinct()
+            
+            # Billing method filter
+            billing_methods = cleaned_data.get('billing_method')
+            if billing_methods:
+                queryset = queryset.filter(billing_method__in=billing_methods)
+            
+            # Availability filter
+            is_available = cleaned_data.get('is_available')
+            if is_available:
+                queryset = queryset.filter(is_available=True)
+            
+            # Experience range filter
+            min_experience = cleaned_data.get('min_experience')
+            max_experience = cleaned_data.get('max_experience')
+            if min_experience is not None:
+                queryset = queryset.filter(years_of_experience__gte=min_experience)
+            if max_experience is not None:
+                queryset = queryset.filter(years_of_experience__lte=max_experience)
+            
+            # Qualifications filter
+            has_qualifications = cleaned_data.get('has_qualifications')
+            if has_qualifications:
+                queryset = queryset.filter(qualifications__isnull=False).distinct()
+        
+        return queryset.order_by('user__last_name', 'user__first_name')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search_form'] = LawyerProfileSearchForm(self.request.GET, request=self.request)
+        context['total_profiles'] = self.get_queryset().count()
+        return context
+
+
+class LawyerProfileDetailView(LawyerPanelRequiredMixin, DetailView):
+    """Detail view for lawyer profiles."""
+    model = LawyerProfile
+    template_name = 'lawyer_panel/lawyer_profile_detail.html'
+    context_object_name = 'lawyer_profile'
+    
+    def get_queryset(self):
+        return LawyerProfile.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            deleted_at__isnull=True
+        ).select_related('user').prefetch_related('practice_areas', 'qualifications')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        lawyer_profile = self.get_object()
+        
+        # Get related cases
+        from cases.models import Case
+        context['recent_cases'] = Case.objects.filter(
+            assigned_lawyers=lawyer_profile.user,
+            tenant=self.request.tenant,  # type: ignore
+            deleted_at__isnull=True
+        ).order_by('-updated_at')[:5]
+        
+        # Calculate statistics
+        context['profile_completion'] = lawyer_profile.get_profile_completion_percentage()  # type: ignore
+        context['availability_percentage'] = lawyer_profile.availability_percentage  # type: ignore
+        
+        return context
+
+
+class LawyerProfileCreateView(LawyerPanelRequiredMixin, CreateView):
+    """Create view for new lawyer profiles."""
+    model = LawyerProfile
+    form_class = LawyerProfileForm
+    template_name = 'lawyer_panel/lawyer_profile_form.html'
+    success_url = reverse_lazy('lawyer_panel:lawyer_profile_list')
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+    
+    def form_valid(self, form):
+        form.instance.tenant = self.request.tenant
+        form.instance.user = self.request.user
+        messages.success(self.request, f'Lawyer profile for {form.instance.user.get_full_name()} has been created successfully.')  # type: ignore
+        return super().form_valid(form)
+    
+    def dispatch(self, request, *args, **kwargs):
+        # Check if user already has a profile
+        if hasattr(request.user, 'lawyer_profile'):
+            messages.warning(request, 'You already have a lawyer profile. You can edit it instead.')
+            return redirect('lawyer_panel:lawyer_profile_detail', pk=request.user.lawyer_profile.pk)  # type: ignore
+        return super().dispatch(request, *args, **kwargs)
+
+
+class LawyerProfileUpdateView(LawyerPanelRequiredMixin, UpdateView):
+    """Update view for existing lawyer profiles."""
+    model = LawyerProfile
+    form_class = LawyerProfileForm
+    template_name = 'lawyer_panel/lawyer_profile_form.html'
+    success_url = reverse_lazy('lawyer_panel:lawyer_profile_list')
+    
+    def get_queryset(self):
+        return LawyerProfile.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            deleted_at__isnull=True
+        )
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+    
+    def form_valid(self, form):
+        messages.success(self.request, f'Lawyer profile for {form.instance.user.get_full_name()} has been updated successfully.')
+        return super().form_valid(form)
+
+
+# Practice Area Views
+
+class PracticeAreaListView(LawyerPanelRequiredMixin, ListView):
+    """List view for practice areas."""
+    model = PracticeArea
+    template_name = 'lawyer_panel/practice_area_list.html'
+    context_object_name = 'practice_areas'
+    paginate_by = 20
+    
+    def get_queryset(self):
+        return PracticeArea.objects.filter(
+            tenant=self.request.tenant
+        ).order_by('name')
+
+
+class PracticeAreaCreateView(LawyerPanelRequiredMixin, CreateView):
+    """Create view for new practice areas."""
+    model = PracticeArea
+    form_class = PracticeAreaForm
+    template_name = 'lawyer_panel/practice_area_form.html'
+    success_url = reverse_lazy('lawyer_panel:practice_area_list')
+    
+    def form_valid(self, form):
+        form.instance.tenant = self.request.tenant  # type: ignore
+        messages.success(self.request, f'Practice area "{form.instance.name}" has been created successfully.')
+        return super().form_valid(form)
+
+
+class PracticeAreaUpdateView(LawyerPanelRequiredMixin, UpdateView):
+    """Update view for existing practice areas."""
+    model = PracticeArea
+    form_class = PracticeAreaForm
+    template_name = 'lawyer_panel/practice_area_form.html'
+    success_url = reverse_lazy('lawyer_panel:practice_area_list')
+    
+    def get_queryset(self):
+        return PracticeArea.objects.filter(tenant=self.request.tenant)  # type: ignore
+    
+    def form_valid(self, form):
+        messages.success(self.request, f'Practice area "{form.instance.name}" has been updated successfully.')
+        return super().form_valid(form)
+
+
+# Lawyer Qualification Views
+
+class LawyerQualificationListView(LawyerPanelRequiredMixin, ListView):
+    """List view for lawyer qualifications."""
+    model = LawyerQualification
+    template_name = 'lawyer_panel/lawyer_qualification_list.html'
+    context_object_name = 'qualifications'
+    paginate_by = 20
+    
+    def get_queryset(self):
+        lawyer_profile_id = self.kwargs.get('lawyer_profile_id')
+        if lawyer_profile_id:
+            return LawyerQualification.objects.filter(
+                lawyer_profile_id=lawyer_profile_id,
+                tenant=self.request.tenant
+            ).select_related('lawyer_profile__user')
+        else:
+            return LawyerQualification.objects.filter(
+                tenant=self.request.tenant
+            ).select_related('lawyer_profile__user')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        lawyer_profile_id = self.kwargs.get('lawyer_profile_id')
+        if lawyer_profile_id:
+            try:
+                context['lawyer_profile'] = LawyerProfile.objects.get(
+                    pk=lawyer_profile_id,
+                    tenant=self.request.tenant
+                )
+            except LawyerProfile.DoesNotExist:
+                pass
+        return context
+
+
+class LawyerQualificationCreateView(LawyerPanelRequiredMixin, CreateView):
+    """Create view for new lawyer qualifications."""
+    model = LawyerQualification
+    form_class = LawyerQualificationForm
+    template_name = 'lawyer_panel/lawyer_qualification_form.html'
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        lawyer_profile_id = self.kwargs.get('lawyer_profile_id')
+        if lawyer_profile_id:
+            try:
+                kwargs['lawyer_profile'] = LawyerProfile.objects.get(
+                    pk=lawyer_profile_id,
+                    tenant=self.request.tenant
+                )
+            except LawyerProfile.DoesNotExist:
+                pass
+        return kwargs
+    
+    def get_success_url(self):
+        lawyer_profile_id = self.kwargs.get('lawyer_profile_id')
+        if lawyer_profile_id:
+            return reverse_lazy('lawyer_panel:lawyer_qualification_list', kwargs={'lawyer_profile_id': lawyer_profile_id})
+        return reverse_lazy('lawyer_panel:lawyer_qualification_list')
+    
+    def form_valid(self, form):
+        messages.success(self.request, f'Qualification "{form.instance.title}" has been added successfully.')
+        return super().form_valid(form)
+
+
+class LawyerQualificationUpdateView(LawyerPanelRequiredMixin, UpdateView):
+    """Update view for existing lawyer qualifications."""
+    model = LawyerQualification
+    form_class = LawyerQualificationForm
+    template_name = 'lawyer_panel/lawyer_qualification_form.html'
+    
+    def get_queryset(self):
+        return LawyerQualification.objects.filter(tenant=self.request.tenant)  # type: ignore
+    
+    def get_success_url(self):
+        return reverse_lazy('lawyer_panel:lawyer_qualification_list', kwargs={
+            'lawyer_profile_id': self.object.lawyer_profile.pk
+        })
+    
+    def form_valid(self, form):
+        messages.success(self.request, f'Qualification "{form.instance.title}" has been updated successfully.')
+        return super().form_valid(form)
+
+
+# Availability Management Views
+
+class LawyerAvailabilityUpdateView(LawyerPanelRequiredMixin, UpdateView):
+    """Update view for lawyer availability settings."""
+    model = LawyerProfile
+    form_class = LawyerAvailabilityForm
+    template_name = 'lawyer_panel/lawyer_availability_form.html'
+    
+    def get_queryset(self):
+        return LawyerProfile.objects.filter(
+            tenant=self.request.tenant,
+            deleted_at__isnull=True
+        )
+    
+    def get_success_url(self):
+        return reverse_lazy('lawyer_panel:lawyer_profile_detail', kwargs={'pk': self.object.pk})
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Availability settings have been updated successfully.')
+        return super().form_valid(form)
+
+
+# Export Views
+
+@login_required
+def export_lawyer_profiles(request: TenantHttpRequest):
+    """Export lawyer profiles to CSV."""
+    if not hasattr(request.user, 'role') or request.user.role.lower() not in ['lawyer', 'admin']:  # type: ignore
+        return HttpResponseForbidden()
+    
+    import csv
+    from django.http import HttpResponse
+    
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="lawyer_profiles.csv"'
+    
+    writer = csv.writer(response)
+    writer.writerow([
+        'Name', 'Email', 'Bar Number', 'Law School', 'Graduation Year',
+        'Experience Level', 'Years of Experience', 'Practice Areas',
+        'Billing Method', 'Hourly Rate', 'Is Available', 'Max Cases',
+        'Current Case Load', 'Profile Completion %'
+    ])
+    
+    lawyer_profiles = LawyerProfile.objects.filter(
+        tenant=request.tenant,
+        deleted_at__isnull=True
+    ).select_related('user').prefetch_related('practice_areas')
+    
+    for profile in lawyer_profiles:
+        practice_areas = ', '.join([pa.name for pa in profile.practice_areas.all()])
+        writer.writerow([
+            profile.full_name,
+            profile.user.email,
+            profile.bar_number or '',
+            profile.law_school or '',
+            profile.graduation_year or '',
+            profile.get_experience_level_display() or '',
+            profile.years_of_experience or '',
+            practice_areas,
+            profile.get_billing_method_display() or '',
+            profile.hourly_rate or '',
+            profile.is_available,
+            profile.max_cases,
+            profile.current_case_load,
+            profile.get_profile_completion_percentage()
+        ])
+    
+    return response
+
+
+@login_required
+def update_case_load(request: TenantHttpRequest, lawyer_profile_id: int):
+    """Update case load for a specific lawyer profile."""
+    if not hasattr(request.user, 'role') or request.user.role.lower() not in ['lawyer', 'admin']:  # type: ignore
+        return HttpResponseForbidden()
+    
+    lawyer_profile = get_object_or_404(
+        LawyerProfile,
+        pk=lawyer_profile_id,
+        tenant=request.tenant,
+        deleted_at__isnull=True
+    )
+    
+    lawyer_profile.update_case_load()
+    messages.success(request, f'Case load for {lawyer_profile.full_name} has been updated.')
+    
+    return redirect('lawyer_panel:lawyer_profile_detail', pk=lawyer_profile.pk)

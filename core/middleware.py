@@ -110,10 +110,29 @@ class TenantContextMiddleware:
             response = self.get_response(request)
             return response
         
-        # If tenant is not set and user has a tenant, set it
-        if not hasattr(request, 'tenant') and hasattr(request.user, 'tenant'):
-            if request.user.tenant:
-                request.tenant = request.user.tenant
+        # If tenant is not set, try to get it from session first, then from user
+        if not hasattr(request, 'tenant') or request.tenant is None:
+            tenant = None
+            
+            # First try to get tenant from session
+            if 'current_tenant_id' in request.session:
+                try:
+                    tenant_id = request.session['current_tenant_id']
+                    from tenants.models import Tenant
+                    tenant = Tenant.objects.get(pk=tenant_id, status='active')
+                except (Tenant.DoesNotExist, ValueError, KeyError):
+                    # Clear invalid tenant from session
+                    if 'current_tenant_id' in request.session:
+                        del request.session['current_tenant_id']
+                        request.session.save()
+            
+            # If no tenant from session, try to get from user relationship
+            if not tenant and hasattr(request.user, 'tenant'):
+                tenant = request.user.tenant
+            
+            # Set tenant on request if found
+            if tenant:
+                request.tenant = tenant
         
         response = self.get_response(request)
         return response

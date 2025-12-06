@@ -1,0 +1,270 @@
+{% extends 'lawyer_panel/base.html' %}
+{% load static crispy_forms_tags %}
+
+{% block title %}
+    {% if object %}Edit Qualification{% else %}Add Qualification{% endif %}
+    {% if lawyer_profile %} - {{ lawyer_profile.full_name }}{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        {% if object %}Edit Qualification{% else %}Add Qualification{% endif %}
+        {% if lawyer_profile %} - {{ lawyer_profile.full_name }}{% endif %}
+    </h1>
+    <div>
+        {% if lawyer_profile %}
+        <a href="{% url 'lawyer_panel:lawyer_qualification_list' lawyer_profile.pk %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Qualifications
+        </a>
+        {% else %}
+        <a href="{% url 'lawyer_panel:lawyer_qualification_list' %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Qualifications
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{% if lawyer_profile %}
+<!-- Lawyer Profile Summary -->
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <div class="d-flex align-items-center">
+            <div class="flex-grow-1">
+                <h5 class="card-title mb-1">{{ lawyer_profile.full_name }}</h5>
+                <p class="text-muted mb-0">{{ lawyer_profile.user.email }}</p>
+            </div>
+            <div class="text-right">
+                <span class="badge badge-info">{{ lawyer_profile.qualifications.count }} Qualification{{ lawyer_profile.qualifications.count|pluralize }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-certificate"></i>
+                    {% if object %}Edit Qualification{% else %}Add New Qualification{% endif %}
+                </h6>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" id="qualification-form">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 
+                            {% if object %}Update Qualification{% else %}Add Qualification{% endif %}
+                        </button>
+                        <a href="{% if lawyer_profile %}{% url 'lawyer_panel:lawyer_qualification_list' lawyer_profile.pk %}{% else %}{% url 'lawyer_panel:lawyer_qualification_list' %}{% endif %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Help Card -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-question-circle"></i> Qualification Guide
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6><i class="fas fa-graduation-cap text-primary"></i> Qualification Type</h6>
+                    <p class="text-muted small">
+                        Select the most appropriate type for this qualification (degree, certificate, license, etc.).
+                    </p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6><i class="fas fa-university text-primary"></i> Institution</h6>
+                    <p class="text-muted small">
+                        Enter the full name of the educational institution or certifying body.
+                    </p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6><i class="fas fa-calendar text-primary"></i> Year Obtained</h6>
+                    <p class="text-muted small">
+                        The year when this qualification was awarded or completed.
+                    </p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6><i class="fas fa-file-upload text-primary"></i> Certificate File</h6>
+                    <p class="text-muted small">
+                        Upload PDF or image files of certificates, diplomas, or other documentation.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Qualification Types Guide -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-list"></i> Qualification Types
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <strong>Law Degree:</strong>
+                    <br><small class="text-muted">J.D., LL.B., or equivalent law degree</small>
+                </div>
+                
+                <div class="mb-2">
+                    <strong>Master's Degree:</strong>
+                    <br><small class="text-muted">LL.M., M.L., or other advanced law degree</small>
+                </div>
+                
+                <div class="mb-2">
+                    <strong>PhD/Doctorate:</strong>
+                    <br><small class="text-muted">S.J.D., Ph.D. in Law, or other doctoral degree</small>
+                </div>
+                
+                <div class="mb-2">
+                    <strong>Professional Certificate:</strong>
+                    <br><small class="text-muted">Specialized training or certification programs</small>
+                </div>
+                
+                <div class="mb-2">
+                    <strong>License:</strong>
+                    <br><small class="text-muted">Bar admission or professional license</small>
+                </div>
+                
+                <div class="mb-2">
+                    <strong>Accreditation:</strong>
+                    <br><small class="text-muted">Professional accreditations or recognitions</small>
+                </div>
+                
+                <div class="mb-2">
+                    <strong>Other:</strong>
+                    <br><small class="text-muted">Any other relevant qualifications</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Form validation
+    $('#qualification-form').submit(function(e) {
+        var title = $('#id_title').val().trim();
+        var institution = $('#id_institution').val().trim();
+        var yearObtained = $('#id_year_obtained').val();
+        var qualificationType = $('#id_qualification_type').val();
+        
+        // Validate required fields
+        if (!qualificationType) {
+            e.preventDefault();
+            alert('Please select a qualification type.');
+            $('#id_qualification_type').focus();
+            return false;
+        }
+        
+        if (!title) {
+            e.preventDefault();
+            alert('Qualification title is required.');
+            $('#id_title').focus();
+            return false;
+        }
+        
+        if (!institution) {
+            e.preventDefault();
+            alert('Institution name is required.');
+            $('#id_institution').focus();
+            return false;
+        }
+        
+        if (!yearObtained) {
+            e.preventDefault();
+            alert('Year obtained is required.');
+            $('#id_year_obtained').focus();
+            return false;
+        }
+        
+        // Validate year
+        var currentYear = new Date().getFullYear();
+        if (yearObtained < 1900 || yearObtained > currentYear + 10) {
+            e.preventDefault();
+            alert('Please enter a valid year between 1900 and ' + (currentYear + 10) + '.');
+            $('#id_year_obtained').focus();
+            return false;
+        }
+    });
+    
+    // Character counter for title field
+    $('#id_title').on('input', function() {
+        var length = $(this).val().length;
+        var maxLength = 200;
+        var remaining = maxLength - length;
+        
+        if (remaining < 0) {
+            $(this).val($(this).val().substring(0, maxLength));
+            remaining = 0;
+        }
+        
+        // Update character counter if exists
+        var counter = $('#title-counter');
+        if (counter.length === 0) {
+            $(this).after('<small id="title-counter" class="text-muted">0/200 characters</small>');
+            counter = $('#title-counter');
+        }
+        
+        counter.text(length + '/' + maxLength + ' characters');
+        
+        if (remaining < 20) {
+            counter.removeClass('text-muted').addClass('text-warning');
+        } else {
+            counter.removeClass('text-warning').addClass('text-muted');
+        }
+    });
+    
+    // File upload validation
+    $('#id_certificate_file').change(function() {
+        var file = this.files[0];
+        if (file) {
+            // Check file size (max 10MB)
+            var maxSize = 10 * 1024 * 1024; // 10MB in bytes
+            if (file.size > maxSize) {
+                alert('File size must be less than 10MB.');
+                $(this).val('');
+                return false;
+            }
+            
+            // Check file type
+            var allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+            if (allowedTypes.indexOf(file.type) === -1) {
+                alert('Only PDF, JPEG, and PNG files are allowed.');
+                $(this).val('');
+                return false;
+            }
+            
+            // Show file info
+            var fileSize = (file.size / 1024 / 1024).toFixed(2);
+            var fileInfo = '<div class="mt-2 p-2 bg-light rounded">' +
+                '<strong>File:</strong> ' + file.name + '<br>' +
+                '<strong>Size:</strong> ' + fileSize + ' MB<br>' +
+                '<strong>Type:</strong> ' + file.type +
+                '</div>';
+            
+            $('#file-info').remove();
+            $(this).after(fileInfo);
+        }
+    });
+});
+</script>
+{% endblock %}

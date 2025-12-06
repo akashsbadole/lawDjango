@@ -1,0 +1,249 @@
+{% extends 'lawyer_panel/base.html' %}
+{% load static %}
+
+{% block title %}Lawyer Dashboard{% endblock %}
+
+{% block lawyer_panel_content %}
+<!-- Dashboard Content -->
+<div class="row">
+    <!-- Recent Cases -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Recent Cases</h6>
+                <a href="{% url 'lawyer_panel:case_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_cases %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Case Number</th>
+                                    <th>Title</th>
+                                    <th>Client</th>
+                                    <th>Status</th>
+                                    <th>Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for case in recent_cases %}
+                                <tr>
+                                    <td><a href="{% url 'lawyer_panel:case_detail' case.pk %}">{{ case.case_number }}</a></td>
+                                    <td><a href="{% url 'lawyer_panel:case_detail' case.pk %}">{{ case.title }}</a></td>
+                                    <td>{{ case.client.full_name }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ case.status|default:'secondary' }}">
+                                            {{ case.get_status_display|default:case.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ case.updated_at|date:"M d, Y" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No cases assigned yet.</p>
+                        <a href="{% url 'lawyer_panel:case_create' %}" class="btn btn-primary">Create Your First Case</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Hearings & Activities -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Upcoming Hearings</h6>
+            </div>
+            <div class="card-body">
+                {% if upcoming_hearings %}
+                    {% for hearing in upcoming_hearings %}
+                    <div class="mb-3 pb-3 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">{{ hearing.title }}</h6>
+                                <p class="text-muted mb-1">{{ hearing.case.title }}</p>
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                    {{ hearing.event_date|date:"M d, Y H:i" }}
+                                </small>
+                            </div>
+                            <span class="badge badge-info">{{ hearing.get_event_type_display }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-check fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No upcoming hearings scheduled.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'lawyer_panel:case_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>New Case
+                    </a>
+                    <a href="{% url 'lawyer_panel:client_create' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-user-plus me-2"></i>Add Client
+                    </a>
+                    <a href="{% url 'lawyer_panel:time_entry_create' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-clock me-2"></i>Log Time
+                    </a>
+                    <a href="{% url 'lawyer_panel:document_create' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-upload me-2"></i>Upload Document
+                    </a>
+                    <a href="{% url 'lawyer_panel:billing_dashboard' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-file-invoice-dollar me-2"></i>Billing Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <!-- Recent Time Entries -->
+    <div class="col-xl-6 col-lg-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Recent Time Entries</h6>
+                <a href="{% url 'lawyer_panel:time_entry_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_time_entries %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Case</th>
+                                    <th>Hours</th>
+                                    <th>Billable</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in recent_time_entries %}
+                                <tr>
+                                    <td>{{ entry.date|date:"M d" }}</td>
+                                    <td><a href="{% url 'lawyer_panel:case_detail' entry.case.pk %}">{{ entry.case.title }}</a></td>
+                                    <td>{{ entry.hours }}</td>
+                                    <td>
+                                        {% if entry.is_billable %}
+                                            <i class="fas fa-check text-success"></i>
+                                        {% else %}
+                                            <i class="fas fa-times text-muted"></i>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-clock fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No time entries recorded yet.</p>
+                        <a href="{% url 'lawyer_panel:time_entry_create' %}" class="btn btn-primary">Log Time</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Expenses -->
+    <div class="col-xl-6 col-lg-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Recent Expenses</h6>
+                <a href="{% url 'lawyer_panel:expense_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_expenses %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for expense in recent_expenses %}
+                                <tr>
+                                    <td>{{ expense.date|date:"M d" }}</td>
+                                    <td>{{ expense.description }}</td>
+                                    <td>{{ expense.get_category_display }}</td>
+                                    <td>${{ expense.amount }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No expenses recorded yet.</p>
+                        <a href="{% url 'lawyer_panel:expense_create' %}" class="btn btn-primary">Add Expense</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Billing Summary -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Billing Summary (Last 30 Days)</h6>
+                <a href="{% url 'lawyer_panel:billing_dashboard' %}" class="btn btn-sm btn-outline-primary">View Details</a>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="text-center">
+                            <h4 class="text-primary">{{ total_billable_hours|floatformat:1 }}</h4>
+                            <p class="text-muted mb-0">Billable Hours</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="text-center">
+                            <h4 class="text-success">${{ total_billed_amount|floatformat:2 }}</h4>
+                            <p class="text-muted mb-0">Total Billed</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="text-center">
+                            <h4 class="text-info">{{ recent_time_entries.count }}</h4>
+                            <p class="text-muted mb-0">Time Entries</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="text-center">
+                            <h4 class="text-warning">{{ recent_expenses.count }}</h4>
+                            <p class="text-muted mb-0">Expenses</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

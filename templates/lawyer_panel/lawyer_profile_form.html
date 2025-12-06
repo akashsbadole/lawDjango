@@ -1,0 +1,252 @@
+{% extends 'lawyer_panel/base.html' %}
+{% load static crispy_forms_tags %}
+
+{% block title %}
+    {% if object %}Edit Lawyer Profile{% else %}Create Lawyer Profile{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        {% if object %}Edit Lawyer Profile{% else %}Create Lawyer Profile{% endif %}
+    </h1>
+    <div>
+        <a href="{% url 'lawyer_panel:lawyer_profile_list' %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Profiles
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    {% if object %}Edit Profile Information{% else %}Create New Profile{% endif %}
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if object %}
+                <form method="post" enctype="multipart/form-data" id="lawyer-profile-form">
+                {% else %}
+                <form method="post" enctype="multipart/form-data" id="lawyer-profile-form">
+                {% endif %}
+                    {% csrf_token %}
+                    
+                    <!-- Profile Completion Indicator -->
+                    {% if object %}
+                    <div class="alert alert-info mb-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <div class="flex-grow-1">
+                                <strong>Profile Completion:</strong>
+                                <div class="progress mt-2" style="height: 20px;">
+                                    <div class="progress-bar bg-info" 
+                                         style="width: {{ object.get_profile_completion_percentage }}%;"
+                                         role="progressbar">
+                                        {{ object.get_profile_completion_percentage }}% Complete
+                                    </div>
+                                </div>
+                                <small class="text-muted">
+                                    Complete all sections to improve your profile visibility and client matching.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {{ form|crispy }}
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 
+                            {% if object %}Update Profile{% else %}Create Profile{% endif %}
+                        </button>
+                        <a href="{% url 'lawyer_panel:lawyer_profile_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Help Card -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-question-circle"></i> Profile Tips
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6><i class="fas fa-user-tie text-primary"></i> Professional Information</h6>
+                    <p class="text-muted small">
+                        Include your bar number, law school, and graduation year to establish credibility.
+                    </p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6><i class="fas fa-briefcase text-primary"></i> Practice Areas</h6>
+                    <p class="text-muted small">
+                        Select all areas of practice to help clients find you for relevant cases.
+                    </p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6><i class="fas fa-dollar-sign text-primary"></i> Billing Information</h6>
+                    <p class="text-muted small">
+                        Set your billing rates and methods. Different billing methods require different fields.
+                    </p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6><i class="fas fa-calendar-check text-primary"></i> Availability</h6>
+                    <p class="text-muted small">
+                        Set your maximum case capacity to manage your workload effectively.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Billing Method Guide -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-credit-card"></i> Billing Methods
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <strong>Hourly:</strong> Charge per hour of work
+                    <br><small class="text-muted">Requires: Hourly Rate</small>
+                </div>
+                
+                <div class="mb-2">
+                    <strong>Fixed:</strong> Fixed fee for entire case
+                    <br><small class="text-muted">Requires: Base Rate</small>
+                </div>
+                
+                <div class="mb-2">
+                    <strong>Contingency:</strong> Percentage of settlement
+                    <br><small class="text-muted">Requires: Contingency %</small>
+                </div>
+                
+                <div class="mb-2">
+                    <strong>Retainer:</strong> Upfront monthly fee
+                    <br><small class="text-muted">Requires: Retainer Fee</small>
+                </div>
+                
+                <div class="mb-2">
+                    <strong>Hybrid:</strong> Combination of methods
+                    <br><small class="text-muted">Requires: Hourly Rate + Retainer Fee</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Show/hide billing method fields based on selection
+    function toggleBillingFields() {
+        var billingMethod = $('#id_billing_method').val();
+        
+        // Hide all billing-related fields first
+        $('#id_hourly_rate, #id_consultation_fee, #id_retainer_fee, #id_contingency_percentage')
+            .closest('.form-group').hide();
+        
+        // Show relevant fields based on billing method
+        switch(billingMethod) {
+            case 'hourly':
+                $('#id_hourly_rate, #id_consultation_fee')
+                    .closest('.form-group').show();
+                $('#id_hourly_rate').prop('required', true);
+                break;
+                
+            case 'fixed':
+                $('#id_hourly_rate, #id_consultation_fee')
+                    .closest('.form-group').show();
+                $('#id_hourly_rate').prop('required', true);
+                break;
+                
+            case 'contingency':
+                $('#id_contingency_percentage, #id_consultation_fee')
+                    .closest('.form-group').show();
+                $('#id_contingency_percentage').prop('required', true);
+                break;
+                
+            case 'retainer':
+                $('#id_retainer_fee, #id_consultation_fee')
+                    .closest('.form-group').show();
+                $('#id_retainer_fee').prop('required', true);
+                break;
+                
+            case 'hybrid':
+                $('#id_hourly_rate, #id_retainer_fee, #id_consultation_fee')
+                    .closest('.form-group').show();
+                $('#id_hourly_rate, #id_retainer_fee').prop('required', true);
+                break;
+                
+            default:
+                // Remove required attribute if no billing method selected
+                $('#id_hourly_rate, #id_retainer_fee, #id_contingency_percentage')
+                    .prop('required', false);
+        }
+    }
+    
+    // Initialize on page load
+    toggleBillingFields();
+    
+    // Update on billing method change
+    $('#id_billing_method').change(toggleBillingFields);
+    
+    // Auto-calculate years of experience when graduation year changes
+    $('#id_graduation_year').change(function() {
+        var graduationYear = parseInt($(this).val());
+        if (graduationYear) {
+            var currentYear = new Date().getFullYear();
+            var yearsOfExperience = Math.max(0, currentYear - graduationYear);
+            $('#id_years_of_experience').val(yearsOfExperience);
+        }
+    });
+    
+    // Form validation
+    $('#lawyer-profile-form').submit(function(e) {
+        var billingMethod = $('#id_billing_method').val();
+        var errors = [];
+        
+        // Validate billing method requirements
+        if (billingMethod === 'hourly' && !$('#id_hourly_rate').val()) {
+            errors.push('Hourly rate is required for hourly billing method.');
+        }
+        
+        if (billingMethod === 'contingency' && !$('#id_contingency_percentage').val()) {
+            errors.push('Contingency percentage is required for contingency billing method.');
+        }
+        
+        if (billingMethod === 'retainer' && !$('#id_retainer_fee').val()) {
+            errors.push('Retainer fee is required for retainer billing method.');
+        }
+        
+        if (billingMethod === 'hybrid') {
+            if (!$('#id_hourly_rate').val()) {
+                errors.push('Hourly rate is required for hybrid billing method.');
+            }
+            if (!$('#id_retainer_fee').val()) {
+                errors.push('Retainer fee is required for hybrid billing method.');
+            }
+        }
+        
+        if (errors.length > 0) {
+            e.preventDefault();
+            alert('Please fix the following errors:\n\n' + errors.join('\n'));
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}

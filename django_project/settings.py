@@ -3,7 +3,9 @@ import os
 
 # Try to import python-decouple, fallback to basic environment variable handling
 try:
-    from decouple import config, Csv
+    import decouple
+    config = decouple.config
+    Csv = decouple.Csv  # type: ignore
     HAS_DECOUPLE = True
 except ImportError:
     HAS_DECOUPLE = False
@@ -140,6 +142,8 @@ INSTALLED_APPS = [
     "backup_restore",
     "lawyer_panel",
     "legal_research",
+    "client_requests",
+    "seed_data",
 ]
 
 

@@ -26,4 +26,7 @@ urlpatterns = [
     
     # Import/Export URLs
     path('import-export/', include('import_export.urls')),
+    
+    # Client Requests URLs
+    path('client-requests/', include('client_requests.urls')),
 ]

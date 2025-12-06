@@ -1,6 +1,11 @@
 from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import redirect
+
+def lawyer_redirect(request):
+    """Redirect /lawyer/ to /lawyer-panel/"""
+    return redirect('lawyer_panel:dashboard')
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -14,6 +19,7 @@ urlpatterns = [
     path("subscriptions/", include("subscriptions.urls")),
     path("platform-admin/", include("platform_admin.urls")),
     path("backup-restore/", include("backup_restore.urls")),
+    path("lawyer/", lawyer_redirect, name='lawyer_redirect'),
     path("lawyer-panel/", include("lawyer_panel.urls")),
     path("legal-research/", include("legal_research.urls")),
 ]

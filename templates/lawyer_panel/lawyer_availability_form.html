@@ -1,0 +1,237 @@
+{% extends 'lawyer_panel/base.html' %}
+{% load static crispy_forms_tags %}
+
+{% block title %}Update Availability - {{ lawyer_profile.full_name }}{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Update Availability</h1>
+    <div>
+        <a href="{% url 'lawyer_panel:lawyer_profile_detail' lawyer_profile.pk %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Profile
+        </a>
+    </div>
+</div>
+
+<!-- Lawyer Profile Summary -->
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <div class="d-flex align-items-center">
+            <div class="flex-grow-1">
+                <h5 class="card-title mb-1">{{ lawyer_profile.full_name }}</h5>
+                <p class="text-muted mb-0">{{ lawyer_profile.user.email }}</p>
+            </div>
+            <div class="text-right">
+                <span class="badge badge-info">{{ lawyer_profile.current_case_load }} / {{ lawyer_profile.max_cases }} Cases</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-calendar-check"></i> Availability Settings
+                </h6>
+            </div>
+            <div class="card-body">
+                <form method="post" id="availability-form">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Availability
+                        </button>
+                        <a href="{% url 'lawyer_panel:lawyer_profile_detail' lawyer_profile.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Current Status Card -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-info-circle"></i> Current Status
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Availability Status</span>
+                        {% if lawyer_profile.is_available %}
+                            <span class="badge badge-success">Available</span>
+                        {% else %}
+                            <span class="badge badge-secondary">Unavailable</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Case Load</span>
+                        <strong>{{ lawyer_profile.current_case_load }} / {{ lawyer_profile.max_cases }}</strong>
+                    </div>
+                    <div class="progress" style="height: 15px;">
+                        <div class="progress-bar" 
+                             style="width: {{ lawyer_profile.availability_percentage }}%;"
+                             role="progressbar">
+                            {{ lawyer_profile.availability_percentage|floatformat:0 }}%
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Availability Percentage:</strong>
+                    <div class="progress mt-2" style="height: 20px;">
+                        <div class="progress-bar bg-info" 
+                             style="width: {{ lawyer_profile.availability_percentage }}%;"
+                             role="progressbar">
+                            {{ lawyer_profile.availability_percentage|floatformat:0 }}% Available
+                        </div>
+                    </div>
+                </div>
+                
+                {% if lawyer_profile.is_at_capacity %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>At Capacity</strong><br>
+                    This lawyer is currently at maximum case capacity.
+                </div>
+                {% elif lawyer_profile.can_accept_new_case %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <strong>Available for New Cases</strong><br>
+                    This lawyer can accept additional cases.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Help Card -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-question-circle"></i> Availability Guide
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6><i class="fas fa-toggle-on text-primary"></i> Available Status</h6>
+                    <p class="text-muted small">
+                        When available, the lawyer will be considered for new case assignments and client matching.
+                    </p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6><i class="fas fa-briefcase text-primary"></i> Maximum Cases</h6>
+                    <p class="text-muted small">
+                        Set the maximum number of active cases this lawyer can handle effectively.
+                        This helps with workload management and ensures quality service.
+                    </p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6><i class="fas fa-chart-line text-primary"></i> Case Load Management</h6>
+                    <p class="text-muted small">
+                        The system automatically updates the current case load when cases are assigned or completed.
+                        You can manually update it if needed.
+                    </p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6><i class="fas fa-percentage text-primary"></i> Availability Percentage</h6>
+                    <p class="text-muted small">
+                        Calculated as: (1 - current_case_load / max_cases) × 100
+                        <br>This helps visualize the lawyer's current capacity.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-bolt"></i> Quick Actions
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'lawyer_panel:lawyer_update_case_load' lawyer_profile.pk %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-sync"></i> Refresh Case Load
+                    </a>
+                    <a href="{% url 'lawyer_panel:lawyer_profile_update' lawyer_profile.pk %}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </a>
+                    <a href="{% url 'lawyer_panel:lawyer_qualification_create' lawyer_profile.pk %}" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-certificate"></i> Add Qualification
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Form validation
+    $('#availability-form').submit(function(e) {
+        var maxCases = parseInt($('#id_max_cases').val());
+        
+        if (!maxCases || maxCases < 1) {
+            e.preventDefault();
+            alert('Maximum cases must be at least 1.');
+            $('#id_max_cases').focus();
+            return false;
+        }
+        
+        if (maxCases > 100) {
+            e.preventDefault();
+            alert('Maximum cases cannot exceed 100.');
+            $('#id_max_cases').focus();
+            return false;
+        }
+        
+        // Show confirmation if changing availability status
+        var currentAvailability = {{ lawyer_profile.is_available|yesno:"true,false" }};
+        var newAvailability = $('#id_is_available').prop('checked');
+        
+        if (currentAvailability !== newAvailability) {
+            var message = newAvailability ? 
+                'Are you sure you want to mark this lawyer as available?' :
+                'Are you sure you want to mark this lawyer as unavailable?';
+            
+            if (!confirm(message)) {
+                e.preventDefault();
+                return false;
+            }
+        }
+    });
+    
+    // Update availability preview when values change
+    function updateAvailabilityPreview() {
+        var maxCases = parseInt($('#id_max_cases').val()) || 1;
+        var currentCases = {{ lawyer_profile.current_case_load }};
+        var availability = Math.max(0, Math.min(100, (1 - currentCases / maxCases) * 100));
+        
+        $('#availability-preview').text(availability.toFixed(0) + '% Available');
+        $('#availability-bar').css('width', availability + '%');
+    }
+    
+    $('#id_max_cases').on('input', updateAvailabilityPreview);
+    
+    // Initialize preview
+    updateAvailabilityPreview();
+});
+</script>
+{% endblock %}

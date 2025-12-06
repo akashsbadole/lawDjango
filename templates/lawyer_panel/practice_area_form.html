@@ -1,0 +1,172 @@
+{% extends 'lawyer_panel/base.html' %}
+{% load static crispy_forms_tags %}
+
+{% block title %}
+    {% if object %}Edit Practice Area{% else %}Create Practice Area{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        {% if object %}Edit Practice Area{% else %}Create Practice Area{% endif %}
+    </h1>
+    <div>
+        <a href="{% url 'lawyer_panel:practice_area_list' %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Practice Areas
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    {% if object %}Edit Practice Area{% else %}Create New Practice Area{% endif %}
+                </h6>
+            </div>
+            <div class="card-body">
+                <form method="post" id="practice-area-form">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 
+                            {% if object %}Update Practice Area{% else %}Create Practice Area{% endif %}
+                        </button>
+                        <a href="{% url 'lawyer_panel:practice_area_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Help Card -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-question-circle"></i> Practice Area Guide
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6><i class="fas fa-briefcase text-primary"></i> Name</h6>
+                    <p class="text-muted small">
+                        Use a clear, descriptive name for the practice area (e.g., "Family Law", "Corporate Law").
+                    </p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6><i class="fas fa-align-left text-primary"></i> Description</h6>
+                    <p class="text-muted small">
+                        Provide a detailed description to help lawyers understand the scope of this practice area.
+                    </p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6><i class="fas fa-toggle-on text-primary"></i> Active Status</h6>
+                    <p class="text-muted small">
+                        Keep practice areas active when they're currently being used. Inactive areas won't appear in selection lists.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Examples Card -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-lightbulb"></i> Common Practice Areas
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item">
+                        <strong>Family Law</strong>
+                        <p class="text-muted small mb-0">Divorce, child custody, adoption, domestic violence</p>
+                    </div>
+                    <div class="list-group-item">
+                        <strong>Criminal Law</strong>
+                        <p class="text-muted small mb-0">Defense, prosecution, appeals, white collar crime</p>
+                    </div>
+                    <div class="list-group-item">
+                        <strong>Corporate Law</strong>
+                        <p class="text-muted small mb-0">Business formation, contracts, mergers, compliance</p>
+                    </div>
+                    <div class="list-group-item">
+                        <strong>Real Estate Law</strong>
+                        <p class="text-muted small mb-0">Property transactions, zoning, landlord-tenant disputes</p>
+                    </div>
+                    <div class="list-group-item">
+                        <strong>Immigration Law</strong>
+                        <p class="text-muted small mb-0">Visas, citizenship, deportation defense</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Form validation
+    $('#practice-area-form').submit(function(e) {
+        var name = $('#id_name').val().trim();
+        
+        if (!name) {
+            e.preventDefault();
+            alert('Practice area name is required.');
+            $('#id_name').focus();
+            return false;
+        }
+        
+        if (name.length < 2) {
+            e.preventDefault();
+            alert('Practice area name must be at least 2 characters long.');
+            $('#id_name').focus();
+            return false;
+        }
+        
+        if (name.length > 100) {
+            e.preventDefault();
+            alert('Practice area name cannot exceed 100 characters.');
+            $('#id_name').focus();
+            return false;
+        }
+    });
+    
+    // Character counter for name field
+    $('#id_name').on('input', function() {
+        var length = $(this).val().length;
+        var maxLength = 100;
+        var remaining = maxLength - length;
+        
+        if (remaining < 0) {
+            $(this).val($(this).val().substring(0, maxLength));
+            remaining = 0;
+        }
+        
+        // Update character counter if exists
+        var counter = $('#name-counter');
+        if (counter.length === 0) {
+            $(this).after('<small id="name-counter" class="text-muted">0/100 characters</small>');
+            counter = $('#name-counter');
+        }
+        
+        counter.text(length + '/' + maxLength + ' characters');
+        
+        if (remaining < 20) {
+            counter.removeClass('text-muted').addClass('text-warning');
+        } else {
+            counter.removeClass('text-warning').addClass('text-muted');
+        }
+    });
+});
+</script>
+{% endblock %}
