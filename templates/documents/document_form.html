@@ -1,0 +1,249 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} - Documents - {{ user.tenant.name }} - Lithium{% endblock title %}
+
+{% block page_header %}
+<h1 class="h2">{{ title }}</h1>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="fas fa-{% if action == 'Upload' %}upload{% else %}edit{% endif %}"></i>
+          {{ action }} Document
+        </h6>
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          
+          {% if form.non_field_errors %}
+          <div class="alert alert-danger">
+            {% for error in form.non_field_errors %}
+              {{ error }}
+            {% endfor %}
+          </div>
+          {% endif %}
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                  <div class="text-danger">
+                    {% for error in form.title.errors %}
+                      <small>{{ error }}</small>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="{{ form.file.id_for_label }}" class="form-label">{{ form.file.label }}</label>
+                {{ form.file }}
+                {% if form.file.errors %}
+                  <div class="text-danger">
+                    {% for error in form.file.errors %}
+                      <small>{{ error }}</small>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+                {% if form.file.help_text %}
+                  <small class="form-text text-muted">{{ form.file.help_text }}</small>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+            {{ form.description }}
+            {% if form.description.errors %}
+              <div class="text-danger">
+                {% for error in form.description.errors %}
+                  <small>{{ error }}</small>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          
+          <div class="row">
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="{{ form.category.id_for_label }}" class="form-label">{{ form.category.label }}</label>
+                {{ form.category }}
+                {% if form.category.errors %}
+                  <div class="text-danger">
+                    {% for error in form.category.errors %}
+                      <small>{{ error }}</small>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="{{ form.access_level.id_for_label }}" class="form-label">{{ form.access_level.label }}</label>
+                {{ form.access_level }}
+                {% if form.access_level.errors %}
+                  <div class="text-danger">
+                    {% for error in form.access_level.errors %}
+                      <small>{{ error }}</small>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="{{ form.file_type.id_for_label }}" class="form-label">{{ form.file_type.label }}</label>
+                {{ form.file_type }}
+                {% if form.file_type.errors %}
+                  <div class="text-danger">
+                    {% for error in form.file_type.errors %}
+                      <small>{{ error }}</small>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="{{ form.case.id_for_label }}" class="form-label">{{ form.case.label }}</label>
+                {{ form.case }}
+                {% if form.case.errors %}
+                  <div class="text-danger">
+                    {% for error in form.case.errors %}
+                      <small>{{ error }}</small>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="{{ form.client.id_for_label }}" class="form-label">{{ form.client.label }}</label>
+                {{ form.client }}
+                {% if form.client.errors %}
+                  <div class="text-danger">
+                    {% for error in form.client.errors %}
+                      <small>{{ error }}</small>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="{{ form.tags.id_for_label }}" class="form-label">{{ form.tags.label }}</label>
+            {{ form.tags }}
+            {% if form.tags.errors %}
+              <div class="text-danger">
+                {% for error in form.tags.errors %}
+                  <small>{{ error }}</small>
+                {% endfor %}
+              </div>
+            {% endif %}
+            {% if form.tags.help_text %}
+              <small class="form-text text-muted">{{ form.tags.help_text }}</small>
+            {% endif %}
+          </div>
+          
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'documents:list' %}" class="btn btn-secondary">
+              <i class="fas fa-arrow-left"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-{% if action == 'Upload' %}upload{% else %}save{% endif %}"></i>
+              {{ action }} Document
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <!-- Help Card -->
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">
+          <i class="fas fa-info-circle"></i> Help
+        </h6>
+      </div>
+      <div class="card-body">
+        <h6>Document Categories</h6>
+        <ul class="small">
+          <li><strong>Contract:</strong> Legal contracts and agreements</li>
+          <li><strong>Evidence:</strong> Evidence materials and exhibits</li>
+          <li><strong>Correspondence:</strong> Letters, emails, and communications</li>
+          <li><strong>Court Filing:</strong> Court documents and filings</li>
+          <li><strong>Discovery:</strong> Discovery documents and responses</li>
+          <li><strong>Motion:</strong> Legal motions and briefs</li>
+          <li><strong>Brief:</strong> Legal briefs and memoranda</li>
+          <li><strong>Research:</strong> Legal research materials</li>
+          <li><strong>Note:</strong> Notes and annotations</li>
+        </ul>
+        
+        <h6>Access Levels</h6>
+        <ul class="small">
+          <li><strong>Public:</strong> Accessible to all tenant members</li>
+          <li><strong>Internal:</strong> Accessible to all tenant members</li>
+          <li><strong>Confidential:</strong> Accessible to lawyers and admins only</li>
+          <li><strong>Restricted:</strong> Accessible to assigned lawyers and admins only</li>
+        </ul>
+        
+        <h6>File Upload</h6>
+        <p class="small">
+          <strong>Supported formats:</strong> PDF, Word, Excel, PowerPoint, Text, Images<br>
+          <strong>Maximum file size:</strong> 50MB<br>
+          <strong>Storage quota:</strong> Based on your tenant plan
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+<script>
+$(document).ready(function() {
+    // Auto-select file type based on file extension when file is selected
+    $('#id_file').on('change', function() {
+        var fileName = $(this).val().toLowerCase();
+        var fileTypeField = $('#id_file_type');
+        
+        if (fileName.endsWith('.pdf')) {
+            fileTypeField.val('pdf');
+        } else if (fileName.endsWith('.doc') || fileName.endsWith('.docx')) {
+            fileTypeField.val('word');
+        } else if (fileName.endsWith('.xls') || fileName.endsWith('.xlsx')) {
+            fileTypeField.val('excel');
+        } else if (fileName.endsWith('.ppt') || fileName.endsWith('.pptx')) {
+            fileTypeField.val('powerpoint');
+        } else if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') || fileName.endsWith('.png') || fileName.endsWith('.gif')) {
+            fileTypeField.val('image');
+        } else if (fileName.endsWith('.txt')) {
+            fileTypeField.val('text');
+        } else if (fileName.endsWith('.mp4') || fileName.endsWith('.avi') || fileName.endsWith('.mov')) {
+            fileTypeField.val('video');
+        } else if (fileName.endsWith('.mp3') || fileName.endsWith('.wav')) {
+            fileTypeField.val('audio');
+        } else {
+            fileTypeField.val('other');
+        }
+    });
+});
+</script>
+{% endblock javascript %}

@@ -1,0 +1,249 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}Generate Invoice - {{ user.tenant.name }}{% endblock %}
+
+{% block page_header %}
+  <h1 class="h2">Generate Invoice</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <a href="{% url 'billing:invoice_list' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Invoices
+      </a>
+    </div>
+  </div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Invoice Details</h5>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="id_client" class="form-label">Client *</label>
+                <select name="client" class="form-select" id="id_client" required>
+                  <option value="">---------</option>
+                  {% for client in form.client.field.queryset %}
+                    <option value="{{ client.pk }}">{{ client }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="id_case" class="form-label">Case</label>
+                <select name="case" class="form-select" id="id_case">
+                  <option value="">---------</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="id_issue_date" class="form-label">Issue Date *</label>
+                <input type="date" name="issue_date" class="form-control" id="id_issue_date" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="id_due_date" class="form-label">Due Date *</label>
+                <input type="date" name="due_date" class="form-control" id="id_due_date" required>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="id_tax_rate" class="form-label">Tax Rate (%)</label>
+                <input type="number" name="tax_rate" class="form-control" id="id_tax_rate" step="0.01" min="0" max="100" value="0">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="id_status" class="form-label">Status</label>
+                <select name="status" class="form-select" id="id_status">
+                  <option value="draft" selected>Draft</option>
+                  <option value="sent">Sent</option>
+                  <option value="paid">Paid</option>
+                  <option value="overdue">Overdue</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="id_notes" class="form-label">Notes</label>
+            <textarea name="notes" class="form-control" id="id_notes" rows="3"></textarea>
+          </div>
+          
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'billing:invoice_list' %}" class="btn btn-secondary">
+              <i class="fas fa-times"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-magic"></i> Generate Invoice
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <!-- Unbilled Time Entries -->
+    {% if unbilled_time_entries %}
+    <div class="card mb-3">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Unbilled Time Entries</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th><input type="checkbox" id="select-all-time"></th>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Hours</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for entry in unbilled_time_entries %}
+              <tr>
+                <td><input type="checkbox" name="time_entries" value="{{ entry.pk }}"></td>
+                <td>{{ entry.date|date:"M d" }}</td>
+                <td>{{ entry.description|truncatechars:30 }}</td>
+                <td>{{ entry.hours }}</td>
+                <td>${{ entry.hours|mul:entry.rate }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    
+    <!-- Unbilled Expenses -->
+    {% if unbilled_expenses %}
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Reimbursable Expenses</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th><input type="checkbox" id="select-all-expenses"></th>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for expense in unbilled_expenses %}
+              <tr>
+                <td><input type="checkbox" name="expenses" value="{{ expense.pk }}"></td>
+                <td>{{ expense.date|date:"M d" }}</td>
+                <td>{{ expense.description|truncatechars:30 }}</td>
+                <td>${{ expense.amount }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    
+    {% if not unbilled_time_entries and not unbilled_expenses %}
+    <div class="card">
+      <div class="card-body text-center">
+        <i class="fas fa-info-circle fa-2x text-muted mb-2"></i>
+        <p class="text-muted">No unbilled time entries or expenses found.</p>
+        <a href="{% url 'billing:time_entry_create' %}" class="btn btn-sm btn-outline-primary">
+          <i class="fas fa-plus"></i> Add Time Entry
+        </a>
+        <a href="{% url 'billing:expense_create' %}" class="btn btn-sm btn-outline-primary ms-2">
+          <i class="fas fa-plus"></i> Add Expense
+        </a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Set default dates
+  const today = new Date().toISOString().split('T')[0];
+  const dueDate = new Date();
+  dueDate.setDate(dueDate.getDate() + 30); // Default due date is 30 days from now
+  
+  document.getElementById('id_issue_date').value = today;
+  document.getElementById('id_due_date').value = dueDate.toISOString().split('T')[0];
+  
+  // Handle client selection to update cases
+  const clientSelect = document.getElementById('id_client');
+  const caseSelect = document.getElementById('id_case');
+  
+  clientSelect.addEventListener('change', function() {
+    const clientId = this.value;
+    
+    // Clear current cases
+    caseSelect.innerHTML = '<option value="">---------</option>';
+    
+    if (clientId) {
+      // Fetch cases for this client
+      fetch(`/api/cases/by-client/${clientId}/`)
+        .then(response => response.json())
+        .then(data => {
+          data.forEach(caseItem => {
+            const option = document.createElement('option');
+            option.value = caseItem.id;
+            option.textContent = `${caseItem.case_number} - ${caseItem.title}`;
+            caseSelect.appendChild(option);
+          });
+        })
+        .catch(error => {
+          console.error('Error fetching cases:', error);
+        });
+    }
+  });
+  
+  // Select all checkboxes functionality
+  const selectAllTime = document.getElementById('select-all-time');
+  const selectAllExpenses = document.getElementById('select-all-expenses');
+  
+  if (selectAllTime) {
+    selectAllTime.addEventListener('change', function() {
+      const checkboxes = document.querySelectorAll('input[name="time_entries"]');
+      checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+    });
+  }
+  
+  if (selectAllExpenses) {
+    selectAllExpenses.addEventListener('change', function() {
+      const checkboxes = document.querySelectorAll('input[name="expenses"]');
+      checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+    });
+  }
+});
+</script>
+{% endblock %}

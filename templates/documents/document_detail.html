@@ -1,0 +1,282 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}{{ document.title }} - Documents - {{ user.tenant.name }} - Lithium{% endblock title %}
+
+{% block page_header %}
+<h1 class="h2">{{ document.title }}</h1>
+<div class="btn-toolbar mb-2 mb-md-0">
+  <div class="btn-group me-2">
+    <a href="{% url 'documents:download' document.pk %}" class="btn btn-success">
+      <i class="fas fa-download"></i> Download
+    </a>
+    <a href="{% url 'documents:update' document.pk %}" class="btn btn-warning">
+      <i class="fas fa-edit"></i> Edit
+    </a>
+    <a href="{% url 'documents:add_version' document.pk %}" class="btn btn-secondary">
+      <i class="fas fa-plus"></i> New Version
+    </a>
+    <a href="{% url 'documents:delete' document.pk %}" class="btn btn-danger">
+      <i class="fas fa-trash"></i> Delete
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- Document Details -->
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">Document Information</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>Title:</strong> {{ document.title }}</p>
+            <p><strong>File Name:</strong> {{ document.file_name }}</p>
+            <p><strong>File Size:</strong> {{ document.file_size_mb }} MB</p>
+            <p><strong>File Type:</strong> {{ document.get_file_type_display }}</p>
+            <p><strong>Category:</strong> 
+              <span class="badge bg-{% if document.category == 'contract' %}primary{% elif document.category == 'evidence' %}danger{% elif document.category == 'correspondence' %}success{% elif document.category == 'court_filing' %}warning{% else %}secondary{% endif %}">
+                {{ document.get_category_display }}
+              </span>
+            </p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Access Level:</strong> 
+              <span class="badge bg-{% if document.access_level == 'public' %}success{% elif document.access_level == 'internal' %}info{% elif document.access_level == 'confidential' %}warning{% else %}danger{% endif %}">
+                {{ document.get_access_level_display }}
+              </span>
+            </p>
+            <p><strong>Version:</strong> {{ document.version }}</p>
+            <p><strong>Uploaded By:</strong> 
+              {% if document.uploaded_by %}
+                {{ document.uploaded_by.get_full_name|default:document.uploaded_by.email }}
+              {% else %}
+                <span class="text-muted">Unknown</span>
+              {% endif %}
+            </p>
+            <p><strong>Created:</strong> {{ document.created_at|date:"M d, Y H:i" }}</p>
+            <p><strong>Last Updated:</strong> {{ document.updated_at|date:"M d, Y H:i" }}</p>
+          </div>
+        </div>
+        
+        {% if document.description %}
+        <div class="mt-3">
+          <h6>Description</h6>
+          <p>{{ document.description|linebreaks }}</p>
+        </div>
+        {% endif %}
+        
+        {% if document.tags %}
+        <div class="mt-3">
+          <h6>Tags</h6>
+          {% for tag in document.tag_list %}
+            <span class="badge bg-light text-dark me-1">{{ tag }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <!-- Related Information -->
+    <div class="card mb-3">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">Related Information</h6>
+      </div>
+      <div class="card-body">
+        {% if document.case %}
+        <p><strong>Case:</strong> 
+          <a href="{% url 'cases:detail' document.case.pk %}" class="text-decoration-none">
+            {{ document.case.case_number }} - {{ document.case.title }}
+          </a>
+        </p>
+        {% endif %}
+        
+        {% if document.client %}
+        <p><strong>Client:</strong> 
+          <a href="{% url 'clients:detail' document.client.pk %}" class="text-decoration-none">
+            {{ document.client.full_name }}
+          </a>
+        </p>
+        {% endif %}
+        
+        <p><strong>Tenant:</strong> {{ document.tenant.name }}</p>
+      </div>
+    </div>
+    
+    <!-- File Preview (if applicable) -->
+    {% if document.file_type == 'image' %}
+    <div class="card mb-3">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">Preview</h6>
+      </div>
+      <div class="card-body text-center">
+        <img src="{{ document.file.url }}" alt="{{ document.title }}" class="img-fluid" style="max-height: 200px;">
+      </div>
+    </div>
+    {% endif %}
+    
+    <!-- Document Actions -->
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">Actions</h6>
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <a href="{% url 'documents:download' document.pk %}" class="btn btn-success">
+            <i class="fas fa-download"></i> Download File
+          </a>
+          <a href="{% url 'documents:update' document.pk %}" class="btn btn-warning">
+            <i class="fas fa-edit"></i> Edit Details
+          </a>
+          <a href="{% url 'documents:add_version' document.pk %}" class="btn btn-secondary">
+            <i class="fas fa-plus"></i> Upload New Version
+          </a>
+          <button type="button" class="btn btn-outline-danger" onclick="confirmDelete()">
+            <i class="fas fa-trash"></i> Delete Document
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Document Versions -->
+{% if versions %}
+<div class="row mt-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">Document Versions</h6>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Version</th>
+                <th>File Name</th>
+                <th>Size</th>
+                <th>Uploaded By</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for version in versions %}
+              <tr {% if version.is_latest_version %}class="table-success"{% endif %}>
+                <td>
+                  v{{ version.version }}
+                  {% if version.is_latest_version %}
+                    <span class="badge bg-success">Latest</span>
+                  {% endif %}
+                </td>
+                <td>{{ version.file_name }}</td>
+                <td>{{ version.file_size_mb }} MB</td>
+                <td>
+                  {% if version.uploaded_by %}
+                    {{ version.uploaded_by.get_full_name|default:version.uploaded_by.email }}
+                  {% else %}
+                    <span class="text-muted">Unknown</span>
+                  {% endif %}
+                </td>
+                <td>{{ version.created_at|date:"M d, Y H:i" }}</td>
+                <td>
+                  <div class="btn-group btn-group-sm" role="group">
+                    {% if not version.is_latest_version %}
+                    <a href="{% url 'documents:detail' version.pk %}" class="btn btn-info" title="View">
+                      <i class="fas fa-eye"></i>
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'documents:download' version.pk %}" class="btn btn-success" title="Download">
+                      <i class="fas fa-download"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Related Documents -->
+{% if related_documents %}
+<div class="row mt-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">Related Documents</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          {% for related_doc in related_documents %}
+          <div class="col-md-4 mb-3">
+            <div class="card h-100">
+              <div class="card-body">
+                <h6 class="card-title">
+                  <a href="{% url 'documents:detail' related_doc.pk %}" class="text-decoration-none">
+                    {{ related_doc.title }}
+                  </a>
+                </h6>
+                <p class="card-text">
+                  <small class="text-muted">{{ related_doc.file_name }}</small><br>
+                  <small class="text-muted">{{ related_doc.created_at|date:"M d, Y" }}</small>
+                </p>
+                <a href="{% url 'documents:download' related_doc.pk %}" class="btn btn-sm btn-success">
+                  <i class="fas fa-download"></i> Download
+                </a>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete the document "{{ document.title }}"?</p>
+        <p class="text-danger">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <a href="{% url 'documents:delete' document.pk %}" class="btn btn-danger">Delete</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+<script>
+function confirmDelete() {
+    $('#deleteModal').modal('show');
+}
+
+$(document).ready(function() {
+    // Initialize tooltips
+    $('[title]').tooltip();
+});
+</script>
+{% endblock javascript %}

@@ -1,0 +1,597 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block title %}Customer Success Stories - Law Firm Management Platform{% endblock title %}
+
+{% block meta_description %}
+Read testimonials and case studies from law firms using our management platform. Discover how solo practitioners and small firms are streamlining their practice with our software.
+{% endblock meta_description %}
+
+{% block extra_css %}
+<style>
+/* Testimonials page specific styles */
+.testimonials-hero {
+    background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+    color: white;
+    padding: 80px 0;
+    text-align: center;
+}
+
+.testimonials-hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.testimonials-hero p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+    opacity: 0.95;
+}
+
+.testimonials-stats {
+    padding: 60px 0;
+    background: var(--brand-background);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    text-align: center;
+}
+
+.stat-item {
+    padding: 2rem;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease;
+}
+
+.stat-item:hover {
+    transform: translateY(-5px);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--brand-primary);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--brand-secondary);
+    font-size: 1rem;
+}
+
+.testimonials-section {
+    padding: 80px 0;
+}
+
+.section-title {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.section-title h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--brand-text);
+    margin-bottom: 1rem;
+}
+
+.section-title p {
+    font-size: 1.2rem;
+    color: var(--brand-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+}
+
+.testimonial-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.testimonial-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
+.testimonial-content {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--brand-secondary);
+    margin-bottom: 1.5rem;
+    font-style: italic;
+}
+
+.testimonial-author {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.author-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.author-info h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--brand-text);
+    margin-bottom: 0.25rem;
+}
+
+.author-info p {
+    font-size: 0.9rem;
+    color: var(--brand-secondary);
+}
+
+.author-info .firm {
+    font-weight: 500;
+}
+
+.rating {
+    margin-bottom: 1rem;
+}
+
+.rating .star {
+    color: #ffd700;
+    font-size: 1.2rem;
+}
+
+.case-studies-section {
+    padding: 80px 0;
+    background: var(--brand-background);
+}
+
+.case-studies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+.case-study-card {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.case-study-card:hover {
+    transform: translateY(-5px);
+}
+
+.case-study-header {
+    padding: 1.5rem;
+    background: var(--brand-primary);
+    color: white;
+}
+
+.case-study-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.case-study-firm {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.case-study-content {
+    padding: 1.5rem;
+}
+
+.case-study-description {
+    color: var(--brand-secondary);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.case-study-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.metric-item {
+    text-align: center;
+    padding: 1rem;
+    background: var(--brand-background);
+    border-radius: 10px;
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--brand-primary);
+    margin-bottom: 0.25rem;
+}
+
+.metric-label {
+    font-size: 0.8rem;
+    color: var(--brand-secondary);
+}
+
+.case-study-link {
+    display: inline-block;
+    color: var(--brand-primary);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.case-study-link:hover {
+    color: var(--brand-secondary);
+}
+
+.case-study-link::after {
+    content: ' →';
+    transition: transform 0.3s ease;
+}
+
+.case-study-link:hover::after {
+    transform: translateX(5px);
+}
+
+.cta-section {
+    padding: 80px 0;
+    text-align: center;
+}
+
+.cta-section h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--brand-text);
+    margin-bottom: 1.5rem;
+}
+
+.cta-section p {
+    font-size: 1.2rem;
+    color: var(--brand-secondary);
+    max-width: 600px;
+    margin: 0 auto 2rem;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .testimonials-hero h1 {
+        font-size: 2rem;
+    }
+    
+    .testimonials-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .case-studies-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .section-title h2 {
+        font-size: 2rem;
+    }
+    
+    .cta-section h2 {
+        font-size: 2rem;
+    }
+}
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="testimonials-hero">
+    <div class="container">
+        <h1>Customer Success Stories</h1>
+        <p>See how law firms like yours are transforming their practice with our platform</p>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="testimonials-stats">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">1,200+</div>
+                <div class="stat-label">Law Firms Served</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">98%</div>
+                <div class="stat-label">Customer Satisfaction</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">40%</div>
+                <div class="stat-label">Average Time Saved</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">25%</div>
+                <div class="stat-label">Revenue Increase</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>What Our Customers Say</h2>
+            <p>Real feedback from real law firms using our platform every day</p>
+        </div>
+        
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <div class="rating">
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                </div>
+                <div class="testimonial-content">
+                    "This platform has completely transformed how I manage my solo practice. I used to spend hours on administrative tasks, but now everything is streamlined in one place. The time tracking and billing features alone have saved me countless hours each month."
+                </div>
+                <div class="testimonial-author">
+                    <img src="{% static 'images/testimonials/attorney1.jpg' %}" alt="Sarah Mitchell" class="author-avatar">
+                    <div class="author-info">
+                        <h4>Sarah Mitchell</h4>
+                        <p class="firm">Mitchell & Associates</p>
+                        <p>Solo Practitioner</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="testimonial-card">
+                <div class="rating">
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                </div>
+                <div class="testimonial-content">
+                    "We've tried multiple practice management software solutions, but this is by far the most intuitive and comprehensive. The client portal has been a game-changer for our firm - our clients love being able to access their case information 24/7."
+                </div>
+                <div class="testimonial-author">
+                    <img src="{% static 'images/testimonials/attorney2.jpg' %}" alt="Robert Chen" class="author-avatar">
+                    <div class="author-info">
+                        <h4>Robert Chen</h4>
+                        <p class="firm">Chen Legal Group</p>
+                        <p>Managing Partner</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="testimonial-card">
+                <div class="rating">
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                </div>
+                <div class="testimonial-content">
+                    "The document management system is incredible. We no longer worry about version control or losing important files. The ability to collaborate on documents in real-time has improved our team's efficiency significantly."
+                </div>
+                <div class="testimonial-author">
+                    <img src="{% static 'images/testimonials/attorney3.jpg' %}" alt="Emily Rodriguez" class="author-avatar">
+                    <div class="author-info">
+                        <h4>Emily Rodriguez</h4>
+                        <p class="firm">Rodriguez & Partners</p>
+                        <p>Senior Associate</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="testimonial-card">
+                <div class="rating">
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                </div>
+                <div class="testimonial-content">
+                    "As a small firm, we needed something that was powerful yet affordable. This platform delivers exactly that. The billing and invoicing features have helped us improve our cash flow and reduce administrative overhead."
+                </div>
+                <div class="testimonial-author">
+                    <img src="{% static 'images/testimonials/attorney4.jpg' %}" alt="Michael Thompson" class="author-avatar">
+                    <div class="author-info">
+                        <h4>Michael Thompson</h4>
+                        <p class="firm">Thompson Legal Services</p>
+                        <p>Founding Partner</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="testimonial-card">
+                <div class="rating">
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                </div>
+                <div class="testimonial-content">
+                    "The customer support is exceptional. Every time we've had a question or needed assistance, the team has been responsive and helpful. They truly understand the needs of law firms."
+                </div>
+                <div class="testimonial-author">
+                    <img src="{% static 'images/testimonials/attorney5.jpg' %}" alt="Jennifer Williams" class="author-avatar">
+                    <div class="author-info">
+                        <h4>Jennifer Williams</h4>
+                        <p class="firm">Williams Law Office</p>
+                        <p>Office Manager</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="testimonial-card">
+                <div class="rating">
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                </div>
+                <div class="testimonial-content">
+                    "The calendar and scheduling features have eliminated double bookings and missed deadlines. Our entire team is now on the same page, and we can easily track important court dates and appointments."
+                </div>
+                <div class="testimonial-author">
+                    <img src="{% static 'images/testimonials/attorney6.jpg' %}" alt="David Park" class="author-avatar">
+                    <div class="author-info">
+                        <h4>David Park</h4>
+                        <p class="firm">Park & Associates</p>
+                        <p>Partner</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Case Studies Section -->
+<section class="case-studies-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Detailed Case Studies</h2>
+            <p>In-depth looks at how law firms achieved remarkable results with our platform</p>
+        </div>
+        
+        <div class="case-studies-grid">
+            <div class="case-study-card">
+                <div class="case-study-header">
+                    <div class="case-study-title">Solo Practice Transformation</div>
+                    <div class="case-study-firm">Mitchell & Associates</div>
+                </div>
+                <div class="case-study-content">
+                    <div class="case-study-description">
+                        Sarah Mitchell, a solo practitioner specializing in family law, was struggling with administrative overhead and inefficient workflows. After implementing our platform, she streamlined her entire practice.
+                    </div>
+                    <div class="case-study-metrics">
+                        <div class="metric-item">
+                            <div class="metric-value">15 hrs</div>
+                            <div class="metric-label">Time Saved Weekly</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">35%</div>
+                            <div class="metric-label">Revenue Increase</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">100%</div>
+                            <div class="metric-label">Billing Accuracy</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">0</div>
+                            <div class="metric-label">Missed Deadlines</div>
+                        </div>
+                    </div>
+                    <a href="#" class="case-study-link">Read Full Case Study</a>
+                </div>
+            </div>
+            
+            <div class="case-study-card">
+                <div class="case-study-header">
+                    <div class="case-study-title">Small Firm Growth Strategy</div>
+                    <div class="case-study-firm">Chen Legal Group</div>
+                </div>
+                <div class="case-study-content">
+                    <div class="case-study-description">
+                        Chen Legal Group, a 5-attorney firm, needed to scale their operations without hiring additional staff. Our platform enabled them to handle 40% more cases while maintaining quality service.
+                    </div>
+                    <div class="case-study-metrics">
+                        <div class="metric-item">
+                            <div class="metric-value">40%</div>
+                            <div class="metric-label">Case Increase</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">28%</div>
+                            <div class="metric-label">Cost Reduction</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">95%</div>
+                            <div class="metric-label">Client Satisfaction</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">2x</div>
+                            <div class="metric-label">ROI in 6 Months</div>
+                        </div>
+                    </div>
+                    <a href="#" class="case-study-link">Read Full Case Study</a>
+                </div>
+            </div>
+            
+            <div class="case-study-card">
+                <div class="case-study-header">
+                    <div class="case-study-title">Document Management Overhaul</div>
+                    <div class="case-study-firm">Rodriguez & Partners</div>
+                </div>
+                <div class="case-study-content">
+                    <div class="case-study-description">
+                        Rodriguez & Partners was drowning in paperwork and struggling with document version control. Our document management system revolutionized their workflow and eliminated lost files.
+                    </div>
+                    <div class="case-study-metrics">
+                        <div class="metric-item">
+                            <div class="metric-value">80%</div>
+                            <div class="metric-label">Paper Reduction</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">60%</div>
+                            <div class="metric-label">Faster Document Access</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">100%</div>
+                            <div class="metric-label">Version Control</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">$12k</div>
+                            <div class="metric-label">Annual Savings</div>
+                        </div>
+                    </div>
+                    <a href="#" class="case-study-link">Read Full Case Study</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <h2>Ready to Transform Your Practice?</h2>
+        <p>Join hundreds of law firms that have already streamlined their operations with our platform</p>
+        <div class="cta-buttons">
+            <a href="{% url 'tenants:tenant-registration' %}" class="btn btn-primary btn-lg">Start Your Free Trial</a>
+            <a href="{% url 'contact' %}" class="btn btn-outline-primary btn-lg">Schedule a Demo</a>
+        </div>
+    </div>
+</section>
+{% endblock content %}

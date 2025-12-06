@@ -1,0 +1,74 @@
+{% extends "platform_admin/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block page_title %}{% if form.instance.pk %}Edit Announcement{% else %}Create Announcement{% endif %}{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+  <a href="{% url 'platform_admin:announcement_list' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i> Back to Announcements
+  </a>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card shadow">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+          {% if form.instance.pk %}Edit System Announcement{% else %}Create New System Announcement{% endif %}
+        </h6>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          {{ form|crispy }}
+          <div class="mt-4">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-circle"></i> {% if form.instance.pk %}Update Announcement{% else %}Create Announcement{% endif %}
+            </button>
+            <a href="{% url 'platform_admin:announcement_list' %}" class="btn btn-secondary">
+              <i class="bi bi-x-circle"></i> Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-4">
+    <div class="card shadow">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-info">Help</h6>
+      </div>
+      <div class="card-body">
+        <h6>Announcement Types</h6>
+        <ul class="list-unstyled">
+          <li><strong>Information:</strong> General information</li>
+          <li><strong>Warning:</strong> Important warnings</li>
+          <li><strong>Maintenance:</strong> Maintenance notifications</li>
+          <li><strong>New Feature:</strong> Feature announcements</li>
+          <li><strong>Security:</strong> Security alerts</li>
+          <li><strong>Urgent:</strong> Critical urgent messages</li>
+        </ul>
+        
+        <h6 class="mt-4">Targeting</h6>
+        <p>You can target announcements to specific tenants and user roles. If you select "Target all tenants", the announcement will be shown to all users.</p>
+        
+        <h6>Display Options</h6>
+        <ul class="list-unstyled">
+          <li><strong>Show on Login:</strong> Display after user login</li>
+          <li><strong>Show on Dashboard:</strong> Display on user dashboard</li>
+          <li><strong>Show as Banner:</strong> Display as a top banner</li>
+          <li><strong>Is Dismissible:</strong> Users can close the announcement</li>
+        </ul>
+        
+        <h6 class="mt-4">Priority</h6>
+        <p>Higher priority announcements (0-100) will be shown first. Use higher numbers for more important announcements.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

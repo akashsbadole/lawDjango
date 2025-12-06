@@ -1,0 +1,319 @@
+{% extends "backup_restore/base.html" %}
+{% load static %}
+
+{% block title %}Create Backup{% endblock %}
+
+{% block backup_restore_content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-plus me-2"></i>Create New Backup
+                </h6>
+            </div>
+            <div class="card-body">
+                <form method="post" id="backupWizardForm">
+                    {% csrf_token %}
+                    
+                    <!-- Step 1: Basic Information -->
+                    <div class="wizard-step" id="step1">
+                        <h5 class="mb-3">
+                            <span class="step-number">1</span>
+                            Basic Information
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.name.id_for_label }}" class="form-label">
+                                        Backup Name <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.name.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.backup_type.id_for_label }}" class="form-label">
+                                        Backup Type <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.backup_type }}
+                                    {% if form.backup_type.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.backup_type.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label for="{{ form.description.id_for_label }}" class="form-label">
+                                        Description
+                                    </label>
+                                    {{ form.description }}
+                                    {% if form.description.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.description.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2: Backup Options -->
+                    <div class="wizard-step" id="step2" style="display: none;">
+                        <h5 class="mb-3">
+                            <span class="step-number">2</span>
+                            Backup Options
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3">Select what to include in this backup:</h6>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <input type="checkbox" id="includeDatabase" class="form-check-input" checked>
+                                    <label class="form-check-label" for="includeDatabase">
+                                        <i class="fas fa-database me-2"></i>Database
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <input type="checkbox" id="includeMedia" class="form-check-input" checked>
+                                    <label class="form-check-label" for="includeMedia">
+                                        <i class="fas fa-image me-2"></i>Media Files
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <input type="checkbox" id="includeDocuments" class="form-check-input" checked>
+                                    <label class="form-check-label" for="includeDocuments">
+                                        <i class="fas fa-file-alt me-2"></i>Documents
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <input type="checkbox" id="includeSettings" class="form-check-input" checked>
+                                    <label class="form-check-label" for="includeSettings">
+                                        <i class="fas fa-cog me-2"></i>Settings
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <input type="checkbox" id="compressBackup" class="form-check-input" checked>
+                                    <label class="form-check-label" for="compressBackup">
+                                        <i class="fas fa-compress me-2"></i>Compress Backup
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <input type="checkbox" id="encryptBackup" class="form-check-input" checked>
+                                    <label class="form-check-label" for="encryptBackup">
+                                        <i class="fas fa-lock me-2"></i>Encrypt Backup
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Incremental backup options (shown only when incremental is selected) -->
+                        <div id="incrementalOptions" style="display: none;">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Incremental Backup:</strong> This will only backup changes since the last full backup.
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <label for="parentBackup" class="form-label">
+                                            Parent Backup <span class="text-danger">*</span>
+                                        </label>
+                                        <select id="parentBackup" class="form-select">
+                                            <option value="">Select a full backup to base incremental backup on</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3: Review -->
+                    <div class="wizard-step" id="step3" style="display: none;">
+                        <h5 class="mb-3">
+                            <span class="step-number">3</span>
+                            Review & Create
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card bg-light">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Backup Summary</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <strong>Name:</strong> <span id="reviewName"></span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>Type:</strong> <span id="reviewType"></span>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <strong>Include Database:</strong> <span id="reviewDatabase">Yes</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>Include Media:</strong> <span id="reviewMedia">Yes</span>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <strong>Include Documents:</strong> <span id="reviewDocuments">Yes</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>Include Settings:</strong> <span id="reviewSettings">Yes</span>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <strong>Compress:</strong> <span id="reviewCompress">Yes</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>Encrypt:</strong> <span id="reviewEncrypt">Yes</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-secondary" onclick="showStep(2)">
+                                <i class="fas fa-arrow-left me-2"></i>Previous
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check me-2"></i>Create Backup
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Show step 1 by default
+    showStep(1);
+    
+    // Handle backup type change
+    $('#id_backup_type').change(function() {
+        var backupType = $(this).val();
+        if (backupType === 'incremental') {
+            $('#incrementalOptions').show();
+            $('#parentBackup').prop('required', true);
+        } else {
+            $('#incrementalOptions').hide();
+            $('#parentBackup').prop('required', false);
+        }
+    });
+    
+    // Handle form submission
+    $('#backupWizardForm').submit(function(e) {
+        e.preventDefault();
+        
+        // Validate form
+        if (!validateForm()) {
+            return false;
+        }
+        
+        // Update review summary
+        updateReviewSummary();
+        
+        // Show review step
+        showStep(3);
+    });
+    
+    // Navigation buttons
+    window.showStep = function(stepNumber) {
+        $('.wizard-step').hide();
+        $('#step' + stepNumber).show();
+        
+        // Update progress indicator
+        $('.step-number').removeClass('active');
+        $('.step-number').each(function() {
+            if ($(this).text() == stepNumber) {
+                $(this).addClass('active');
+            }
+        });
+    };
+    
+    // Form validation
+    window.validateForm = function() {
+        var name = $('#id_name').val().trim();
+        var backupType = $('#id_backup_type').val();
+        
+        if (!name) {
+            alert('Backup name is required.');
+            return false;
+        }
+        
+        if (backupType === 'incremental') {
+            var parentBackup = $('#parentBackup').val();
+            if (!parentBackup) {
+                alert('Parent backup is required for incremental backups.');
+                return false;
+            }
+        }
+        
+        return true;
+    };
+    
+    // Update review summary
+    window.updateReviewSummary = function() {
+        $('#reviewName').text($('#id_name').val());
+        $('#reviewType').text($('#id_backup_type option:selected').text());
+        $('#reviewDatabase').text($('#includeDatabase').is(':checked') ? 'Yes' : 'No');
+        $('#reviewMedia').text($('#includeMedia').is(':checked') ? 'Yes' : 'No');
+        $('#reviewDocuments').text($('#includeDocuments').is(':checked') ? 'Yes' : 'No');
+        $('#reviewSettings').text($('#includeSettings').is(':checked') ? 'Yes' : 'No');
+        $('#reviewCompress').text($('#compressBackup').is(':checked') ? 'Yes' : 'No');
+        $('#reviewEncrypt').text($('#encryptBackup').is(':checked') ? 'Yes' : 'No');
+    };
+});
+</script>
+{% endblock %}

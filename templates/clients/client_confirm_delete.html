@@ -1,0 +1,184 @@
+{% extends "_base.html" %}
+{% load static %}
+
+{% block title %}Delete {{ client.full_name }} - {{ tenant.name }} - Lithium{% endblock title %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Delete Client</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <a href="{% url 'clients:detail' client.pk %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Client
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Warning Card -->
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card border-left-danger shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+              <i class="fas fa-exclamation-triangle"></i> Warning
+            </div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">
+              You are about to delete a client record
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-trash fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Client Information -->
+<div class="row mt-4">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">Client Information</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-sm-3"><strong>Name:</strong></div>
+          <div class="col-sm-9">{{ client.full_name }}</div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-3"><strong>Email:</strong></div>
+          <div class="col-sm-9">{{ client.email }}</div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-3"><strong>Phone:</strong></div>
+          <div class="col-sm-9">{{ client.phone|default:"Not provided" }}</div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-3"><strong>Company:</strong></div>
+          <div class="col-sm-9">{{ client.company|default:"Not provided" }}</div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-3"><strong>Member Since:</strong></div>
+          <div class="col-sm-9">{{ client.created_at|date:"F d, Y" }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Important Information -->
+  <div class="col-lg-4">
+    <div class="card border-left-info shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+              <i class="fas fa-info-circle"></i> Important
+            </div>
+            <div class="mb-0 font-weight-bold text-gray-800">
+              This is a soft delete operation
+            </div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-undo fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-warning">
+          <i class="fas fa-shield-alt"></i> What Happens Next?
+        </h6>
+      </div>
+      <div class="card-body">
+        <ul class="small">
+          <li>The client will be marked as deleted</li>
+          <li>The record will be hidden from normal views</li>
+          <li>All data will be preserved in the database</li>
+          <li>The client can be restored later if needed</li>
+          <li>Associated cases and documents remain intact</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Form -->
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-danger">Confirm Deletion</h6>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          
+          <div class="alert alert-danger" role="alert">
+            <h5 class="alert-heading">
+              <i class="fas fa-exclamation-triangle"></i> Are you sure?
+            </h5>
+            <p>
+              This action will mark <strong>{{ client.full_name }}</strong> as deleted. 
+              This can be undone, but the client will no longer appear in your active client list.
+            </p>
+            <hr>
+            <p class="mb-0">
+              Type <code>DELETE</code> in the box below to confirm this action:
+            </p>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="confirm-text" class="form-label">Confirmation Text</label>
+                <input type="text" class="form-control" id="confirm-text" name="confirm-text" 
+                       placeholder="Type DELETE to confirm">
+                <small class="form-text text-muted">
+                  This field is case-sensitive.
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'clients:detail' client.pk %}" class="btn btn-secondary">
+              <i class="fas fa-times"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-danger" id="delete-btn" disabled>
+              <i class="fas fa-trash"></i> Delete Client
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmTextInput = document.getElementById('confirm-text');
+    const deleteBtn = document.getElementById('delete-btn');
+    
+    confirmTextInput.addEventListener('input', function() {
+        if (this.value === 'DELETE') {
+            deleteBtn.disabled = false;
+        } else {
+            deleteBtn.disabled = true;
+        }
+    });
+});
+</script>
+{% endblock javascript %}

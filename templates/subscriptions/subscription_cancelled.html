@@ -1,0 +1,244 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}Subscription Cancelled - {{ user.tenant.name }}{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Subscription Cancelled</h1>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header bg-warning text-white text-center">
+        <h3 class="mb-0">
+          <i class="fas fa-exclamation-triangle"></i> 
+          Subscription Cancelled
+        </h3>
+      </div>
+      <div class="card-body text-center">
+        <div class="mb-4">
+          <i class="fas fa-exclamation-triangle text-warning" style="font-size: 4rem;"></i>
+        </div>
+        
+        <h4 class="mb-3">Your Subscription Has Been Cancelled</h4>
+        
+        <p class="lead mb-4">
+          Your subscription has been cancelled successfully. You will continue to have access to your plan features until the end of your current billing period.
+        </p>
+        
+        {% if subscription %}
+        <div class="alert alert-info mb-4">
+          <h5><i class="fas fa-info-circle"></i> Subscription Details</h5>
+          <div class="row">
+            <div class="col-md-6">
+              <p class="mb-1"><strong>Plan:</strong> {{ subscription.plan.name }}</p>
+              <p class="mb-1"><strong>Status:</strong> 
+                <span class="badge bg-warning">{{ subscription.get_status_display }}</span>
+              </p>
+              <p class="mb-1"><strong>Cancelled Date:</strong> {{ subscription.cancelled_at|date:"F j, Y" }}</p>
+            </div>
+            <div class="col-md-6">
+              <p class="mb-1"><strong>Access Until:</strong> {{ subscription.end_date|date:"F j, Y" }}</p>
+              <p class="mb-1"><strong>Days Remaining:</strong> 
+                {% if days_remaining %}
+                {{ days_remaining }} days
+                {% else %}
+                Less than 1 day
+                {% endif %}
+              </p>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        
+        <div class="alert alert-warning mb-4">
+          <h5><i class="fas fa-exclamation-circle"></i> Important Information</h5>
+          <p class="mb-2">
+            <strong>Data Access:</strong> After your subscription expires, you will still have access to your data but with limited functionality.
+          </p>
+          <p class="mb-0">
+            <strong>Reactivation:</strong> You can reactivate your subscription at any time before or after the expiry date.
+          </p>
+        </div>
+        
+        <div class="mb-4">
+          <h5>What happens next?</h5>
+          <ul class="list-unstyled text-start">
+            <li class="mb-2">
+              <i class="fas fa-calendar text-warning"></i> 
+              Your account will remain active until {{ subscription.end_date|date:"F j, Y" }}
+            </li>
+            <li class="mb-2">
+              <i class="fas fa-lock text-warning"></i> 
+              After expiry, premium features will be unavailable
+            </li>
+            <li class="mb-2">
+              <i class="fas fa-database text-warning"></i> 
+              Your data will be preserved and accessible
+            </li>
+            <li class="mb-0">
+              <i class="fas fa-redo text-warning"></i> 
+              You can reactivate your subscription at any time
+            </li>
+          </ul>
+        </div>
+        
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+          <a href="{% url 'subscriptions:subscription_create' %}" class="btn btn-primary">
+            <i class="fas fa-redo"></i> Reactivate Subscription
+          </a>
+          <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card mt-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-question-circle"></i> 
+          Why Cancel?
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="mb-3">
+          We're sorry to see you go! If you have a moment, we'd appreciate your feedback to help us improve our service.
+        </p>
+        
+        <div class="mb-3">
+          <h6>Common reasons for cancellation:</h6>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="reason1">
+                <label class="form-check-label" for="reason1">
+                  Too expensive
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="reason2">
+                <label class="form-check-label" for="reason2">
+                  Missing features
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="reason3">
+                <label class="form-check-label" for="reason3">
+                  Technical issues
+                </label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="reason4">
+                <label class="form-check-label" for="reason4">
+                  Found alternative solution
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="reason5">
+                <label class="form-check-label" for="reason5">
+                  Business closed/changed
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="reason6">
+                <label class="form-check-label" for="reason6">
+                  Other
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <label for="feedback" class="form-label">Additional feedback (optional)</label>
+          <textarea class="form-control" id="feedback" rows="3" placeholder="Tell us more about your experience..."></textarea>
+        </div>
+        
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+          <button type="button" class="btn btn-outline-secondary" onclick="submitFeedback()">
+            <i class="fas fa-paper-plane"></i> Submit Feedback
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card mt-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-lightbulb"></i> 
+          Alternative Plans
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="mb-3">
+          If cost is a concern, we offer these alternatives:
+        </p>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-body">
+                <h6 class="card-title">Basic Plan</h6>
+                <p class="card-text">Essential features for small firms</p>
+                <a href="{% url 'subscriptions:plan_selection' %}" class="btn btn-outline-primary btn-sm">View Plans</a>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-body">
+                <h6 class="card-title">Pause Subscription</h6>
+                <p class="card-text">Temporarily suspend your account</p>
+                <a href="{% url 'subscriptions:subscription_detail' %}" class="btn btn-outline-primary btn-sm">Learn More</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function submitFeedback() {
+  // Collect feedback data
+  const reasons = [];
+  const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+  checkboxes.forEach(checkbox => {
+    const label = document.querySelector(`label[for="${checkbox.id}"]`);
+    if (label) {
+      reasons.push(label.textContent.trim());
+    }
+  });
+  
+  const feedbackText = document.getElementById('feedback').value;
+  
+  // In a real implementation, you would send this to your server
+  console.log('Feedback submitted:', {
+    reasons: reasons,
+    additional: feedbackText
+  });
+  
+  // Show success message
+  const alert = document.createElement('div');
+  alert.className = 'alert alert-success alert-dismissible fade show';
+  alert.innerHTML = `
+    <strong>Thank you!</strong> Your feedback has been submitted.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  `;
+  
+  const card = document.querySelector('.card-body');
+  card.insertBefore(alert, card.firstChild);
+  
+  // Clear form
+  document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+  document.getElementById('feedback').value = '';
+}
+</script>
+{% endblock %}

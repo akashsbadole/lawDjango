@@ -1,0 +1,187 @@
+{% extends "lawyer_panel/base.html" %}
+{% load static %}
+
+{% block title %}Documents - Lawyer Panel{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Documents</h1>
+        <a href="{% url 'lawyer_panel:document_create' %}" class="btn btn-primary btn-icon-split">
+            <span class="icon text-white-50">
+                <i class="fas fa-plus"></i>
+            </span>
+            <span class="text">Upload Document</span>
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filters</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" action="{% url 'lawyer_panel:document_list' %}">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <select class="form-control" id="category" name="category">
+                                <option value="">All Categories</option>
+                                {% for value, label in category_choices %}
+                                <option value="{{ value }}" {% if request.GET.category == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="access_level">Access Level</label>
+                            <select class="form-control" id="access_level" name="access_level">
+                                <option value="">All Levels</option>
+                                {% for value, label in access_level_choices %}
+                                <option value="{{ value }}" {% if request.GET.access_level == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="case">Case</label>
+                            <select class="form-control" id="case" name="case">
+                                <option value="">All Cases</option>
+                                {% for case in cases %}
+                                <option value="{{ case.pk }}" {% if request.GET.case == case.pk|stringformat:"s" %}selected{% endif %}>{{ case.case_number }} - {{ case.title|truncatechars:30 }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="client">Client</label>
+                            <select class="form-control" id="client" name="client">
+                                <option value="">All Clients</option>
+                                {% for client in clients %}
+                                <option value="{{ client.pk }}" {% if request.GET.client == client.pk|stringformat:"s" %}selected{% endif %}">{{ client.full_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="search">Search</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="search" name="search" 
+                                           value="{{ request.GET.search }}" placeholder="Search documents...">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-primary" type="submit">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-right mt-2">
+                    <button class="btn btn-secondary" type="button" onclick="clearFilters()">Clear Filters</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Documents Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                Documents ({{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }})
+            </h6>
+        </div>
+        <div class="card-body">
+            {% if documents %}
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>File</th>
+                            <th>Category</th>
+                            <th>Access Level</th>
+                            <th>Size</th>
+                            <th>Upload Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for document in documents %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'lawyer_panel:document_detail' document.pk %}">{{ document.title|truncatechars:50 }}</a>
+                            </td>
+                            <td>{{ document.file_name }}</td>
+                            <td>{{ document.get_category_display }}</td>
+                            <td>
+                                <span class="badge badge-{% if document.access_level == 'public' %}success{% elif document.access_level == 'internal' %}info{% else %}warning{% endif %}">
+                                    {{ document.get_access_level_display }}
+                                </span>
+                            </td>
+                            <td>{{ document.file_size_mb }} MB</td>
+                            <td>{{ document.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                {% if document.file %}
+                                <a href="{{ document.get_download_url }}" class="btn btn-info btn-sm btn-circle" download>
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'lawyer_panel:document_detail' document.pk %}" class="btn btn-primary btn-sm btn-circle">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav aria-label="Documents pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">&laquo;</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">&raquo;</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="text-center">
+                <p class="text-muted">No documents found.</p>
+                <a href="{% url 'lawyer_panel:document_create' %}" class="btn btn-primary">Upload Your First Document</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function clearFilters() {
+    window.location.href = "{% url 'lawyer_panel:document_list' %}";
+}
+</script>
+{% endblock %}

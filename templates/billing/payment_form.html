@@ -1,0 +1,106 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if form.instance.pk %}Edit{% else %}Record{% endif %} Payment - {{ user.tenant.name }}{% endblock %}
+
+{% block page_header %}
+  <h1 class="h2">{% if form.instance.pk %}Edit{% else %}Record{% endif %} Payment</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <a href="{% url 'billing:payment_list' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Payments
+      </a>
+    </div>
+  </div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          {{ form|crispy }}
+          
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'billing:payment_list' %}" class="btn btn-secondary">
+              <i class="fas fa-times"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save"></i> {% if form.instance.pk %}Update{% else %}Record{% endif %} Payment
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Help</h5>
+      </div>
+      <div class="card-body">
+        <h6>Payment Methods</h6>
+        <ul class="list-unstyled">
+          <li><strong>Cash:</strong> Physical cash payments</li>
+          <li><strong>Check:</strong> Check payments</li>
+          <li><strong>Credit Card:</strong> Credit or debit card payments</li>
+          <li><strong>Bank Transfer:</strong> Direct bank transfers or ACH</li>
+          <li><strong>Online:</strong> Online payment platforms</li>
+          <li><strong>Other:</strong> Other payment methods</li>
+        </ul>
+        
+        <h6 class="mt-3">Reference Number</h6>
+        <p>Include check numbers, transaction IDs, or other reference information for tracking purposes.</p>
+        
+        <h6 class="mt-3">Payment Allocation</h6>
+        <p>Payments are automatically applied to the selected invoice. The system will track partial payments and remaining balances.</p>
+      </div>
+    </div>
+    
+    {% if form.instance.invoice %}
+    <div class="card mt-3">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Invoice Details</h5>
+      </div>
+      <div class="card-body">
+        <p><strong>Invoice:</strong> {{ form.instance.invoice.invoice_number }}</p>
+        <p><strong>Client:</strong> {{ form.instance.invoice.client }}</p>
+        <p><strong>Total Amount:</strong> ${{ form.instance.invoice.total_amount }}</p>
+        <p><strong>Current Balance:</strong> 
+          <span class="{% if form.instance.invoice.balance > 0 %}text-danger{% else %}text-success{% endif %}">
+            ${{ form.instance.invoice.balance }}
+          </span>
+        </p>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Auto-select invoice based on URL parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  const invoiceId = urlParams.get('invoice');
+  if (invoiceId) {
+    const invoiceField = document.getElementById('id_invoice');
+    if (invoiceField) {
+      invoiceField.value = invoiceId;
+    }
+  }
+  
+  // Update payment date to today by default
+  const dateField = document.getElementById('id_payment_date');
+  if (dateField && !dateField.value) {
+    const today = new Date().toISOString().split('T')[0];
+    dateField.value = today;
+  }
+});
+</script>
+{% endblock %}

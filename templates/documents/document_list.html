@@ -1,0 +1,271 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}Documents - {{ user.tenant.name }} - Lithium{% endblock title %}
+
+{% block page_header %}
+<h1 class="h2">Documents</h1>
+<div class="btn-toolbar mb-2 mb-md-0">
+  <div class="btn-group me-2">
+    <a href="{% url 'documents:upload' %}" class="btn btn-primary">
+      <i class="fas fa-upload"></i> Upload Document
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- Storage Usage Card -->
+<div class="row mb-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-md-8">
+            <h6 class="card-title">Storage Usage</h6>
+            <div class="progress mb-2" style="height: 25px;">
+              <div class="progress-bar {% if storage_percentage > 80 %}bg-danger{% elif storage_percentage > 60 %}bg-warning{% else %}bg-success{% endif %}" 
+                   role="progressbar" 
+                   style="width: {{ storage_percentage }}%;" 
+                   aria-valuenow="{{ storage_percentage }}" 
+                   aria-valuemin="0" 
+                   aria-valuemax="100">
+                {{ storage_percentage|floatformat:1 }}%
+              </div>
+            </div>
+            <small class="text-muted">
+              {{ storage_used|filesizeformat }} of {{ storage_limit|filesizeformat }} used
+              ({{ total_documents }} documents)
+            </small>
+          </div>
+          <div class="col-md-4 text-end">
+            <div class="btn-group">
+              <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.href='{% url 'documents:stats' %}'">
+                <i class="fas fa-chart-pie"></i> Statistics
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Enhanced Search Form -->
+<div class="card mb-4 fade-in-up">
+  <div class="card-header">
+    <h6 class="m-0 font-weight-bold text-primary d-flex align-items-center">
+      <i class="fas fa-search me-2"></i> Search Documents
+    </h6>
+  </div>
+  <div class="card-body">
+    <form method="get" class="row g-3">
+      <div class="col-md-3">
+        <label class="form-label small text-muted">Search</label>
+        {{ search_form.query }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small text-muted">Category</label>
+        {{ search_form.category }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small text-muted">Access Level</label>
+        {{ search_form.access_level }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small text-muted">File Type</label>
+        {{ search_form.file_type }}
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small text-muted">&nbsp;</label>
+        <div class="btn-group w-100">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search me-2"></i> Search
+          </button>
+          <a href="{% url 'documents:list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-times me-2"></i> Clear
+          </a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Enhanced Documents Table -->
+<div class="card fade-in-up" style="animation-delay: 0.1s;">
+  <div class="card-header">
+    <h6 class="m-0 font-weight-bold text-primary d-flex align-items-center justify-content-between">
+      <span>
+        <i class="fas fa-file-alt me-2"></i>
+        Document List
+        {% if search_form.query.value %}
+          - Search Results
+        {% endif %}
+      </span>
+      <span class="badge bg-primary">{{ documents|length }} documents</span>
+    </h6>
+  </div>
+  <div class="card-body">
+    {% if documents %}
+      <div class="table-responsive">
+        <table class="table table-hover" id="dataTable" width="100%" cellspacing="0">
+          <thead class="table-light">
+            <tr>
+              <th><i class="fas fa-heading me-1"></i> Title</th>
+              <th><i class="fas fa-file me-1"></i> File Name</th>
+              <th><i class="fas fa-tag me-1"></i> Category</th>
+              <th><i class="fas fa-lock me-1"></i> Access Level</th>
+              <th><i class="fas fa-file-code me-1"></i> File Type</th>
+              <th><i class="fas fa-database me-1"></i> Size</th>
+              <th><i class="fas fa-user me-1"></i> Uploaded By</th>
+              <th><i class="fas fa-calendar me-1"></i> Created</th>
+              <th><i class="fas fa-cogs me-1"></i> Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for document in documents %}
+            <tr class="fade-in-up" style="animation-delay: {{ forloop.counter0|add:2 }}0s;">
+              <td>
+                <div class="d-flex align-items-center">
+                  <a href="{% url 'documents:detail' document.pk %}" class="text-decoration-none fw-bold text-primary">
+                    {{ document.title|truncatechars:40 }}
+                  </a>
+                  {% if document.version > 1 %}
+                    <span class="badge bg-info ms-2">v{{ document.version }}</span>
+                  {% endif %}
+                </div>
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-file{% if document.file_type == 'pdf' %}-pdf{% elif document.file_type == 'word' %}-word{% elif document.file_type == 'excel' %}-excel{% elif document.file_type == 'image' %}-image{% else %}-alt{% endif %} me-2 text-muted"></i>
+                  <span class="text-muted">{{ document.file_name|truncatechars:30 }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-{% if document.category == 'contract' %}primary{% elif document.category == 'evidence' %}danger{% elif document.category == 'correspondence' %}success{% elif document.category == 'court_filing' %}warning{% else %}secondary{% endif %} px-3 py-2">
+                  {{ document.get_category_display }}
+                </span>
+              </td>
+              <td>
+                <span class="badge bg-{% if document.access_level == 'public' %}success{% elif document.access_level == 'internal' %}info{% elif document.access_level == 'confidential' %}warning{% else %}danger{% endif %} px-3 py-2">
+                  <i class="fas fa-{% if document.access_level == 'public' %}unlock{% elif document.access_level == 'internal' %}users{% elif document.access_level == 'confidential' %}lock{% else %}shield-alt{% endif %} me-1"></i>
+                  {{ document.get_access_level_display }}
+                </span>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark">{{ document.get_file_type_display }}</span>
+              </td>
+              <td>
+                <i class="fas fa-database me-1"></i>
+                {{ document.file_size_mb }} MB
+              </td>
+              <td>
+                {% if document.uploaded_by %}
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-user-circle me-2 text-muted"></i>
+                    {{ document.uploaded_by.get_full_name|default:document.uploaded_by.email|truncatechars:20 }}
+                  </div>
+                {% else %}
+                  <span class="text-muted">
+                    <i class="fas fa-user-slash me-1"></i>Unknown
+                  </span>
+                {% endif %}
+              </td>
+              <td>
+                <i class="fas fa-calendar me-1"></i>
+                {{ document.created_at|date:"M d, Y" }}
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm" role="group">
+                  <a href="{% url 'documents:detail' document.pk %}" class="btn btn-info" title="View Document">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a href="{% url 'documents:download' document.pk %}" class="btn btn-success" title="Download Document">
+                    <i class="fas fa-download"></i>
+                  </a>
+                  <a href="{% url 'documents:update' document.pk %}" class="btn btn-warning" title="Edit Document">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <a href="{% url 'documents:add_version' document.pk %}" class="btn btn-secondary" title="New Version">
+                    <i class="fas fa-plus"></i>
+                  </a>
+                  <a href="{% url 'documents:delete' document.pk %}" class="btn btn-danger" title="Delete Document">
+                    <i class="fas fa-trash"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Pagination -->
+      {% if is_paginated %}
+      <nav aria-label="Document list pagination">
+        <ul class="pagination justify-content-center">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Previous</span>
+            </li>
+          {% endif %}
+          
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+              </li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+          
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Next</span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    {% else %}
+      <div class="text-center py-5">
+        <i class="fas fa-file-alt fa-4x text-muted mb-3"></i>
+        <h5 class="text-muted mb-3">No documents found</h5>
+        <p class="text-muted mb-4">
+          {% if request.GET.query or request.GET.category or request.GET.access_level or request.GET.file_type %}
+            No documents match your search criteria.
+            <a href="{% url 'documents:list' %}" class="btn btn-outline-primary">Clear search</a> to see all documents.
+          {% else %}
+            You haven't uploaded any documents yet.
+            <a href="{% url 'documents:upload' %}" class="btn btn-primary">
+              <i class="fas fa-upload me-2"></i> Upload Your First Document
+            </a> to get started.
+          {% endif %}
+        </p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+<script>
+// Add any document list-specific JavaScript here
+$(document).ready(function() {
+    // Initialize tooltips
+    $('[title]').tooltip();
+});
+</script>
+{% endblock javascript %}

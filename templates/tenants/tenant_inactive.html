@@ -1,0 +1,45 @@
+{% extends "_base.html" %}
+{% load static %}
+
+{% block title %}Tenant Inactive - {{ tenant.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-secondary">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-pause-circle mr-2"></i>
+                        Tenant Inactive
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-pause-circle fa-4x text-secondary mb-3"></i>
+                        <h2>{{ tenant.name }}</h2>
+                        <p class="lead text-muted">This tenant is currently inactive</p>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6>What happens next?</h6>
+                        <ul class="mb-0">
+                            <li>Your data is safe and will be available when the tenant is reactivated</li>
+                            <li>Contact your system administrator for more information</li>
+                            <li>You will receive an email notification when the tenant is reactivated</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="text-center">
+                        <p class="text-muted">
+                            <small>
+                                If you believe this is an error, please contact support immediately.
+                            </small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

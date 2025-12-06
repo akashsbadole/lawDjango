@@ -1,0 +1,167 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}Subscribe to {{ plan.name }} - {{ user.tenant.name }}{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Subscribe to {{ plan.name }}</h1>
+  <div>
+    <a href="{% url 'subscriptions:plan_selection' %}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left"></i> Back to Plans
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-crown"></i> Complete Your Subscription
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <h4 class="text-primary">{{ plan.name }}</h4>
+            <p class="text-muted">{{ plan.get_billing_cycle_display }} billing</p>
+            <p class="mb-0"><strong>Price:</strong> ${{ plan.price }}</p>
+          </div>
+          <div class="col-md-6">
+            {% if plan.trial_days > 0 %}
+            <h4 class="text-info">{{ plan.trial_days }} Days</h4>
+            <p class="text-muted">Free trial period</p>
+            {% else %}
+            <h4 class="text-muted">No Trial</h4>
+            <p class="text-muted">No trial period</p>
+            {% endif %}
+            {% if plan.setup_fee > 0 %}
+            <p class="mb-0"><strong>Setup Fee:</strong> ${{ plan.setup_fee }}</p>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="alert alert-info">
+          <h5><i class="fas fa-info-circle"></i> Subscription Summary</h5>
+          <p>You're about to subscribe to the <strong>{{ plan.name }}</strong> plan. Here's what you'll get:</p>
+          
+          <ul class="mb-0">
+            {% if plan.max_users %}
+            <li><strong>Users:</strong> Up to {{ plan.max_users }} users</li>
+            {% endif %}
+            
+            {% if plan.max_storage_mb %}
+            <li><strong>Storage:</strong> {{ plan.max_storage_mb }}MB storage space</li>
+            {% endif %}
+            
+            {% for feature in plan.features.all %}
+            <li>
+              <strong>{{ feature.feature.name }}:</strong> 
+              {% if feature.is_included %}
+              <i class="fas fa-check text-success"></i> Included
+              {% else %}
+              <i class="fas fa-times text-danger"></i> Not included
+              {% endif %}
+              {% if feature.value %}: {{ feature.value }}{% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        
+        <form method="post">
+          {% csrf_token %}
+          
+          <div class="mb-3">
+            <label for="payment_method" class="form-label">Payment Method</label>
+            <select name="payment_method" class="form-select" required>
+              <option value="">Select payment method</option>
+              {% for method in payment_methods %}
+              <option value="{{ method.id }}">
+                {% if method.is_default %}{{ method.get_method_type_display }} (Default){% else %}{{ method.get_method_type_display }}{% endif %}
+              </option>
+              {% endfor %}
+            </select>
+            {% if not payment_methods %}
+            <div class="form-text">
+              <a href="{% url 'subscriptions:payment_method_create' %}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-plus"></i> Add Payment Method
+              </a>
+            </div>
+            {% endif %}
+          </div>
+          
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="auto_renew" id="auto_renew" checked>
+              <label class="form-check-label" for="auto_renew">
+                Automatically renew subscription when it expires
+              </label>
+            </div>
+          </div>
+          
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a href="{% url 'subscriptions:plan_selection' %}" class="btn btn-outline-secondary">
+              Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-check"></i> Complete Subscription
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-shield-alt"></i> Secure Payment
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="card-text">Your payment information is encrypted and secure:</p>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <i class="fas fa-check text-success"></i> PCI DSS Compliant
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-check text-success"></i> 256-bit SSL Encryption
+          </li>
+          <li class="mb-0">
+            <i class="fas fa-check text-success"></i> Tokenized Payment Processing
+          </li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-question-circle"></i> Billing Questions?
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="card-text">Have questions about billing or subscriptions?</p>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <i class="fas fa-envelope text-primary"></i> 
+            Contact our support team
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-book text-primary"></i> 
+            View our documentation
+          </li>
+          <li class="mb-0">
+            <i class="fas fa-comments text-primary"></i> 
+            Start a live chat
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

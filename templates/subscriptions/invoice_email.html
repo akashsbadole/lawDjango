@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice #{{ invoice.invoice_number }} - {{ tenant.name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid #007bff;
+        }
+        .content {
+            padding: 20px;
+        }
+        .invoice-details {
+            background-color: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .invoice-total {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .table th, .table td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: left;
+        }
+        .table th {
+            background-color: #f8f9fa;
+        }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+        }
+        .alert-danger {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #dee2e6;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-paid {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-overdue {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ tenant.name }}</h1>
+        <p>Law Firm Management System</p>
+    </div>
+    
+    <div class="content">
+        {% if invoice.status == 'paid' %}
+        <div class="alert alert-success">
+            <h2><i>✅</i> Payment Confirmation</h2>
+            <p>Thank you for your payment! Your invoice has been paid in full.</p>
+        </div>
+        {% elif invoice.status == 'pending' %}
+        <div class="alert alert-warning">
+            <h2><i>📄</i> Invoice Ready</h2>
+            <p>Your invoice is ready for payment. Please review and pay by the due date.</p>
+        </div>
+        {% elif invoice.status == 'overdue' %}
+        <div class="alert alert-danger">
+            <h2><i>⚠️</i> Payment Overdue</h2>
+            <p>Your invoice payment is overdue. Please make payment as soon as possible to avoid service interruption.</p>
+        </div>
+        {% endif %}
+        
+        <h2>Invoice #{{ invoice.invoice_number }}</h2>
+        
+        <div class="invoice-details">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Invoice Number:</strong> #{{ invoice.invoice_number }}</p>
+                    <p><strong>Issue Date:</strong> {{ invoice.issue_date|date:"F j, Y" }}</p>
+                    <p><strong>Due Date:</strong> {{ invoice.due_date|date:"F j, Y" }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Status:</strong> 
+                        <span class="status-badge status-{{ invoice.status }}">{{ invoice.get_status_display }}</span>
+                    </p>
+                    <p><strong>Subscription:</strong> {{ invoice.subscription.plan.name }}</p>
+                    <p><strong>Billing Period:</strong> {{ invoice.billing_start_date|date:"F j, Y" }} - {{ invoice.billing_end_date|date:"F j, Y" }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <h3>Invoice Items</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ invoice.subscription.plan.name }} - {{ invoice.subscription.plan.get_billing_cycle_display }} Subscription</td>
+                    <td>1</td>
+                    <td>${{ invoice.subscription.plan.price }}</td>
+                    <td>${{ invoice.subscription.plan.price }}</td>
+                </tr>
+                {% if invoice.items.all %}
+                {% for item in invoice.items.all %}
+                <tr>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>${{ item.unit_price }}</td>
+                    <td>${{ item.total }}</td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+        
+        <div class="invoice-total">
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <td style="text-align: right; padding: 5px;"><strong>Subtotal:</strong></td>
+                    <td style="text-align: right; padding: 5px;">${{ invoice.subtotal }}</td>
+                </tr>
+                <tr>
+                    <td style="text-align: right; padding: 5px;"><strong>Tax ({{ invoice.tax_rate|floatformat:2 }}%):</strong></td>
+                    <td style="text-align: right; padding: 5px;">${{ invoice.tax_amount }}</td>
+                </tr>
+                <tr style="border-top: 2px solid #dee2e6;">
+                    <td style="text-align: right; padding: 5px;"><strong>Total Amount:</strong></td>
+                    <td style="text-align: right; padding: 5px; font-size: 18px; font-weight: bold;">${{ invoice.total_amount }}</td>
+                </tr>
+            </table>
+        </div>
+        
+        {% if invoice.status == 'pending' or invoice.status == 'overdue' %}
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ site_url }}{% url 'subscriptions:invoice_payment' invoice.pk %}" class="btn btn-primary">
+                Pay Invoice Now
+            </a>
+            <a href="{{ site_url }}{% url 'subscriptions:invoice_detail' invoice.pk %}" class="btn btn-secondary">
+                View Invoice Details
+            </a>
+        </div>
+        {% endif %}
+        
+        {% if invoice.status == 'paid' %}
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ site_url }}{% url 'subscriptions:invoice_detail' invoice.pk %}" class="btn btn-secondary">
+                View Invoice Details
+            </a>
+            <a href="{{ site_url }}{% url 'subscriptions:invoice_list' %}" class="btn btn-secondary">
+                View All Invoices
+            </a>
+        </div>
+        {% endif %}
+        
+        {% if invoice.status == 'overdue' %}
+        <div class="alert alert-danger">
+            <h3>Payment Overdue</h3>
+            <p>Your payment is {{ days_overdue }} days overdue. To avoid service interruption, please make payment immediately.</p>
+            <p>If you have already made payment, please allow 1-2 business days for processing.</p>
+        </div>
+        {% endif %}
+        
+        <div style="margin-top: 30px;">
+            <h3>Payment Methods</h3>
+            <p>You can pay this invoice using any of your saved payment methods or add a new one.</p>
+            <ul>
+                <li>Credit/Debit Card</li>
+                <li>Bank Transfer</li>
+                <li>Online Payment</li>
+            </ul>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <h3>Need Help?</h3>
+            <p>If you have questions about this invoice or need assistance with payment, please contact our support team.</p>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>This is an automated invoice notification from {{ tenant.name }} Law Firm Management System.</p>
+        <p>If you believe this invoice is incorrect or have questions about your subscription, please contact our billing department.</p>
+        <p>&copy; {% now "Y" %} {{ tenant.name }}. All rights reserved.</p>
+    </div>
+</body>
+</html>

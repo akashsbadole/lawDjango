@@ -1,0 +1,287 @@
+{% extends "lawyer_panel/base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Lawyer Panel{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Active Cases Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Active Cases</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_cases_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-briefcase fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Clients Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Clients</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_clients_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Documents Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Recent Documents (30 days)</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ recent_documents_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Billable Hours Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Billable Hours (30 days)</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_billable_hours|floatformat:2 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Upcoming Hearings -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Upcoming Hearings</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                            <a class="dropdown-item" href="{% url 'lawyer_panel:case_list' %}">View All Cases</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_hearings %}
+                        {% for event in upcoming_hearings %}
+                        <div class="timeline-item mb-3">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <h6 class="font-weight-bold">{{ event.title }}</h6>
+                                <p class="text-muted small mb-0">
+                                    <i class="fas fa-calendar-alt mr-1"></i>
+                                    {{ event.event_date|date:"M d, Y H:i" }}
+                                </p>
+                                <p class="small mb-0">
+                                    <strong>Case:</strong> 
+                                    <a href="{% url 'lawyer_panel:case_detail' event.case.pk %}">{{ event.case.case_number }}</a>
+                                </p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center text-muted">No upcoming hearings in the next 30 days.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Time Entries -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Time Entries</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                            <a class="dropdown-item" href="{% url 'lawyer_panel:time_entry_list' %}">View All Time Entries</a>
+                            <a class="dropdown-item" href="{% url 'lawyer_panel:time_entry_create' %}">Add Time Entry</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if recent_time_entries %}
+                        {% for entry in recent_time_entries %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="font-weight-bold">{{ entry.description|truncatewords:8 }}</h6>
+                                <span class="badge badge-primary">{{ entry.hours }}h</span>
+                            </div>
+                            <p class="text-muted small mb-0">
+                                <i class="fas fa-calendar-alt mr-1"></i>
+                                {{ entry.date|date:"M d, Y" }}
+                                {% if entry.case %}
+                                | <strong>Case:</strong> 
+                                <a href="{% url 'lawyer_panel:case_detail' entry.case.pk %}">{{ entry.case.case_number }}</a>
+                                {% endif %}
+                            </p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center text-muted">No recent time entries.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Recent Expenses -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Expenses</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                            <a class="dropdown-item" href="{% url 'lawyer_panel:expense_list' %}">View All Expenses</a>
+                            <a class="dropdown-item" href="{% url 'lawyer_panel:expense_create' %}">Add Expense</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if recent_expenses %}
+                        {% for expense in recent_expenses %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="font-weight-bold">{{ expense.description|truncatewords:8 }}</h6>
+                                <span class="badge badge-warning">${{ expense.amount }}</span>
+                            </div>
+                            <p class="text-muted small mb-0">
+                                <i class="fas fa-calendar-alt mr-1"></i>
+                                {{ expense.date|date:"M d, Y" }}
+                                | <strong>Category:</strong> {{ expense.get_category_display }}
+                            </p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center text-muted">No recent expenses.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Cases -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Cases</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                            <a class="dropdown-item" href="{% url 'lawyer_panel:case_list' %}">View All Cases</a>
+                            <a class="dropdown-item" href="{% url 'lawyer_panel:case_create' %}">Create New Case</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if recent_cases %}
+                        {% for case in recent_cases %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="font-weight-bold">{{ case.title|truncatewords:8 }}</h6>
+                                {% if case.status == 'open' %}
+                                    <span class="badge badge-success">{{ case.get_status_display }}</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">{{ case.get_status_display }}</span>
+                                {% endif %}
+                            </div>
+                            <p class="text-muted small mb-0">
+                                <i class="fas fa-calendar-alt mr-1"></i>
+                                {{ case.updated_at|date:"M d, Y" }}
+                                | <strong>Client:</strong> {{ case.client.full_name }}
+                            </p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center text-muted">No recent cases.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Billing Summary -->
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Billing Summary (Last 30 Days)</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                            <a class="dropdown-item" href="{% url 'lawyer_panel:time_entry_list' %}">Time Entries</a>
+                            <a class="dropdown-item" href="{% url 'lawyer_panel:expense_list' %}">Expenses</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="text-center">
+                                <h5 class="font-weight-bold text-gray-800">Total Billed Amount</h5>
+                                <h3 class="text-success">${{ total_billed_amount|floatformat:2 }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-center">
+                                <h5 class="font-weight-bold text-gray-800">Total Billable Hours</h5>
+                                <h3 class="text-primary">{{ total_billable_hours|floatformat:2 }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,314 @@
+{% extends "platform_admin/base.html" %}
+{% load static %}
+
+{% block page_title %}Revenue Report{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+  <a href="{% url 'platform_admin:export_data' %}?type=revenue" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-download"></i> Export
+  </a>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+<!-- Date Range Filter -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h6 class="m-0 font-weight-bold text-primary">Filter by Date Range</h6>
+  </div>
+  <div class="card-body">
+    <form method="get" action="{% url 'platform_admin:revenue_report' %}">
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label for="date_from" class="form-label">From Date</label>
+          <input type="date" class="form-control" id="date_from" name="date_from" 
+                 value="{{ date_from }}">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label for="date_to" class="form-label">To Date</label>
+          <input type="date" class="form-control" id="date_to" name="date_to" 
+                 value="{{ date_to }}">
+        </div>
+        <div class="col-md-4 mb-3 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary me-2">Filter</button>
+          <a href="{% url 'platform_admin:revenue_report' %}" class="btn btn-secondary">Clear</a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Revenue Summary -->
+<div class="row mb-4">
+  <div class="col-xl-4 col-md-6 mb-4">
+    <div class="card border-left-primary shadow h-100 py-2 metric-card">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Revenue</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800 metric-value">${{ total_revenue|floatformat:2 }}</div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-4 col-md-6 mb-4">
+    <div class="card border-left-success shadow h-100 py-2 metric-card">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Monthly Revenue</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800 metric-value">${{ monthly_revenue|floatformat:2 }}</div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-4 col-md-6 mb-4">
+    <div class="card border-left-info shadow h-100 py-2 metric-card">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Payments</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800 metric-value">{{ payments|length }}</div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-credit-card fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Revenue Charts -->
+<div class="row">
+  <div class="col-lg-8 mb-4">
+    <div class="card shadow">
+      <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">Revenue by Month</h6>
+      </div>
+      <div class="card-body">
+        {% if revenue_by_month %}
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th>Revenue</th>
+                  <th>Payments</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for month_data in revenue_by_month %}
+                <tr>
+                  <td>{{ month_data.month }}</td>
+                  <td>${{ month_data.total|floatformat:2 }}</td>
+                  <td>{{ month_data.count }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-center py-3">
+            <p class="text-muted">No revenue data available for the selected period.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4 mb-4">
+    <div class="card shadow">
+      <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">Top Tenants by Revenue</h6>
+      </div>
+      <div class="card-body">
+        {% if revenue_by_tenant %}
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Tenant</th>
+                  <th>Revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for tenant_data in revenue_by_tenant %}
+                <tr>
+                  <td>{{ tenant_data.invoice__tenant__name }}</td>
+                  <td>${{ tenant_data.total|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-center py-3">
+            <p class="text-muted">No tenant revenue data available.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Details -->
+<div class="card shadow">
+  <div class="card-header py-3 d-flex justify-content-between align-items-center">
+    <h6 class="m-0 font-weight-bold text-primary">Payment Details</h6>
+    <div class="text-muted small">
+      Showing {{ payments.start_index }}-{{ payments.end_index }} of {{ payments.paginator.count }}
+    </div>
+  </div>
+  <div class="card-body">
+    {% if payments %}
+      <div class="table-responsive">
+        <table class="table table-bordered" id="paymentsTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Tenant</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for payment in payments %}
+            <tr>
+              <td>{{ payment.payment_date|date:"M d, Y" }}</td>
+              <td>{{ payment.invoice.tenant.name }}</td>
+              <td>${{ payment.amount|floatformat:2 }}</td>
+              <td>
+                <span class="badge bg-success">{{ payment.get_status_display }}</span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if payments.has_other_pages %}
+      <nav aria-label="Payment pagination">
+        <ul class="pagination justify-content-center">
+          {% if payments.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ payments.previous_page_number }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">Previous</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Previous</span>
+            </li>
+          {% endif %}
+
+          {% for num in payments.paginator.page_range %}
+            {% if payments.number == num %}
+              <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+              </li>
+            {% elif num > payments.number|add:'-3' and num < payments.number|add:'3' %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">{{ num }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+          {% if payments.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ payments.next_page_number }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">Next</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Next</span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    {% else %}
+      <div class="text-center py-5">
+        <i class="bi bi-currency-dollar fa-3x text-gray-300 mb-3"></i>
+        <h5 class="text-gray-500">No payments found</h5>
+        <p class="text-gray-400">Try adjusting your date range filter.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+.border-left-primary {
+  border-left: 0.25rem solid #4e73df !important;
+}
+
+.border-left-success {
+  border-left: 0.25rem solid #1cc88a !important;
+}
+
+.border-left-info {
+  border-left: 0.25rem solid #36b9cc !important;
+}
+
+.text-xs {
+  font-size: 0.7rem;
+}
+
+.font-weight-bold {
+  font-weight: 700 !important;
+}
+
+.text-gray-300 {
+  color: #dddfeb !important;
+}
+
+.text-gray-500 {
+  color: #858796 !important;
+}
+
+.text-gray-800 {
+  color: #5a5c69 !important;
+}
+
+.metric-card {
+  transition: transform 0.2s;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.metric-label {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.table th {
+  background-color: #f8f9fc;
+  font-weight: 600;
+  border-top: none;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.badge {
+  font-size: 0.75rem;
+}
+</style>
+{% endblock %}

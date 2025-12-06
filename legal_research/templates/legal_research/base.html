@@ -1,0 +1,269 @@
+{% extends 'lawyer_panel/base.html' %}
+
+{% block title %}AI Legal Research Assistant{% endblock %}
+
+{% block extra_css %}
+<style>
+.research-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    border-radius: 10px;
+}
+
+.research-card {
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out;
+    margin-bottom: 1.5rem;
+}
+
+.research-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.query-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-processing {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+.status-completed {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-failed {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.ai-response {
+    background: #f8f9fa;
+    border-left: 4px solid #007bff;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    border-radius: 0 5px 5px 0;
+}
+
+.source-item {
+    border-left: 3px solid #28a745;
+    padding-left: 1rem;
+    margin-bottom: 1rem;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.quick-research-form {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.stats-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.stats-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.stats-label {
+    color: #6c757d;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.export-buttons {
+    margin-top: 1rem;
+}
+
+.feedback-section {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-top: 2rem;
+}
+
+.document-analysis-form {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.session-card {
+    border-left: 4px solid #6f42c1;
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    margin-bottom: 1rem;
+    border-radius: 0 5px 5px 0;
+}
+
+.token-usage {
+    background: #e9ecef;
+    padding: 0.5rem 1rem;
+    border-radius: 15px;
+    font-size: 0.875rem;
+    color: #495057;
+}
+
+.progress-bar {
+    height: 8px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: #007bff;
+    transition: width 0.3s ease;
+}
+
+.query-type-badge {
+    background: #6c757d;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            {% block research_header %}
+            <div class="research-header text-center">
+                <h1><i class="fas fa-brain mr-3"></i>AI Legal Research Assistant</h1>
+                <p class="lead mb-0">Powered by Google Gemini Flash AI</p>
+            </div>
+            {% endblock %}
+        </div>
+    </div>
+    
+    {% block research_content %}
+    {% endblock %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh for processing queries
+function checkQueryStatus(queryId) {
+    setInterval(function() {
+        fetch(`/legal_research/api/query/${queryId}/status/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'completed') {
+                    window.location.reload();
+                }
+            })
+            .catch(error => console.error('Error checking status:', error));
+    }, 5000); // Check every 5 seconds
+}
+
+// Token usage calculator
+function calculateTokens(text) {
+    return Math.ceil(text.length / 4); // Rough approximation
+}
+
+// Export functionality
+function exportQuery(queryId, format) {
+    window.open(`/legal_research/query/${queryId}/export/?format=${format}`, '_blank');
+}
+
+// Quick research form submission
+function submitQuickResearch(form) {
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.innerHTML = '<span class="loading-spinner mr-2"></span>Processing...';
+    submitBtn.disabled = true;
+    
+    // Form will be submitted normally, this is just for UI feedback
+    setTimeout(function() {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }, 5000);
+}
+
+// Document analysis selection
+function toggleDocumentSelection(checkbox) {
+    const card = checkbox.closest('.document-card');
+    if (checkbox.checked) {
+        card.style.borderColor = '#007bff';
+        card.style.backgroundColor = '#f8f9ff';
+    } else {
+        card.style.borderColor = '#dee2e6';
+        card.style.backgroundColor = 'white';
+    }
+}
+
+// Feedback submission
+function submitFeedback(form, queryId) {
+    const formData = new FormData(form);
+    
+    fetch(`/legal_research/query/${queryId}/feedback/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Thank you for your feedback!');
+            form.reset();
+        } else {
+            alert('Error submitting feedback. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Error submitting feedback:', error);
+        alert('Error submitting feedback. Please try again.');
+    });
+    
+    return false;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,213 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block title %}{{ tenant_settings.company_name|default:'Law Firm' }} Dashboard{% endblock %}
+
+{% block css %}
+{{ block.super }}
+<style>
+  .dashboard-header {
+    background: linear-gradient(135deg, {{ tenant_settings.brand_colors.primary }} 0%, {{ tenant_settings.brand_colors.primary_dark }} 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+  }
+  
+  .dashboard-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    font-family: {{ tenant_settings.font_heading_family }};
+  }
+  
+  .welcome-message {
+    background: rgba(255, 255, 255, 0.1);
+    border-left: 4px solid {{ tenant_settings.brand_colors.accent }};
+    padding: 1rem 1.5rem;
+    border-radius: 5px;
+    margin-bottom: 2rem;
+    font-style: italic;
+  }
+  
+  .stats-card {
+    border-left: 4px solid {{ tenant_settings.brand_colors.accent }};
+    transition: all 0.3s ease;
+  }
+  
+  .stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .stats-number {
+    color: {{ tenant_settings.brand_colors.primary }};
+    font-size: 2rem;
+    font-weight: 700;
+  }
+  
+  .stats-label {
+    color: {{ tenant_settings.brand_colors.text }};
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .quick-action {
+    background: white;
+    border: 1px solid {{ tenant_settings.brand_colors.secondary }};
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+  
+  .quick-action:hover {
+    background: {{ tenant_settings.brand_colors.background }};
+    border-color: {{ tenant_settings.brand_colors.primary }};
+    transform: translateY(-3px);
+  }
+  
+  .quick-action-icon {
+    font-size: 2rem;
+    color: {{ tenant_settings.brand_colors.primary }};
+    margin-bottom: 0.5rem;
+  }
+  
+  .quick-action-label {
+    color: {{ tenant_settings.brand_colors.text }};
+    font-weight: 500;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Dashboard Header -->
+  <div class="dashboard-header">
+    <div class="row align-items-center">
+      <div class="col">
+        <h1 class="dashboard-title">
+          {% if tenant_settings.company_info.tagline %}
+            {{ tenant_settings.company_info.name }} - {{ tenant_settings.company_info.tagline }}
+          {% else %}
+            {{ tenant_settings.company_info.name }} Dashboard
+          {% endif %}
+        </h1>
+      </div>
+    </div>
+  </div>
+  
+  {% if tenant_settings.dashboard_welcome_message %}
+    <div class="welcome-message">
+      {{ tenant_settings.dashboard_welcome_message|safe }}
+    </div>
+  {% endif %}
+  
+  <!-- Statistics Cards -->
+  <div class="row mb-4">
+    <div class="col-md-3 mb-4">
+      <div class="card stats-card h-100">
+        <div class="card-body">
+          <div class="stats-number">{{ user_count }}</div>
+          <div class="stats-label">Users</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+      <div class="card stats-card h-100">
+        <div class="card-body">
+          <div class="stats-number">{{ client_count }}</div>
+          <div class="stats-label">Clients</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+      <div class="card stats-card h-100">
+        <div class="card-body">
+          <div class="stats-number">{{ case_count }}</div>
+          <div class="stats-label">Cases</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+      <div class="card stats-card h-100">
+        <div class="card-body">
+          <div class="stats-number">{{ document_count }}</div>
+          <div class="stats-label">Documents</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Quick Actions -->
+  <div class="row mb-4">
+    <div class="col-md-3 mb-4">
+      <div class="quick-action">
+        <div class="quick-action-icon">👥</div>
+        <div class="quick-action-label">Add Client</div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+      <div class="quick-action">
+        <div class="quick-action-icon">📁</div>
+        <div class="quick-action-label">Create Case</div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+      <div class="quick-action">
+        <div class="quick-action-icon">📄</div>
+        <div class="quick-action-label">Upload Document</div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+      <div class="quick-action">
+        <div class="quick-action-icon">📊</div>
+        <div class="quick-action-label">View Reports</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Help Links -->
+  {% if tenant_settings.company_info.website %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5>Help & Resources</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <a href="{{ tenant_settings.company_info.website }}" class="btn btn-outline-primary" target="_blank">
+                Company Website
+              </a>
+            </div>
+            <div class="col-md-6">
+              <a href="#" class="btn btn-outline-secondary">
+                User Guide
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block javascript %}
+{{ block.super }}
+<script>
+  // Add any tenant-specific JavaScript here
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize any tenant-specific dashboard features
+  });
+</script>
+{% endblock %}

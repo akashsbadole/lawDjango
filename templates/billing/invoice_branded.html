@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Invoice {{ invoice_number }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+            @bottom-center {
+                content: "{{ tenant_settings.company_name|default:'Law Firm' }} - Page {{ page_num }} of {{ total_pages }}";
+                font-size: 10px;
+                color: {{ tenant_settings.brand_colors.text|default:'#333' }};
+            }
+        }
+        
+        body {
+            font-family: {{ tenant_settings.font_family|default:'Arial, sans-serif' }};
+            font-size: 12px;
+            line-height: 1.4;
+            color: {{ tenant_settings.brand_colors.text|default:'#333' }};
+        }
+        
+        .header {
+            background-color: {{ tenant_settings.brand_colors.primary|default:'#007bff' }};
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .logo {
+            max-width: 200px;
+            max-height: 60px;
+            margin-bottom: 10px;
+        }
+        
+        .company-info {
+            margin-bottom: 20px;
+        }
+        
+        .company-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-family: {{ tenant_settings.font_heading_family|default:'Arial, sans-serif' }};
+        }
+        
+        .invoice-details {
+            margin-bottom: 30px;
+        }
+        
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .invoice-table th {
+            background-color: {{ tenant_settings.brand_colors.secondary|default:'#6c757d' }};
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        .invoice-table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .total-row {
+            font-weight: bold;
+            background-color: {{ tenant_settings.brand_colors.background|default:'#f8f9fa' }};
+        }
+        
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: {{ tenant_settings.brand_colors.secondary|default:'#6c757d' }};
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        {% if tenant_settings.logo_url %}
+            <div class="logo">
+                <img src="{{ tenant_settings.logo_url }}" alt="{{ tenant_settings.company_name|default:'Law Firm' }}">
+            </div>
+        {% endif %}
+        
+        <div class="company-info">
+            <div class="company-name">{{ tenant_settings.company_name|default:'Law Firm' }}</div>
+            {% if tenant_settings.company_info.address %}
+                <div>{{ tenant_settings.company_info.address|linebreaksbr }}</div>
+            {% endif %}
+            {% if tenant_settings.company_info.phone %}
+                <div>Phone: {{ tenant_settings.company_info.phone }}</div>
+            {% endif %}
+            {% if tenant_settings.company_info.email %}
+                <div>Email: {{ tenant_settings.company_info.email }}</div>
+            {% endif %}
+            {% if tenant_settings.company_info.website %}
+                <div>Website: {{ tenant_settings.company_info.website }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="invoice-details">
+        <h2>Invoice #{{ invoice_number }}</h2>
+        <p><strong>Date:</strong> {% now "Y-m-d" %}</p>
+        <p><strong>Due Date:</strong> {% if due_date %}{{ due_date }}{% else %}{% now "Y-m-d" %}{% endif %}</p>
+        
+        {% if client %}
+            <h3>Bill To:</h3>
+            <p><strong>{{ client.name }}</strong></p>
+            {% if client.address %}
+                <p>{{ client.address|linebreaksbr }}</p>
+            {% endif %}
+            {% if client.email %}
+                <p>Email: {{ client.email }}</p>
+            {% endif %}
+            {% if client.phone %}
+                <p>Phone: {{ client.phone }}</p>
+            {% endif %}
+        {% endif %}
+    </div>
+    
+    <table class="invoice-table">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.description }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ item.unit_price }}</td>
+                <td>${{ item.total }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <table class="invoice-table">
+        <tr class="total-row">
+            <td colspan="3" style="text-align: right;"><strong>Subtotal:</strong></td>
+            <td>${{ subtotal }}</td>
+        </tr>
+        <tr class="total-row">
+            <td colspan="3" style="text-align: right;"><strong>Tax ({{ tax_rate }}%):</strong></td>
+            <td>${{ tax_amount }}</td>
+        </tr>
+        <tr class="total-row">
+            <td colspan="3" style="text-align: right;"><strong>Total:</strong></td>
+            <td>${{ total }}</td>
+        </tr>
+    </table>
+    
+    {% if notes %}
+        <div class="invoice-details">
+            <h3>Notes:</h3>
+            <p>{{ notes|linebreaksbr }}</p>
+        </div>
+    {% endif %}
+    
+    <div class="footer">
+        <p>Thank you for your business!</p>
+        <p>Payment is due within {{ payment_terms }} days.</p>
+    </div>
+</body>
+</html>

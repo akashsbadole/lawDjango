@@ -1,0 +1,211 @@
+{% extends "_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} - Law Firm Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ title }}</h1>
+                <a href="{% url 'import_export:export_job_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" id="export-job-form">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.model_type.id_for_label }}">{{ form.model_type.label }}</label>
+                                    {{ form.model_type }}
+                                    {% if form.model_type.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.model_type.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Select the type of data you want to export.</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.export_type.id_for_label }}">{{ form.export_type.label }}</label>
+                                    {{ form.export_type }}
+                                    {% if form.export_type.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.export_type.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Select what to export.</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.file_format.id_for_label }}">{{ form.file_format.label }}</label>
+                                    {{ form.file_format }}
+                                    {% if form.file_format.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.file_format.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Select the format for your export file.</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.include_header.id_for_label }}">{{ form.include_header.label }}</label>
+                                    {{ form.include_header }}
+                                    {% if form.include_header.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.include_header.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Include field names as the first row.</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Export Filters Section -->
+                        <div id="export-filters-section">
+                            <hr>
+                            <h5>Export Filters</h5>
+                            <p class="text-muted">Apply filters to limit the data that gets exported.</p>
+                            
+                            <div id="filters-container">
+                                <!-- Filters will be populated here based on model type -->
+                                <div class="alert alert-info">
+                                    Select a model type to see available filters.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Field Selection Section -->
+                        <div id="field-selection-section">
+                            <hr>
+                            <h5>Field Selection</h5>
+                            <p class="text-muted">Select which fields to include in the export.</p>
+                            
+                            <div class="form-group">
+                                <div class="form-check">
+                                    <input type="checkbox" id="select-all-fields" class="form-check-input">
+                                    <label class="form-check-label" for="select-all-fields">
+                                        Select All Fields
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div id="fields-container">
+                                <!-- Fields will be populated here based on model type -->
+                                <div class="alert alert-info">
+                                    Select a model type to see available fields.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-download"></i> Create Export Job
+                            </button>
+                            <a href="{% url 'import_export:export_job_list' %}" class="btn btn-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        let modelFields = [];
+        
+        // Function to load export filters and fields for the selected model type
+        function loadModelOptions() {
+            const modelType = $('#id_model_type').val();
+            
+            if (!modelType) {
+                $('#filters-container').html('<div class="alert alert-info">Select a model type to see available filters.</div>');
+                $('#fields-container').html('<div class="alert alert-info">Select a model type to see available fields.</div>');
+                return;
+            }
+            
+            // Load filters
+            $.get('{% url "import_export:get_export_filters" %}', { model_type: modelType }, function(data) {
+                $('#filters-container').html(data);
+            });
+            
+            // Load fields
+            $.get('{% url "import_export:get_model_fields" %}', { model_type: modelType }, function(data) {
+                modelFields = data.fields;
+                generateFieldSelection();
+            });
+        }
+        
+        // Function to generate field selection checkboxes
+        function generateFieldSelection() {
+            const container = $('#fields-container');
+            container.empty();
+            
+            const fieldsHtml = modelFields.map(field => {
+                const fieldLabel = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                return `
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" id="field_${field}" name="fields" value="${field}" class="form-check-input">
+                        <label class="form-check-label" for="field_${field}">${fieldLabel}</label>
+                    </div>
+                `;
+            }).join('');
+            
+            container.html('<div class="row"><div class="col-12">' + fieldsHtml + '</div></div>');
+        }
+        
+        // Event listeners
+        $('#id_model_type').on('change', loadModelOptions);
+        
+        // Select all fields functionality
+        $(document).on('change', '#select-all-fields', function() {
+            const isChecked = $(this).is(':checked');
+            $('#fields-container input[name="fields"]').prop('checked', isChecked);
+        });
+        
+        // Update select all checkbox when individual fields change
+        $(document).on('change', '#fields-container input[name="fields"]', function() {
+            const allFields = $('#fields-container input[name="fields"]');
+            const checkedFields = allFields.filter(':checked');
+            
+            if (checkedFields.length === 0) {
+                $('#select-all-fields').prop('indeterminate', false).prop('checked', false);
+            } else if (checkedFields.length === allFields.length) {
+                $('#select-all-fields').prop('indeterminate', false).prop('checked', true);
+            } else {
+                $('#select-all-fields').prop('indeterminate', true).prop('checked', false);
+            }
+        });
+        
+        // Form submission
+        $('#export-job-form').on('submit', function(e) {
+            // Check if at least one field is selected
+            const selectedFields = $('#fields-container input[name="fields"]:checked');
+            if (selectedFields.length === 0) {
+                e.preventDefault();
+                alert('Please select at least one field to export.');
+                return false;
+            }
+        });
+    });
+</script>
+{% endblock %}

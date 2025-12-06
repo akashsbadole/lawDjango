@@ -1,0 +1,244 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}Feature Restricted - {{ user.tenant.name }}{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Feature Restricted</h1>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header bg-warning text-white text-center">
+        <h3 class="mb-0">
+          <i class="fas fa-lock"></i> 
+          Feature Restricted
+        </h3>
+      </div>
+      <div class="card-body text-center">
+        <div class="mb-4">
+          <i class="fas fa-lock text-warning" style="font-size: 4rem;"></i>
+        </div>
+        
+        <h4 class="mb-3">This Feature Requires a Higher Plan</h4>
+        
+        <p class="lead mb-4">
+          The feature you're trying to access is not available in your current subscription plan. Upgrade your plan to unlock this feature and more.
+        </p>
+        
+        {% if current_plan %}
+        <div class="alert alert-info mb-4">
+          <h5><i class="fas fa-info-circle"></i> Current Plan Details</h5>
+          <div class="row">
+            <div class="col-md-6">
+              <p class="mb-1"><strong>Current Plan:</strong> {{ current_plan.name }}</p>
+              <p class="mb-1"><strong>Price:</strong> ${{ current_plan.price }}/{{ current_plan.get_billing_cycle_display }}</p>
+            </div>
+            <div class="col-md-6">
+              <p class="mb-1"><strong>Status:</strong> 
+                <span class="badge bg-success">{{ current_subscription.get_status_display }}</span>
+              </p>
+              <p class="mb-1"><strong>Since:</strong> {{ current_subscription.start_date|date:"F j, Y" }}</p>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        
+        {% if required_plan %}
+        <div class="alert alert-warning mb-4">
+          <h5><i class="fas fa-star"></i> Required Plan</h5>
+          <p class="mb-2">
+            To access this feature, you need to upgrade to the <strong>{{ required_plan.name }}</strong> plan.
+          </p>
+          <div class="row">
+            <div class="col-md-6">
+              <p class="mb-1"><strong>Price:</strong> ${{ required_plan.price }}/{{ required_plan.get_billing_cycle_display }}</p>
+              <p class="mb-1"><strong>Users:</strong> {{ required_plan.max_users }}</p>
+            </div>
+            <div class="col-md-6">
+              <p class="mb-1"><strong>Storage:</strong> {{ required_plan.max_storage_mb }}MB</p>
+              <p class="mb-1"><strong>Cases:</strong> {{ required_plan.max_cases }}</p>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        
+        {% if restricted_feature %}
+        <div class="alert alert-secondary mb-4">
+          <h5><i class="fas fa-ban"></i> Restricted Feature</h5>
+          <p class="mb-2">
+            <strong>Feature:</strong> {{ restricted_feature.name }}
+          </p>
+          {% if restricted_feature.description %}
+          <p class="mb-0">
+            {{ restricted_feature.description }}
+          </p>
+          {% endif %}
+        </div>
+        {% endif %}
+        
+        <div class="mb-4">
+          <h5>Upgrade Benefits</h5>
+          <div class="row text-start">
+            <div class="col-md-6">
+              <p class="mb-2">
+                <i class="fas fa-check text-success"></i> 
+                Access to all premium features
+              </p>
+              <p class="mb-2">
+                <i class="fas fa-check text-success"></i> 
+                Higher user and storage limits
+              </p>
+              <p class="mb-0">
+                <i class="fas fa-check text-success"></i> 
+                Priority customer support
+              </p>
+            </div>
+            <div class="col-md-6">
+              <p class="mb-2">
+                <i class="fas fa-check text-success"></i> 
+                Advanced reporting and analytics
+              </p>
+              <p class="mb-2">
+                <i class="fas fa-check text-success"></i> 
+                API access for integrations
+              </p>
+              <p class="mb-0">
+                <i class="fas fa-check text-success"></i> 
+                Custom branding options
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center mb-4">
+          <a href="{% url 'subscriptions:subscription_update' %}" class="btn btn-primary">
+            <i class="fas fa-arrow-up"></i> Upgrade Plan
+          </a>
+          <a href="{% url 'subscriptions:plan_selection' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-th-list"></i> View All Plans
+          </a>
+          <a href="javascript:history.back()" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Go Back
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card mt-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-chart-line"></i> 
+          Available Plans
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          {% for plan in available_plans %}
+          <div class="col-md-4 mb-3">
+            <div class="card h-100 {% if current_plan and plan.id == current_plan.id %}border-success{% endif %}">
+              {% if current_plan and plan.id == current_plan.id %}
+              <div class="card-header bg-success text-white text-center">
+                <small>Current Plan</small>
+              </div>
+              {% endif %}
+              <div class="card-header text-center">
+                <h6 class="mb-0">{{ plan.name }}</h6>
+                <h4 class="text-primary mb-0">${{ plan.price }}</h4>
+                <small class="text-muted">/{{ plan.get_billing_cycle_display }}</small>
+              </div>
+              <div class="card-body">
+                <ul class="list-unstyled">
+                  <li class="mb-1">
+                    <i class="fas fa-users text-success"></i> 
+                    {{ plan.max_users }} users
+                  </li>
+                  <li class="mb-1">
+                    <i class="fas fa-database text-success"></i> 
+                    {{ plan.max_storage_mb }}MB storage
+                  </li>
+                  <li class="mb-1">
+                    <i class="fas fa-file-alt text-success"></i> 
+                    {{ plan.max_cases }} cases
+                  </li>
+                </ul>
+              </div>
+              <div class="card-footer text-center">
+                {% if current_plan and plan.id == current_plan.id %}
+                <span class="badge bg-success">Current Plan</span>
+                {% elif required_plan and plan.id == required_plan.id %}
+                <a href="{% url 'subscriptions:subscription_update' %}?plan={{ plan.id }}" class="btn btn-primary btn-sm">
+                  Upgrade Now
+                </a>
+                {% else %}
+                <a href="{% url 'subscriptions:subscription_update' %}?plan={{ plan.id }}" class="btn btn-outline-primary btn-sm">
+                  {% if plan.price > current_plan.price %}Upgrade{% else %}Downgrade{% endif %}
+                </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    
+    <div class="card mt-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-question-circle"></i> 
+          Need Help?
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="mb-3">
+          If you have questions about our plans or need help choosing the right one for your firm, our team is here to help.
+        </p>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+          <a href="#" class="btn btn-outline-secondary">
+            <i class="fas fa-envelope"></i> Contact Support
+          </a>
+          <a href="{% url 'about' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-info-circle"></i> Learn More
+          </a>
+          <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Track which feature was restricted for analytics
+  const restrictedFeature = '{{ restricted_feature.name|default:"Unknown" }}';
+  const currentPlan = '{{ current_plan.name|default:"None" }}';
+  
+  // In a real implementation, you might send this to your analytics service
+  console.log('Feature restricted:', {
+    feature: restrictedFeature,
+    currentPlan: currentPlan,
+    timestamp: new Date().toISOString()
+  });
+  
+  // Add click tracking for upgrade buttons
+  const upgradeButtons = document.querySelectorAll('a[href*="subscription_update"]');
+  upgradeButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      // In a real implementation, track upgrade attempts
+      console.log('Upgrade attempt:', {
+        fromPlan: currentPlan,
+        toPlan: this.getAttribute('href').match(/plan=(\d+)/)?.[1] || 'Unknown',
+        feature: restrictedFeature
+      });
+    });
+  });
+});
+</script>
+{% endblock %}

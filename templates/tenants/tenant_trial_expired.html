@@ -1,0 +1,69 @@
+{% extends "_base.html" %}
+{% load static %}
+
+{% block title %}Trial Expired - {{ tenant.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock mr-2"></i>
+                        Trial Expired
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-hourglass-end fa-4x text-info mb-3"></i>
+                        <h2>{{ tenant.name }}</h2>
+                        <p class="lead text-muted">Your trial period has expired</p>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6>What happens next?</h6>
+                        <ul class="mb-0">
+                            <li>Your data is safe and will be available after upgrading</li>
+                            <li>Choose a plan that fits your needs to continue using the service</li>
+                            <li>Contact support if you need assistance with the upgrade process</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card-deck mb-4">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Basic Plan</h6>
+                                <p class="card-text">Perfect for small firms</p>
+                                <a href="#" class="btn btn-outline-primary">Upgrade</a>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Professional Plan</h6>
+                                <p class="card-text">For growing law firms</p>
+                                <a href="#" class="btn btn-primary">Upgrade</a>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Enterprise Plan</h6>
+                                <p class="card-text">For large firms</p>
+                                <a href="#" class="btn btn-success">Upgrade</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <p class="text-muted">
+                            <small>
+                                Need help? <a href="mailto:support@lawfirm.com">Contact Support</a>
+                            </small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

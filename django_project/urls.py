@@ -5,7 +5,17 @@ from django.urls import path, include
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("allauth.urls")),
+    path("accounts/", include("accounts.urls")),
     path("", include("pages.urls")),
+    path("tenants/", include("tenants.urls")),
+    # App URLs with tenant pattern: /app/{tenant_slug}/
+    # This will be caught by the TenantMiddleware
+    path("app/", include("tenants.app_urls")),
+    path("subscriptions/", include("subscriptions.urls")),
+    path("platform-admin/", include("platform_admin.urls")),
+    path("backup-restore/", include("backup_restore.urls")),
+    path("lawyer-panel/", include("lawyer_panel.urls")),
+    path("legal-research/", include("legal_research.urls")),
 ]
 
 if settings.DEBUG:

@@ -1,0 +1,291 @@
+{% extends "_base.html" %}
+{% load static %}
+
+{% block title %}{{ case.case_number }} - {{ case.title }} - {{ user.tenant.name }} - Lithium{% endblock title %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">{{ case.case_number }} - {{ case.title }}</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <a href="{% url 'cases:update' case.pk %}" class="btn btn-warning">
+        <i class="fas fa-edit"></i> Edit Case
+      </a>
+      <a href="{% url 'cases:event_create' case.pk %}" class="btn btn-info">
+        <i class="fas fa-plus"></i> Add Event
+      </a>
+      <a href="{% url 'cases:delete' case.pk %}" class="btn btn-danger">
+        <i class="fas fa-trash"></i> Delete Case
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Case Details -->
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">Case Information</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>Case Number:</strong> {{ case.case_number }}</p>
+            <p><strong>Status:</strong> 
+              <span class="badge bg-{% if case.status == 'open' %}success{% elif case.status == 'closed' %}secondary{% elif case.status == 'pending' %}warning{% else %}info{% endif %}">
+                {{ case.get_status_display }}
+              </span>
+            </p>
+            <p><strong>Case Type:</strong> {{ case.get_case_type_display }}</p>
+            <p><strong>Client:</strong> 
+              <a href="{% url 'clients:detail' case.client.pk %}" class="text-decoration-none">
+                {{ case.client.full_name }}
+              </a>
+            </p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Start Date:</strong> {{ case.start_date|date:"M d, Y" }}</p>
+            <p><strong>End Date:</strong> {{ case.end_date|date:"M d, Y"|default:"Not set" }}</p>
+            <p><strong>Duration:</strong> {{ case.duration_days }} days</p>
+            <p><strong>Created:</strong> {{ case.created_at|date:"M d, Y" }} by {{ case.created_by.get_full_name|default:case.created_by.email }}</p>
+          </div>
+        </div>
+        
+        {% if case.description %}
+        <div class="mt-3">
+          <h6>Description</h6>
+          <p>{{ case.description|linebreaks }}</p>
+        </div>
+        {% endif %}
+        
+        {% if case.assigned_lawyers.all %}
+        <div class="mt-3">
+          <h6>Assigned Lawyers</h6>
+          <div class="row">
+            {% for lawyer in case.assigned_lawyers.all %}
+            <div class="col-md-6 mb-2">
+              <span class="badge bg-info">{{ lawyer.get_full_name|default:lawyer.email }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        
+        {% if case.outcome %}
+        <div class="mt-3">
+          <h6>Outcome</h6>
+          <p>{{ case.outcome|linebreaks }}</p>
+        </div>
+        {% endif %}
+        
+        {% if case.notes %}
+        <div class="mt-3">
+          <h6>Additional Notes</h6>
+          <p>{{ case.notes|linebreaks }}</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-4">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <a href="{% url 'cases:event_create' case.pk %}" class="btn btn-info">
+            <i class="fas fa-plus"></i> Add Event
+          </a>
+          <a href="{% url 'cases:update' case.pk %}" class="btn btn-warning">
+            <i class="fas fa-edit"></i> Edit Case
+          </a>
+          <a href="{% url 'clients:detail' case.client.pk %}" class="btn btn-success">
+            <i class="fas fa-user"></i> View Client
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card mb-4">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">Case Statistics</h6>
+      </div>
+      <div class="card-body">
+        <p><strong>Total Events:</strong> {{ events.count }}</p>
+        <p><strong>Upcoming Events:</strong> {{ events|selectattr:"event_date"|length }}</p>
+        <p><strong>Case Age:</strong> {{ case.duration_days }} days</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Case Events -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h6 class="m-0 font-weight-bold text-primary">Case Events Timeline</h6>
+    <a href="{% url 'cases:event_create' case.pk %}" class="btn btn-info btn-sm">
+      <i class="fas fa-plus"></i> Add Event
+    </a>
+  </div>
+  <div class="card-body">
+    {% if events %}
+      <!-- Add Event Form -->
+      <div class="card mb-4 border-info">
+        <div class="card-header bg-info text-white">
+          <h6 class="m-0">Quick Add Event</h6>
+        </div>
+        <div class="card-body">
+          <form method="post" action="{% url 'cases:detail' case.pk %}">
+            {% csrf_token %}
+            <div class="row g-3">
+              <div class="col-md-3">
+                {{ event_form.event_type }}
+              </div>
+              <div class="col-md-3">
+                {{ event_form.title }}
+              </div>
+              <div class="col-md-3">
+                {{ event_form.event_date }}
+              </div>
+              <div class="col-md-3">
+                <button type="submit" name="event_form" class="btn btn-info w-100">
+                  <i class="fas fa-plus"></i> Add Event
+                </button>
+              </div>
+            </div>
+            <div class="row mt-3">
+              <div class="col-12">
+                {{ event_form.description }}
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Events Timeline -->
+      <div class="timeline">
+        {% for event in events %}
+        <div class="timeline-item mb-4">
+          <div class="timeline-marker bg-{% if event.event_type == 'hearing' %}danger{% elif event.event_type == 'filing' %}warning{% elif event.event_type == 'meeting' %}info{% else %}secondary{% endif %}"></div>
+          <div class="timeline-content">
+            <div class="card">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">
+                  <span class="badge bg-{% if event.event_type == 'hearing' %}danger{% elif event.event_type == 'filing' %}warning{% elif event.event_type == 'meeting' %}info{% else %}secondary{% endif %}">
+                    {{ event.get_event_type_display }}
+                  </span>
+                  {{ event.title }}
+                </h6>
+                <div class="btn-group btn-group-sm">
+                  <a href="{% url 'cases:event_update' event.pk %}" class="btn btn-outline-warning" title="Edit">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <a href="{% url 'cases:event_delete' event.pk %}" class="btn btn-outline-danger" title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </a>
+                </div>
+              </div>
+              <div class="card-body">
+                <p class="text-muted small mb-2">
+                  <i class="fas fa-clock"></i> {{ event.event_date|date:"M d, Y H:i" }}
+                  {% if event.created_by %}by {{ event.created_by.get_full_name|default:event.created_by.email }}{% endif %}
+                </p>
+                {% if event.description %}
+                <p>{{ event.description|linebreaks }}</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-center py-4">
+        <i class="fas fa-calendar-alt fa-3x text-gray-300 mb-3"></i>
+        <h5 class="text-gray-600">No events found</h5>
+        <p class="text-muted">
+          No events have been added to this case yet. 
+          <a href="{% url 'cases:event_create' case.pk %}">Add your first event</a> to track case activities.
+        </p>
+        
+        <!-- Add Event Form -->
+        <div class="card mt-4 border-info">
+          <div class="card-header bg-info text-white">
+            <h6 class="m-0">Add First Event</h6>
+          </div>
+          <div class="card-body">
+            <form method="post" action="{% url 'cases:detail' case.pk %}">
+              {% csrf_token %}
+              <div class="row g-3">
+                <div class="col-md-3">
+                  {{ event_form.event_type }}
+                </div>
+                <div class="col-md-3">
+                  {{ event_form.title }}
+                </div>
+                <div class="col-md-3">
+                  {{ event_form.event_date }}
+                </div>
+                <div class="col-md-3">
+                  <button type="submit" name="event_form" class="btn btn-info w-100">
+                    <i class="fas fa-plus"></i> Add Event
+                  </button>
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="col-12">
+                  {{ event_form.description }}
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+.timeline {
+  position: relative;
+  padding-left: 30px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: #e9ecef;
+}
+
+.timeline-item {
+  position: relative;
+}
+
+.timeline-marker {
+  position: absolute;
+  left: -22px;
+  top: 5px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+.timeline-content {
+  margin-left: 0;
+}
+</style>
+{% endblock content %}
+
+{% block javascript %}
+<script>
+// Add any case detail-specific JavaScript here
+</script>
+{% endblock javascript %}

@@ -1,0 +1,222 @@
+{% extends "lawyer_panel/base.html" %}
+{% load static %}
+
+{% block title %}{{ case.title }} - Case Detail - Lawyer Panel{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ case.title }}</h1>
+        <div>
+            <a href="{% url 'lawyer_panel:case_update' case.pk %}" class="btn btn-warning btn-icon-split">
+                <span class="icon text-white-50">
+                    <i class="fas fa-edit"></i>
+                </span>
+                <span class="text">Edit Case</span>
+            </a>
+            <a href="{% url 'lawyer_panel:add_case_event' case.pk %}" class="btn btn-info btn-icon-split">
+                <span class="icon text-white-50">
+                    <i class="fas fa-plus"></i>
+                </span>
+                <span class="text">Add Event</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Case Details -->
+    <div class="row">
+        <!-- Case Information -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Case Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row no-gutters">
+                        <div class="col-sm-6">
+                            <div class="text-xs font-weight-bold text-gray-500">Case Number</div>
+                            <div class="text-gray-800">{{ case.case_number }}</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="text-xs font-weight-bold text-gray-500">Status</div>
+                            <div>
+                                <span class="badge badge-{{ case.status == 'open' and 'success' or 'secondary' }}">
+                                    {{ case.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row no-gutters">
+                        <div class="col-sm-6">
+                            <div class="text-xs font-weight-bold text-gray-500">Type</div>
+                            <div class="text-gray-800">{{ case.get_case_type_display }}</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="text-xs font-weight-bold text-gray-500">Start Date</div>
+                            <div class="text-gray-800">{{ case.start_date|date:"M d, Y" }}</div>
+                        </div>
+                    </div>
+                    <div class="row no-gutters">
+                        <div class="col-sm-6">
+                            <div class="text-xs font-weight-bold text-gray-500">Client</div>
+                            <div class="text-gray-800">
+                                <a href="{% url 'lawyer_panel:client_detail' case.client.pk %}">{{ case.client.full_name }}</a>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="text-xs font-weight-bold text-gray-500">Assigned Lawyers</div>
+                            <div class="text-gray-800">
+                                {% for lawyer in case.assigned_lawyers.all %}
+                                    {{ lawyer.get_full_name|default:lawyer.email }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% if case.end_date %}
+                    <div class="row no-gutters">
+                        <div class="col-sm-6">
+                            <div class="text-xs font-weight-bold text-gray-500">End Date</div>
+                            <div class="text-gray-800">{{ case.end_date|date:"M d, Y" }}</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="text-xs font-weight-bold text-gray-500">Duration</div>
+                            <div class="text-gray-800">{{ case.duration_days }} days</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if case.description %}
+                    <div class="row no-gutters">
+                        <div class="col-sm-12">
+                            <div class="text-xs font-weight-bold text-gray-500">Description</div>
+                            <div class="text-gray-800">{{ case.description|linebreaks }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if case.outcome %}
+                    <div class="row no-gutters">
+                        <div class="col-sm-12">
+                            <div class="text-xs font-weight-bold text-gray-500">Outcome</div>
+                            <div class="text-gray-800">{{ case.outcome|linebreaks }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if case.notes %}
+                    <div class="row no-gutters">
+                        <div class="col-sm-12">
+                            <div class="text-xs font-weight-bold text-gray-500">Notes</div>
+                            <div class="text-gray-800">{{ case.notes|linebreaks }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Case Events -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Case Events</h6>
+                    <a href="{% url 'lawyer_panel:add_case_event' case.pk %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus fa-sm"></i> Add Event
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if events %}
+                        <div class="timeline">
+                            {% for event in events %}
+                            <div class="timeline-item mb-4">
+                                <div class="timeline-marker bg-{{ event.event_type }}"></div>
+                                <div class="timeline-content">
+                                    <h6 class="font-weight-bold">{{ event.title }}</h6>
+                                    <p class="text-muted small mb-2">
+                                        <i class="fas fa-calendar-alt mr-1"></i>
+                                        {{ event.event_date|date:"M d, Y H:i" }}
+                                        <span class="badge badge-{{ event.event_type }} ml-2">{{ event.get_event_type_display }}</span>
+                                    </p>
+                                    <p class="mb-0">{{ event.description|linebreaks }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-center text-muted">No events recorded for this case.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Items -->
+    <div class="row">
+        <!-- Documents -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Documents</h6>
+                </div>
+                <div class="card-body">
+                    {% if documents %}
+                        <div class="list-group list-group-flush">
+                            {% for document in documents %}
+                            <a href="{% url 'lawyer_panel:document_detail' document.pk %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ document.title|truncatechars:30 }}</h6>
+                                    <small class="text-muted">{{ document.created_at|date:"M d, Y" }}</small>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-center text-muted">No documents uploaded for this case.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Time Entries -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Time Entries</h6>
+                </div>
+                <div class="card-body">
+                    {% if time_entries %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Description</th>
+                                        <th>Hours</th>
+                                        <th>Rate</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for entry in time_entries %}
+                                    <tr>
+                                        <td>{{ entry.date|date:"M d, Y" }}</td>
+                                        <td>{{ entry.description|truncatechars:50 }}</td>
+                                        <td>{{ entry.hours }}</td>
+                                        <td>${{ entry.rate }}</td>
+                                        <td>${{ entry.amount }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-right mt-3">
+                            <strong>Total Hours:</strong> {{ time_entries|list_sum:'hours' }}
+                            <strong>Total Amount:</strong> ${{ time_entries|list_sum:'amount' }}
+                        </div>
+                    {% else %}
+                        <p class="text-center text-muted">No time entries recorded for this case.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

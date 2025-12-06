@@ -1,0 +1,744 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block title %}Sign Up or Login - Law Firm Management Platform{% endblock title %}
+
+{% block meta_description %}
+Sign up for a free trial or login to your law firm management platform account. Streamline your practice with our comprehensive case management, billing, and client communication tools.
+{% endblock meta_description %}
+
+{% block extra_css %}
+<style>
+/* Auth page specific styles */
+.auth-hero {
+    background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+    color: white;
+    padding: 80px 0;
+    text-align: center;
+}
+
+.auth-hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.auth-hero p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+    opacity: 0.95;
+}
+
+.auth-section {
+    padding: 80px 0;
+    background: var(--brand-background);
+}
+
+.auth-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.auth-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 3rem;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    overflow: hidden;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.auth-tab {
+    flex: 1;
+    padding: 1.5rem;
+    background: white;
+    border: none;
+    color: var(--brand-secondary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.auth-tab.active {
+    background: var(--brand-primary);
+    color: white;
+}
+
+.auth-tab:hover:not(.active) {
+    background: var(--brand-background);
+}
+
+.auth-forms {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.auth-form-container {
+    background: white;
+    border-radius: 15px;
+    padding: 3rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.auth-form-container.signup {
+    display: block;
+}
+
+.auth-form-container.login {
+    display: none;
+}
+
+.auth-form-container.active {
+    display: block;
+}
+
+.auth-form h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--brand-text);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.auth-form p {
+    color: var(--brand-secondary);
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: var(--brand-text);
+    margin-bottom: 0.5rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid #e1e5e9;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--brand-primary);
+}
+
+.form-group input::placeholder {
+    color: #a0a8b0;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+}
+
+.checkbox-group label {
+    font-weight: normal;
+    color: var(--brand-secondary);
+    margin-bottom: 0;
+}
+
+.form-error {
+    color: #dc3545;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    display: none;
+}
+
+.form-error.show {
+    display: block;
+}
+
+.password-strength {
+    margin-top: 0.5rem;
+    height: 5px;
+    background: #e1e5e9;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.password-strength-bar {
+    height: 100%;
+    width: 0;
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.password-strength-bar.weak {
+    width: 33%;
+    background: #dc3545;
+}
+
+.password-strength-bar.medium {
+    width: 66%;
+    background: #ffc107;
+}
+
+.password-strength-bar.strong {
+    width: 100%;
+    background: #28a745;
+}
+
+.auth-btn {
+    width: 100%;
+    padding: 1rem;
+    background: var(--brand-primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.auth-btn:hover {
+    background: var(--brand-secondary);
+}
+
+.auth-btn:disabled {
+    background: #a0a8b0;
+    cursor: not-allowed;
+}
+
+.divider {
+    text-align: center;
+    margin: 2rem 0;
+    position: relative;
+}
+
+.divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #e1e5e9;
+}
+
+.divider span {
+    background: white;
+    padding: 0 1rem;
+    color: var(--brand-secondary);
+    position: relative;
+}
+
+.social-login {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border: 2px solid #e1e5e9;
+    background: white;
+    border-radius: 10px;
+    color: var(--brand-text);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.social-btn:hover {
+    border-color: var(--brand-primary);
+    background: var(--brand-background);
+}
+
+.auth-footer {
+    text-align: center;
+    color: var(--brand-secondary);
+}
+
+.auth-footer a {
+    color: var(--brand-primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+.trial-features {
+    background: var(--brand-background);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.trial-features h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--brand-text);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.trial-features ul {
+    list-style: none;
+    padding: 0;
+}
+
+.trial-features li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--brand-secondary);
+}
+
+.trial-features li::before {
+    content: '✓';
+    color: #28a745;
+    font-weight: bold;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .auth-hero h1 {
+        font-size: 2rem;
+    }
+    
+    .auth-forms {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .social-login {
+        grid-template-columns: 1fr;
+    }
+    
+    .auth-form-container {
+        padding: 2rem;
+    }
+}
+
+/* Single form view for mobile */
+@media (max-width: 992px) {
+    .auth-forms {
+        grid-template-columns: 1fr;
+    }
+    
+    .auth-form-container.signup {
+        display: none;
+    }
+    
+    .auth-form-container.login {
+        display: none;
+    }
+    
+    .auth-form-container.active {
+        display: block;
+    }
+}
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="auth-hero">
+    <div class="container">
+        <h1>Welcome to Your Law Firm Management Platform</h1>
+        <p>Streamline your practice with powerful case management, billing, and client communication tools</p>
+    </div>
+</section>
+
+<!-- Auth Section -->
+<section class="auth-section">
+    <div class="container">
+        <div class="auth-container">
+            <!-- Tab Navigation -->
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchTab('signup')">Sign Up</button>
+                <button class="auth-tab" onclick="switchTab('login')">Login</button>
+            </div>
+            
+            <!-- Auth Forms -->
+            <div class="auth-forms">
+                <!-- Sign Up Form -->
+                <div class="auth-form-container signup active" id="signup-form">
+                    <form class="auth-form" onsubmit="handleSignup(event)">
+                        <h2>Start Your Free Trial</h2>
+                        <p>No credit card required • 30 days full access</p>
+                        
+                        <div class="trial-features">
+                            <h3>What's included in your trial:</h3>
+                            <ul>
+                                <li>Unlimited cases and clients</li>
+                                <li>Document management (5GB storage)</li>
+                                <li>Time tracking and billing</li>
+                                <li>Client portal access</li>
+                                <li>Mobile app access</li>
+                                <li>Email support</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="first-name">First Name</label>
+                                <input type="text" id="first-name" name="firstName" placeholder="John" required>
+                                <div class="form-error">Please enter your first name</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="last-name">Last Name</label>
+                                <input type="text" id="last-name" name="lastName" placeholder="Doe" required>
+                                <div class="form-error">Please enter your last name</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" placeholder="john@lawfirm.com" required>
+                            <div class="form-error">Please enter a valid email address</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" placeholder="(555) 123-4567" required>
+                            <div class="form-error">Please enter your phone number</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="firm-name">Law Firm Name</label>
+                            <input type="text" id="firm-name" name="firmName" placeholder="Doe & Associates" required>
+                            <div class="form-error">Please enter your firm name</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" placeholder="Create a strong password" required oninput="checkPasswordStrength(this.value)">
+                            <div class="password-strength">
+                                <div class="password-strength-bar" id="password-strength"></div>
+                            </div>
+                            <div class="form-error">Password must be at least 8 characters</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="confirm-password">Confirm Password</label>
+                            <input type="password" id="confirm-password" name="confirmPassword" placeholder="Confirm your password" required>
+                            <div class="form-error">Passwords do not match</div>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="terms" name="terms" required>
+                            <label for="terms">I agree to the <a href="{% url 'terms' %}" target="_blank">Terms of Service</a> and <a href="{% url 'privacy' %}" target="_blank">Privacy Policy</a></label>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="newsletter" name="newsletter">
+                            <label for="newsletter">Send me product updates and legal tech tips</label>
+                        </div>
+                        
+                        <button type="submit" class="auth-btn">Start Your Free Trial</button>
+                        
+                        <div class="divider">
+                            <span>or sign up with</span>
+                        </div>
+                        
+                        <div class="social-login">
+                            <button type="button" class="social-btn" onclick="socialLogin('google')">
+                                <svg width="20" height="20" viewBox="0 0 24 24">
+                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                </svg>
+                                Google
+                            </button>
+                            <button type="button" class="social-btn" onclick="socialLogin('microsoft')">
+                                <svg width="20" height="20" viewBox="0 0 24 24">
+                                    <path fill="#F25022" d="M11.4 11.4H2.6V2.6h8.8v8.8z"/>
+                                    <path fill="#7FBA00" d="M21.4 11.4h-8.8V2.6h8.8v8.8z"/>
+                                    <path fill="#00A4EF" d="M11.4 21.4H2.6v-8.8h8.8v8.8z"/>
+                                    <path fill="#FFB900" d="M21.4 21.4h-8.8v-8.8h8.8v8.8z"/>
+                                </svg>
+                                Microsoft
+                            </button>
+                        </div>
+                        
+                        <div class="auth-footer">
+                            Already have an account? <a href="#" onclick="switchTab('login')">Log in here</a>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Login Form -->
+                <div class="auth-form-container login" id="login-form">
+                    <form class="auth-form" onsubmit="handleLogin(event)">
+                        <h2>Welcome Back</h2>
+                        <p>Access your law firm management dashboard</p>
+                        
+                        <div class="form-group">
+                            <label for="login-email">Email Address</label>
+                            <input type="email" id="login-email" name="email" placeholder="john@lawfirm.com" required>
+                            <div class="form-error">Please enter your email address</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <input type="password" id="login-password" name="password" placeholder="Enter your password" required>
+                            <div class="form-error">Please enter your password</div>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="remember" name="remember">
+                            <label for="remember">Remember me for 30 days</label>
+                        </div>
+                        
+                        <button type="submit" class="auth-btn">Log In</button>
+                        
+                        <div class="divider">
+                            <span>or log in with</span>
+                        </div>
+                        
+                        <div class="social-login">
+                            <button type="button" class="social-btn" onclick="socialLogin('google')">
+                                <svg width="20" height="20" viewBox="0 0 24 24">
+                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                </svg>
+                                Google
+                            </button>
+                            <button type="button" class="social-btn" onclick="socialLogin('microsoft')">
+                                <svg width="20" height="20" viewBox="0 0 24 24">
+                                    <path fill="#F25022" d="M11.4 11.4H2.6V2.6h8.8v8.8z"/>
+                                    <path fill="#7FBA00" d="M21.4 11.4h-8.8V2.6h8.8v8.8z"/>
+                                    <path fill="#00A4EF" d="M11.4 21.4H2.6v-8.8h8.8v8.8z"/>
+                                    <path fill="#FFB900" d="M21.4 21.4h-8.8v-8.8h8.8v8.8z"/>
+                                </svg>
+                                Microsoft
+                            </button>
+                        </div>
+                        
+                        <div class="auth-footer">
+                            <a href="#" onclick="showPasswordReset()">Forgot your password?</a>
+                        </div>
+                        
+                        <div class="auth-footer">
+                            Don't have an account? <a href="#" onclick="switchTab('signup')">Sign up here</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+// Tab switching functionality
+function switchTab(tab) {
+    // Update tab buttons
+    document.querySelectorAll('.auth-tab').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Update form visibility based on screen size
+    const isMobile = window.innerWidth <= 992;
+    
+    if (isMobile) {
+        // Mobile: Show only the active form
+        document.querySelectorAll('.auth-form-container').forEach(form => {
+            form.classList.remove('active');
+        });
+        
+        if (tab === 'signup') {
+            document.getElementById('signup-form').classList.add('active');
+        } else {
+            document.getElementById('login-form').classList.add('active');
+        }
+    } else {
+        // Desktop: Show both forms, highlight the active one
+        document.querySelectorAll('.auth-form-container').forEach(form => {
+            form.classList.remove('active');
+        });
+        
+        if (tab === 'signup') {
+            document.getElementById('signup-form').classList.add('active');
+        } else {
+            document.getElementById('login-form').classList.add('active');
+        }
+    }
+}
+
+// Password strength checker
+function checkPasswordStrength(password) {
+    const strengthBar = document.getElementById('password-strength');
+    let strength = 0;
+    
+    if (password.length >= 8) strength++;
+    if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+    if (password.match(/[0-9]/)) strength++;
+    if (password.match(/[^a-zA-Z0-9]/)) strength++;
+    
+    strengthBar.className = 'password-strength-bar';
+    
+    if (strength <= 1) {
+        strengthBar.classList.add('weak');
+    } else if (strength === 2) {
+        strengthBar.classList.add('medium');
+    } else {
+        strengthBar.classList.add('strong');
+    }
+}
+
+// Form validation and submission
+function handleSignup(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    // Basic validation
+    const password = formData.get('password');
+    const confirmPassword = formData.get('confirmPassword');
+    
+    if (password.length < 8) {
+        showError(form.querySelector('#password'), 'Password must be at least 8 characters');
+        return;
+    }
+    
+    if (password !== confirmPassword) {
+        showError(form.querySelector('#confirm-password'), 'Passwords do not match');
+        return;
+    }
+    
+    if (!formData.get('terms')) {
+        alert('Please accept the Terms of Service and Privacy Policy');
+        return;
+    }
+    
+    // Simulate form submission
+    const submitBtn = form.querySelector('.auth-btn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating Account...';
+    
+    setTimeout(() => {
+        // Redirect to dashboard or show success message
+        window.location.href = '/dashboard/';
+    }, 2000);
+}
+
+function handleLogin(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    // Simulate form submission
+    const submitBtn = form.querySelector('.auth-btn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Logging In...';
+    
+    setTimeout(() => {
+        // Redirect to dashboard
+        window.location.href = '/dashboard/';
+    }, 1500);
+}
+
+// Social login
+function socialLogin(provider) {
+    // Simulate social login
+    console.log(`Logging in with ${provider}`);
+    // In a real implementation, this would redirect to the OAuth provider
+    window.location.href = `/auth/${provider}/`;
+}
+
+// Password reset
+function showPasswordReset() {
+    const email = prompt('Enter your email address for password reset:');
+    if (email) {
+        alert(`Password reset instructions have been sent to ${email}`);
+    }
+}
+
+// Error handling
+function showError(input, message) {
+    const errorElement = input.parentElement.querySelector('.form-error');
+    errorElement.textContent = message;
+    errorElement.classList.add('show');
+    input.focus();
+    
+    setTimeout(() => {
+        errorElement.classList.remove('show');
+    }, 5000);
+}
+
+// Handle window resize for responsive behavior
+window.addEventListener('resize', () => {
+    const activeTab = document.querySelector('.auth-tab.active').textContent.trim();
+    const isMobile = window.innerWidth <= 992;
+    
+    if (!isMobile) {
+        // Desktop: Show both forms
+        document.querySelectorAll('.auth-form-container').forEach(form => {
+            form.style.display = 'block';
+        });
+    } else {
+        // Mobile: Show only active form
+        document.querySelectorAll('.auth-form-container').forEach(form => {
+            form.style.display = 'none';
+        });
+        
+        if (activeTab === 'Sign Up') {
+            document.getElementById('signup-form').style.display = 'block';
+        } else {
+            document.getElementById('login-form').style.display = 'block';
+        }
+    }
+});
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    // Handle initial responsive state
+    const isMobile = window.innerWidth <= 992;
+    if (isMobile) {
+        document.getElementById('login-form').style.display = 'none';
+    }
+});
+</script>
+{% endblock extra_js %}

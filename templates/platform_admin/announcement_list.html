@@ -1,0 +1,228 @@
+{% extends "platform_admin/base.html" %}
+{% load static %}
+
+{% block page_title %}System Announcements{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+  <a href="{% url 'platform_admin:announcement_create' %}" class="btn btn-sm btn-primary">
+    <i class="bi bi-plus-circle"></i> Add Announcement
+  </a>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+<!-- Announcements Table -->
+<div class="card shadow">
+  <div class="card-header py-3 d-flex justify-content-between align-items-center">
+    <h6 class="m-0 font-weight-bold text-primary">System Announcements</h6>
+    <div class="text-muted small">
+      Showing {{ announcements.start_index }}-{{ announcements.end_index }} of {{ announcements.paginator.count }}
+    </div>
+  </div>
+  <div class="card-body">
+    {% if announcements %}
+      <div class="table-responsive">
+        <table class="table table-bordered" id="announcementsTable">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Target</th>
+              <th>Priority</th>
+              <th>Created</th>
+              <th width="120">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for announcement in announcements %}
+            <tr>
+              <td>
+                <div>
+                  <div class="font-weight-bold">{{ announcement.title }}</div>
+                  {% if announcement.is_current %}
+                  <span class="badge bg-success">Currently Active</span>
+                  {% endif %}
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-info">{{ announcement.get_announcement_type_display }}</span>
+              </td>
+              <td>
+                {% if announcement.is_active %}
+                  <span class="badge bg-success">Active</span>
+                {% else %}
+                  <span class="badge bg-secondary">Inactive</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if announcement.target_all_tenants %}
+                  <span class="text-muted">All Tenants</span>
+                {% else %}
+                  <span class="text-muted">{{ announcement.target_tenants.count }} Tenants</span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge bg-warning">{{ announcement.priority }}</span>
+              </td>
+              <td>{{ announcement.created_at|date:"M d, Y" }}</td>
+              <td>
+                <div class="btn-group btn-group-sm" role="group">
+                  <button type="button" class="btn btn-outline-primary" title="View" 
+                          data-bs-toggle="modal" data-bs-target="#announcementModal{{ announcement.id }}">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if announcements.has_other_pages %}
+      <nav aria-label="Announcement pagination">
+        <ul class="pagination justify-content-center">
+          {% if announcements.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ announcements.previous_page_number }}">Previous</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Previous</span>
+            </li>
+          {% endif %}
+
+          {% for num in announcements.paginator.page_range %}
+            {% if announcements.number == num %}
+              <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+              </li>
+            {% elif num > announcements.number|add:'-3' and num < announcements.number|add:'3' %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+          {% if announcements.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ announcements.next_page_number }}">Next</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Next</span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    {% else %}
+      <div class="text-center py-5">
+        <i class="bi bi-megaphone fa-3x text-gray-300 mb-3"></i>
+        <h5 class="text-gray-500">No announcements found</h5>
+        <p class="text-gray-400">Create your first announcement to communicate with users.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Announcement Detail Modals -->
+{% for announcement in announcements %}
+<div class="modal fade" id="announcementModal{{ announcement.id }}" tabindex="-1" aria-labelledby="announcementModalLabel{{ announcement.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="announcementModalLabel{{ announcement.id }}">{{ announcement.title }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Type:</strong> {{ announcement.get_announcement_type_display }}
+          </div>
+          <div class="col-md-6">
+            <strong>Status:</strong> 
+            {% if announcement.is_active %}
+              <span class="badge bg-success">Active</span>
+            {% else %}
+              <span class="badge bg-secondary">Inactive</span>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Priority:</strong> {{ announcement.priority }}
+          </div>
+          <div class="col-md-6">
+            <strong>Created by:</strong> {{ announcement.created_by.email }}
+          </div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Start Date:</strong> {{ announcement.start_date|date:"M d, Y H:i" }}
+          </div>
+          <div class="col-md-6">
+            <strong>End Date:</strong> {{ announcement.end_date|date:"M d, Y H:i"|default:"No end date" }}
+          </div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-md-12">
+            <strong>Target:</strong> 
+            {% if announcement.target_all_tenants %}
+              All Tenants
+            {% else %}
+              {{ announcement.target_tenants.count }} Selected Tenants
+            {% endif %}
+            {% if announcement.target_roles %}
+              <br><strong>Roles:</strong> {{ announcement.target_roles|join:", " }}
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-md-12">
+            <strong>Display Options:</strong>
+            <div class="mt-1">
+              {% if announcement.show_on_login %}<span class="badge bg-info me-1">Login</span>{% endif %}
+              {% if announcement.show_on_dashboard %}<span class="badge bg-info me-1">Dashboard</span>{% endif %}
+              {% if announcement.show_as_banner %}<span class="badge bg-info me-1">Banner</span>{% endif %}
+              {% if announcement.is_dismissible %}<span class="badge bg-secondary">Dismissible</span>{% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <strong>Content:</strong>
+          <div class="mt-2 p-3 bg-light rounded">{{ announcement.content|linebreaks }}</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<style>
+.table th {
+  background-color: #f8f9fc;
+  font-weight: 600;
+  border-top: none;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.badge {
+  font-size: 0.75rem;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,84 @@
+{{ tenant.name }} - Law Firm Management System
+===============================================
+
+{% if notification_type == 'warning' %}
+USAGE WARNING
+=============
+
+You are approaching your subscription limits for the following features. 
+Consider upgrading your plan to avoid service interruption.
+{% elif notification_type == 'critical' %}
+CRITICAL USAGE ALERT
+===================
+
+You have reached or exceeded your subscription limits. 
+Please upgrade your plan immediately to continue using these features.
+{% elif notification_type == 'info' %}
+USAGE SUMMARY
+==============
+
+Here's your current usage summary for your {{ subscription.plan.name }} plan.
+{% endif %}
+
+CURRENT USAGE
+=============
+
+{% for usage in usage_records %}
+{{ usage.feature.name }}: {{ usage.current_usage }} / {{ usage.limit }} ({{ usage.usage_percentage|floatformat:1 }}%)
+{% if usage.usage_percentage >= 90 %}
+STATUS: LIMIT REACHED - ACTION REQUIRED
+{% elif usage.usage_percentage >= 75 %}
+STATUS: WARNING - APPROACHING LIMIT
+{% else %}
+STATUS: OK
+{% endif %}
+{% endfor %}
+
+DETAILED USAGE BREAKDOWN
+========================
+
+{% for usage in usage_records %}
+{{ usage.feature.name }}
+------------------------
+Description: {{ usage.feature.description|default:"No description available" }}
+Current Usage: {{ usage.current_usage }} / {{ usage.limit }} ({{ usage.usage_percentage|floatformat:1 }}%)
+
+{% if usage.usage_percentage >= 90 %}
+ACTION REQUIRED: You have reached your limit. Upgrade your plan to continue using this feature.
+{% elif usage.usage_percentage >= 75 %}
+WARNING: You are approaching your limit. Consider upgrading your plan soon.
+{% endif %}
+
+{% endfor %}
+
+SUBSCRIPTION DETAILS
+====================
+
+Current Plan: {{ subscription.plan.name }}
+Price: ${{ subscription.plan.price }}/{{ subscription.plan.get_billing_cycle_display }}
+Status: {{ subscription.get_status_display }}
+Next Billing Date: {{ subscription.end_date|date:"F j, Y" }}
+
+{% if notification_type == 'critical' %}
+IMMEDIATE ACTION REQUIRED
+=========================
+
+Your account will experience service interruptions for the features listed above 
+until you upgrade your plan or reduce usage.
+
+To ensure uninterrupted service, please upgrade your plan immediately.
+{% endif %}
+
+MANAGE YOUR SUBSCRIPTION
+========================
+
+View Usage Dashboard: {{ site_url }}{% url 'subscriptions:usage_dashboard' %}
+{% if notification_type != 'info' %}
+Upgrade Plan: {{ site_url }}{% url 'subscriptions:plan_selection' %}
+{% endif %}
+Manage Subscription: {{ site_url }}{% url 'subscriptions:subscription_detail' %}
+
+---
+This is an automated message from {{ tenant.name }} Law Firm Management System.
+If you have questions about your subscription or usage, please contact our support team.
+© {% now "Y" %} {{ tenant.name }}. All rights reserved.

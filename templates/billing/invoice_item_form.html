@@ -1,0 +1,84 @@
+{% load crispy_forms_tags %}
+
+<form method="post" class="invoice-item-form">
+  {% csrf_token %}
+  <div class="row">
+    <div class="col-md-6">
+      {{ form.description|as_crispy_field }}
+    </div>
+    <div class="col-md-2">
+      {{ form.quantity|as_crispy_field }}
+    </div>
+    <div class="col-md-2">
+      {{ form.rate|as_crispy_field }}
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">&nbsp;</label>
+      <div class="d-grid">
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Add
+        </button>
+      </div>
+    </div>
+  </div>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.querySelector('.invoice-item-form');
+  const quantityField = document.getElementById('id_quantity');
+  const rateField = document.getElementById('id_rate');
+  
+  // Calculate amount when quantity or rate changes
+  function calculateAmount() {
+    const quantity = parseFloat(quantityField.value) || 0;
+    const rate = parseFloat(rateField.value) || 0;
+    return quantity * rate;
+  }
+  
+  quantityField.addEventListener('input', function() {
+    // Auto-calculate amount display if needed
+  });
+  
+  rateField.addEventListener('input', function() {
+    // Auto-calculate amount display if needed
+  });
+  
+  // Handle form submission
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(form);
+    
+    fetch(form.action || window.location.href, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Close modal or form
+        const modal = form.closest('.modal');
+        if (modal) {
+          const bsModal = bootstrap.Modal.getInstance(modal);
+          bsModal.hide();
+        }
+        
+        // Refresh the page or update the invoice items table
+        window.location.reload();
+      } else {
+        // Handle errors
+        alert('Error adding item: ' + (data.error || 'Unknown error'));
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Error adding item. Please try again.');
+    });
+  });
+});
+</script>

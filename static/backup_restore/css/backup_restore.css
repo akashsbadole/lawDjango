@@ -1,0 +1,394 @@
+/* Backup & Restore Module Styles */
+
+/* Timeline styles for log entries */
+.timeline {
+  position: relative;
+  padding-left: 30px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e9ecef;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.timeline-marker {
+  position: absolute;
+  left: -25px;
+  top: 5px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+.timeline-content {
+  background: #f8f9fa;
+  padding: 10px 15px;
+  border-radius: 5px;
+  border-left: 3px solid #007bff;
+}
+
+/* Progress bar animations */
+.progress-bar-animated {
+  transition: width 0.6s ease;
+}
+
+/* Status badges */
+.status-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Card hover effects */
+.card-hover {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Wizard step indicators */
+.wizard-step {
+  position: relative;
+}
+
+.wizard-step::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -20px;
+  width: 2px;
+  height: 20px;
+  background: #dee2e6;
+}
+
+.wizard-step:last-child::after {
+  display: none;
+}
+
+.wizard-step.active .card {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+}
+
+.wizard-step.completed .card {
+  border-color: #28a745;
+}
+
+.wizard-step.completed::after {
+  background: #28a745;
+}
+
+/* Backup type icons */
+.backup-type-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin: 0 auto 10px;
+}
+
+.backup-type-icon.full {
+  background: #007bff;
+  color: white;
+}
+
+.backup-type-icon.incremental {
+  background: #28a745;
+  color: white;
+}
+
+.backup-type-icon.database-only {
+  background: #6f42c1;
+  color: white;
+}
+
+.backup-type-icon.media-only {
+  background: #fd7e14;
+  color: white;
+}
+
+/* File size display */
+.file-size {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+/* Conflict resolution styles */
+.conflict-item {
+  border-left: 4px solid #ffc107;
+  padding-left: 15px;
+  margin-bottom: 10px;
+}
+
+.conflict-item.critical {
+  border-left-color: #dc3545;
+}
+
+.conflict-item.warning {
+  border-left-color: #ffc107;
+}
+
+.conflict-item.info {
+  border-left-color: #17a2b8;
+}
+
+/* Schedule frequency badges */
+.frequency-daily {
+  background: #007bff;
+}
+
+.frequency-weekly {
+  background: #28a745;
+}
+
+.frequency-monthly {
+  background: #6f42c1;
+}
+
+.frequency-quarterly {
+  background: #fd7e14;
+}
+
+.frequency-yearly {
+  background: #20c997;
+}
+
+/* Retention policy display */
+.retention-policy {
+  background: #f8f9fa;
+  border-radius: 5px;
+  padding: 10px;
+  margin-top: 10px;
+}
+
+.retention-policy .retention-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+/* Backup options grid */
+.backup-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.backup-option {
+  background: #f8f9fa;
+  border-radius: 5px;
+  padding: 15px;
+  text-align: center;
+}
+
+.backup-option i {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  color: #007bff;
+}
+
+/* Restore preview styles */
+.preview-section {
+  margin-bottom: 20px;
+}
+
+.preview-section h6 {
+  color: #495057;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 5px;
+  margin-bottom: 15px;
+}
+
+.preview-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f3f5;
+}
+
+.preview-item:last-child {
+  border-bottom: none;
+}
+
+/* Loading spinner for long operations */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loading-content {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Backup statistics cards */
+.stats-card {
+  border-left: 4px solid;
+  transition: transform 0.2s;
+}
+
+.stats-card:hover {
+  transform: translateY(-3px);
+}
+
+.stats-card.primary {
+  border-left-color: #007bff;
+}
+
+.stats-card.success {
+  border-left-color: #28a745;
+}
+
+.stats-card.warning {
+  border-left-color: #ffc107;
+}
+
+.stats-card.danger {
+  border-left-color: #dc3545;
+}
+
+.stats-card.info {
+  border-left-color: #17a2b8;
+}
+
+/* Schedule status toggle */
+.schedule-toggle {
+  position: relative;
+}
+
+.schedule-toggle .form-check-input {
+  width: 50px;
+  height: 25px;
+}
+
+.schedule-toggle .form-check-input:checked {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+/* Backup file upload area */
+.upload-area {
+  border: 2px dashed #dee2e6;
+  border-radius: 10px;
+  padding: 40px;
+  text-align: center;
+  transition: border-color 0.3s;
+}
+
+.upload-area:hover,
+.upload-area.dragover {
+  border-color: #007bff;
+  background: #f8f9fa;
+}
+
+.upload-area i {
+  font-size: 3rem;
+  color: #6c757d;
+  margin-bottom: 15px;
+}
+
+/* Backup verification status */
+.verification-status {
+  padding: 15px;
+  border-radius: 5px;
+  margin-top: 15px;
+}
+
+.verification-status.success {
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+}
+
+.verification-status.error {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+}
+
+.verification-status.warning {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  color: #856404;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .backup-options-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .timeline {
+    padding-left: 20px;
+  }
+  
+  .timeline-marker {
+    left: -15px;
+    width: 10px;
+    height: 10px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .timeline-content {
+    background: #2d3748;
+    color: #e2e8f0;
+  }
+  
+  .timeline::before {
+    background: #4a5568;
+  }
+  
+  .backup-option {
+    background: #2d3748;
+    color: #e2e8f0;
+  }
+  
+  .preview-item {
+    border-bottom-color: #4a5568;
+  }
+}

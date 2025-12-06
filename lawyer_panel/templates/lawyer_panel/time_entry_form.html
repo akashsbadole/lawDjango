@@ -1,0 +1,66 @@
+{% extends "lawyer_panel/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if form.instance.pk %}Edit Time Entry{% else %}Log Time Entry{% endif %} - Lawyer Panel{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            {% if form.instance.pk %}Edit Time Entry{% else %}Log New Time Entry{% endif %}
+        </h1>
+        <a href="{% url 'lawyer_panel:time_entry_list' %}" class="btn btn-secondary">Back to Time Entries</a>
+    </div>
+
+    <!-- Time Entry Form -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                {% if form.instance.pk %}Edit Time Entry{% else %}Log New Time Entry{% endif %}
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <div class="text-right mt-3">
+                    <button type="submit" class="btn btn-primary">
+                        {% if form.instance.pk %}Update Time Entry{% else %}Log Time Entry{% endif %}
+                    </button>
+                    <a href="{% url 'lawyer_panel:time_entry_list' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Time Entry Guidelines -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-info">Time Entry Guidelines</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="font-weight-bold">Best Practices</h6>
+                    <ul class="list-unstyled">
+                        <li>Be specific about the work performed</li>
+                        <li>Use clear, concise language</li>
+                        <li>Record time in increments of 6-15 minutes</li>
+                        <li>Include relevant case details</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="font-weight-bold">Billing Information</h6>
+                    <ul class="list-unstyled">
+                        <li>Only bill time that can be directly invoiced to clients</li>
+                        <li>Include sufficient detail for audit purposes</li>
+                        <li>Review and submit time entries daily</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

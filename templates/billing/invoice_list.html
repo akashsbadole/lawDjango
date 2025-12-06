@@ -1,0 +1,199 @@
+{% extends "_tenant_base.html" %}
+
+{% block title %}Invoices - {{ tenant.name }} - Lithium{% endblock title %}
+
+{% block page_header %}
+<h1 class="h2">Invoices</h1>
+<div class="btn-toolbar mb-2 mb-md-0">
+  <div class="btn-group me-2">
+    <a href="{% url 'billing:invoice_create' %}" class="btn btn-sm btn-primary">
+      <i class="fas fa-plus"></i> New Invoice
+    </a>
+    <a href="{% url 'billing:invoice_generate' %}" class="btn btn-sm btn-info">
+      <i class="fas fa-magic"></i> Generate from Time Entries
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Invoices</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <a href="{% url 'billing:invoice_create' %}" class="btn btn-sm btn-primary">
+        <i class="fas fa-plus"></i> New Invoice
+      </a>
+      <a href="{% url 'billing:invoice_generate' %}" class="btn btn-sm btn-info">
+        <i class="fas fa-magic"></i> Generate from Time Entries
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Search and Filter -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h6 class="m-0 font-weight-bold text-primary">Search and Filter</h6>
+  </div>
+  <div class="card-body">
+    <form method="get" class="row g-3">
+      <div class="col-md-3">
+        {{ search_form.query.label_tag }}
+        {{ search_form.query }}
+      </div>
+      <div class="col-md-2">
+        {{ search_form.status.label_tag }}
+        {{ search_form.status }}
+      </div>
+      <div class="col-md-2">
+        {{ search_form.date_from.label_tag }}
+        {{ search_form.date_from }}
+      </div>
+      <div class="col-md-2">
+        {{ search_form.date_to.label_tag }}
+        {{ search_form.date_to }}
+      </div>
+      <div class="col-md-3 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-search"></i> Search
+        </button>
+        <a href="{% url 'billing:invoice_list' %}" class="btn btn-secondary ms-2">
+          <i class="fas fa-times"></i> Clear
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Invoices Table -->
+<div class="card">
+  <div class="card-header">
+    <h6 class="m-0 font-weight-bold text-primary">
+      Invoices 
+      {% if is_paginated %}
+        (Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }})
+      {% endif %}
+    </h6>
+  </div>
+  <div class="card-body">
+    {% if invoices %}
+      <div class="table-responsive">
+        <table class="table table-bordered" id="invoicesTable" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Invoice Number</th>
+              <th>Client</th>
+              <th>Issue Date</th>
+              <th>Due Date</th>
+              <th>Total Amount</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for invoice in invoices %}
+            <tr>
+              <td>
+                <a href="{% url 'billing:invoice_detail' invoice.pk %}">{{ invoice.invoice_number }}</a>
+              </td>
+              <td>{{ invoice.client.full_name }}</td>
+              <td>{{ invoice.issue_date|date:"M d, Y" }}</td>
+              <td>{{ invoice.due_date|date:"M d, Y" }}</td>
+              <td>${{ invoice.total_amount }}</td>
+              <td>
+                <span class="badge bg-{% if invoice.status == 'paid' %}success{% elif invoice.status == 'overdue' %}danger{% elif invoice.status == 'sent' %}info{% else %}secondary{% endif %}">
+                  {{ invoice.get_status_display }}
+                </span>
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <a href="{% url 'billing:invoice_detail' invoice.pk %}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a href="{% url 'billing:invoice_update' invoice.pk %}" class="btn btn-sm btn-info">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <a href="{% url 'billing:invoice_pdf' invoice.pk %}" class="btn btn-sm btn-success" target="_blank">
+                    <i class="fas fa-download"></i>
+                  </a>
+                  {% if invoice.status != 'paid' %}
+                  <a href="{% url 'billing:payment_create' %}?invoice={{ invoice.pk }}" class="btn btn-sm btn-warning">
+                    <i class="fas fa-money-bill"></i>
+                  </a>
+                  {% endif %}
+                  <a href="{% url 'billing:invoice_delete' invoice.pk %}" class="btn btn-sm btn-danger">
+                    <i class="fas fa-trash"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Pagination -->
+      {% if is_paginated %}
+      <nav aria-label="Invoice pagination">
+        <ul class="pagination justify-content-center">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page=1{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">First</a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">Previous</a>
+            </li>
+          {% endif %}
+          
+          <li class="page-item active">
+            <span class="page-link">
+              Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+          </li>
+          
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">Next</a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">Last</a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    {% else %}
+      <div class="text-center">
+        <i class="fas fa-file-invoice fa-3x text-gray-300 mb-3"></i>
+        <p class="text-muted">No invoices found.</p>
+        <a href="{% url 'billing:invoice_create' %}" class="btn btn-primary">Create Your First Invoice</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+<script>
+// Initialize DataTable for invoices
+$(document).ready(function() {
+  $('#invoicesTable').DataTable({
+    "responsive": true,
+    "order": [[ 2, "desc" ]], // Sort by issue date descending
+    "pageLength": 25,
+    "language": {
+      "search": "Search invoices:",
+      "lengthMenu": "Show _MENU_ invoices per page",
+      "info": "Showing _START_ to _END_ of _TOTAL_ invoices",
+      "paginate": {
+        "first": "First",
+        "last": "Last",
+        "next": "Next",
+        "previous": "Previous"
+      }
+    }
+  });
+});
+</script>
+{% endblock javascript %}

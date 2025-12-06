@@ -1,0 +1,258 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}Usage Dashboard - {{ user.tenant.name }}{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Usage Dashboard</h1>
+  <div>
+    <a href="{% url 'subscriptions:plan_selection' %}" class="btn btn-primary">
+      <i class="fas fa-exchange-alt"></i> Change Plan
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if subscription_notifications %}
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="alert alert-warning">
+      <h5><i class="fas fa-exclamation-triangle"></i> Usage Notifications</h5>
+      {% for notification in subscription_notifications %}
+      <p class="mb-1">{{ notification }}</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="row mb-4">
+  {% if subscription and subscription.plan %}
+  <div class="col-md-4 mb-4">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="card-title text-muted">Users</h5>
+        <div class="mb-3">
+          <div class="progress" style="height: 25px;">
+            <div class="progress-bar {% if user_usage > 80 %}bg-danger{% elif user_usage > 60 %}bg-warning{% else %}bg-success{% endif %}" 
+                 role="progressbar" 
+                 style="width: {{ user_usage|floatformat:0 }}%;" 
+                 aria-valuenow="{{ user_usage|floatformat:0 }}" 
+                 aria-valuemin="0" 
+                 aria-valuemax="100">
+              {{ user_usage|floatformat:0 }}%
+            </div>
+          </div>
+        </div>
+        <h4>{{ current_users }} / {{ subscription.plan.max_users }}</h4>
+        <p class="card-text">
+          {% if user_usage >= 100 %}
+          <span class="text-danger">Limit reached</span>
+          {% elif user_usage > 80 %}
+          <span class="text-warning">Approaching limit</span>
+          {% else %}
+          <span class="text-success">Within limits</span>
+          {% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4 mb-4">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="card-title text-muted">Storage</h5>
+        <div class="mb-3">
+          <div class="progress" style="height: 25px;">
+            <div class="progress-bar {% if storage_usage > 80 %}bg-danger{% elif storage_usage > 60 %}bg-warning{% else %}bg-success{% endif %}" 
+                 role="progressbar" 
+                 style="width: {{ storage_usage|floatformat:0 }}%;" 
+                 aria-valuenow="{{ storage_usage|floatformat:0 }}" 
+                 aria-valuemin="0" 
+                 aria-valuemax="100">
+              {{ storage_usage|floatformat:0 }}%
+            </div>
+          </div>
+        </div>
+        <h4>{{ storage_used_mb|floatformat:1 }}MB / {{ subscription.plan.max_storage_mb }}MB</h4>
+        <p class="card-text">
+          {% if storage_usage >= 100 %}
+          <span class="text-danger">Limit reached</span>
+          {% elif storage_usage > 80 %}
+          <span class="text-warning">Approaching limit</span>
+          {% else %}
+          <span class="text-success">Within limits</span>
+          {% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4 mb-4">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="card-title text-muted">Subscription Status</h5>
+        <div class="mb-3">
+          <h2 class="{% if subscription.status == 'active' %}text-success{% elif subscription.status == 'trial' %}text-info{% else %}text-warning{% endif %}">
+            {{ subscription.get_status_display }}
+          </h2>
+        </div>
+        {% if subscription.end_date %}
+        <h4>{{ days_until_renewal }} days</h4>
+        <p class="card-text">until renewal</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12">
+    <div class="alert alert-warning">
+      <h5><i class="fas fa-exclamation-triangle"></i> No Active Subscription</h5>
+      <p>You don't have an active subscription. <a href="{% url 'subscriptions:plan_selection' %}">Choose a plan</a> to continue using the service.</p>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-chart-bar"></i> Usage Details
+        </h5>
+      </div>
+      <div class="card-body">
+        {% if usage_records %}
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Feature</th>
+                <th>Current Usage</th>
+                <th>Limit</th>
+                <th>Usage %</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for record in usage_records %}
+              <tr>
+                <td>{{ record.feature.name }}</td>
+                <td>{{ record.current_usage }}</td>
+                <td>
+                  {% if record.feature.limit_value %}
+                  {{ record.feature.limit_value }}
+                  {% else %}
+                  <span class="text-muted">Unlimited</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if record.feature.limit_value %}
+                  {% with usage_percentage=record.current_usage|div:record.feature.limit_value|mul:100 %}
+                  <div class="progress" style="height: 20px; width: 100px;">
+                    <div class="progress-bar {% if usage_percentage > 80 %}bg-danger{% elif usage_percentage > 60 %}bg-warning{% else %}bg-success{% endif %}" 
+                         role="progressbar" 
+                         style="width: {{ usage_percentage|floatformat:0 }}%;" 
+                         aria-valuenow="{{ usage_percentage|floatformat:0 }}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100">
+                      {{ usage_percentage|floatformat:0 }}%
+                    </div>
+                  </div>
+                  {% endwith %}
+                  {% else %}
+                  <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if record.feature.limit_value %}
+                  {% with usage_percentage=record.current_usage|div:record.feature.limit_value|mul:100 %}
+                  {% if usage_percentage >= 100 %}
+                  <span class="badge bg-danger">Limit Reached</span>
+                  {% elif usage_percentage > 80 %}
+                  <span class="badge bg-warning">Warning</span>
+                  {% else %}
+                  <span class="badge bg-success">OK</span>
+                  {% endif %}
+                  {% endwith %}
+                  {% else %}
+                  <span class="badge bg-info">Unlimited</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle"></i> No usage data available yet.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-info-circle"></i> Usage Tips
+        </h5>
+      </div>
+      <div class="card-body">
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <i class="fas fa-lightbulb text-warning"></i> 
+            Monitor your usage regularly to avoid service interruptions
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-lightbulb text-warning"></i> 
+            Consider upgrading your plan if you're consistently near limits
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-lightbulb text-warning"></i> 
+            Clean up unused documents and files to free up storage space
+          </li>
+          <li class="mb-0">
+            <i class="fas fa-lightbulb text-warning"></i> 
+            Remove inactive user accounts to stay within user limits
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-question-circle"></i> Need Help?
+        </h5>
+      </div>
+      <div class="card-body">
+        <p>If you have questions about your usage or need assistance with your subscription:</p>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <i class="fas fa-envelope text-primary"></i> 
+            Contact our support team at support@example.com
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-book text-primary"></i> 
+            Check our documentation for usage guidelines
+          </li>
+          <li class="mb-0">
+            <i class="fas fa-comments text-primary"></i> 
+            Start a live chat with our support team
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

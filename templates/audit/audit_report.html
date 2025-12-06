@@ -1,0 +1,340 @@
+{% extends "_tenant_base.html" %}
+{% load audit_tags %}
+
+{% block title %}Audit Report{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Audit Report</h1>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="?export=csv">Export as CSV</a></li>
+                        <li><a class="dropdown-item" href="?export=json">Export as JSON</a></li>
+                        <li><a class="dropdown-item" href="?export=pdf">Export as PDF</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Report Configuration -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Report Configuration</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            {{ form.date_from.label_tag }}
+                            {{ form.date_from }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form.date_to.label_tag }}
+                            {{ form.date_to }}
+                        </div>
+                        <div class="col-md-2">
+                            {{ form.report_type.label_tag }}
+                            {{ form.report_type }}
+                        </div>
+                        <div class="col-md-2">
+                            {{ form.format.label_tag }}
+                            {{ form.format }}
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-chart-bar"></i> Generate Report
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Report Summary -->
+            {% if report_data %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Report Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Report Period</h6>
+                                <p class="text-muted">
+                                    From: {{ date_from|date:"Y-m-d" }}<br>
+                                    To: {{ date_to|date:"Y-m-d" }}
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Generated At</h6>
+                                <p class="text-muted">{{ generated_at|date:"Y-m-d H:i:s" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="card-title">{{ report_data.total_audit_logs }}</h4>
+                                        <p class="card-text">Total Audit Logs</p>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-list-alt fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="card-title">{{ report_data.total_logins }}</h4>
+                                        <p class="card-text">Total Logins</p>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-sign-in-alt fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="card-title">{{ report_data.total_activities }}</h4>
+                                        <p class="card-text">Total Activities</p>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-stream fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="card-title">{{ report_data.total_security_events }}</h4>
+                                        <p class="card-text">Security Events</p>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-shield-alt fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                {% if report_type == 'comprehensive' %}
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Audit Actions Distribution</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="auditActionsChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Security Events by Severity</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="securityEventsChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Detailed Tables -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Top Users by Activity</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Audit Actions</th>
+                                        <th>Login Count</th>
+                                        <th>Activities</th>
+                                        <th>Security Events</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user_data in report_data.top_users %}
+                                        <tr>
+                                            <td>{{ user_data.user.get_full_name|default:user_data.user.email }}</td>
+                                            <td>{{ user_data.audit_count }}</td>
+                                            <td>{{ user_data.login_count }}</td>
+                                            <td>{{ user_data.activity_count }}</td>
+                                            <td>{{ user_data.security_event_count }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Recent Critical Security Events</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Event Type</th>
+                                        <th>Description</th>
+                                        <th>User</th>
+                                        <th>IP Address</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for event in report_data.critical_events %}
+                                        <tr class="table-danger">
+                                            <td>{{ event.timestamp|date:"Y-m-d H:i:s" }}</td>
+                                            <td>{{ event.get_event_type_display }}</td>
+                                            <td>{{ event.description|truncatechars:80 }}</td>
+                                            <td>{{ event.user.get_full_name|default:event.user.email }}</td>
+                                            <td>{{ event.ip_address }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Failed Login Attempts</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>User</th>
+                                        <th>IP Address</th>
+                                        <th>User Agent</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for login in report_data.failed_logins %}
+                                        <tr class="table-warning">
+                                            <td>{{ login.login_time|date:"Y-m-d H:i:s" }}</td>
+                                            <td>{{ login.user.get_full_name|default:login.user.email }}</td>
+                                            <td>{{ login.ip_address }}</td>
+                                            <td>{{ login.user_agent|default:"N/A"|truncatechars:50 }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                        <h5>No Report Data</h5>
+                        <p class="text-muted">Select a date range and report type to generate an audit report.</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if report_data and report_type == 'comprehensive' %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Audit Actions Chart
+        const auditActionsCtx = document.getElementById('auditActionsChart').getContext('2d');
+        new Chart(auditActionsCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ report_data.action_labels|safe }},
+                datasets: [{
+                    data: {{ report_data.action_counts|safe }},
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0',
+                        '#9966FF',
+                        '#FF9F40'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+
+        // Security Events Chart
+        const securityEventsCtx = document.getElementById('securityEventsChart').getContext('2d');
+        new Chart(securityEventsCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Critical', 'High', 'Medium', 'Low'],
+                datasets: [{
+                    label: 'Security Events',
+                    data: [
+                        {{ report_data.critical_count }},
+                        {{ report_data.high_count }},
+                        {{ report_data.medium_count }},
+                        {{ report_data.low_count }}
+                    ],
+                    backgroundColor: [
+                        '#dc3545',
+                        '#fd7e14',
+                        '#17a2b8',
+                        '#28a745'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+{% endif %}
+{% endblock %}

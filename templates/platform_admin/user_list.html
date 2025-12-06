@@ -1,0 +1,219 @@
+{% extends "platform_admin/base.html" %}
+{% load static %}
+
+{% block page_title %}Users{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+  <a href="{% url 'platform_admin:export_data' %}?type=users" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-download"></i> Export
+  </a>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+<!-- Search and Filter Form -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h6 class="m-0 font-weight-bold text-primary">Search and Filter</h6>
+  </div>
+  <div class="card-body">
+    <form method="get" action="{% url 'platform_admin:user_list' %}">
+      <div class="row">
+        <div class="col-md-3 mb-3">
+          <label for="search" class="form-label">Search</label>
+          <input type="text" class="form-control" id="search" name="search" 
+                 value="{{ search_query }}" placeholder="Search by email, name, or tenant">
+        </div>
+        <div class="col-md-2 mb-3">
+          <label for="role" class="form-label">Role</label>
+          <select class="form-select" id="role" name="role">
+            <option value="">All Roles</option>
+            {% for role_value, role_label in role_choices %}
+            <option value="{{ role_value }}" {% if role_filter == role_value %}selected{% endif %}>{{ role_label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2 mb-3">
+          <label for="tenant" class="form-label">Tenant</label>
+          <select class="form-select" id="tenant" name="tenant">
+            <option value="">All Tenants</option>
+            {% for tenant in tenant_choices %}
+            <option value="{{ tenant.id }}" {% if tenant_filter == tenant.id|stringformat:"s" %}selected{% endif %}>{{ tenant.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2 mb-3">
+          <label for="status" class="form-label">Status</label>
+          <select class="form-select" id="status" name="status">
+            <option value="">All Status</option>
+            <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+          </select>
+        </div>
+        <div class="col-md-2 mb-3">
+          <label for="order_by" class="form-label">Sort By</label>
+          <select class="form-select" id="order_by" name="order_by">
+            <option value="-date_joined" {% if order_by == '-date_joined' %}selected{% endif %}>Newest First</option>
+            <option value="date_joined" {% if order_by == 'date_joined' %}selected{% endif %}>Oldest First</option>
+            <option value="email" {% if order_by == 'email' %}selected{% endif %}>Email (A-Z)</option>
+            <option value="-email" {% if order_by == '-email' %}selected{% endif %}>Email (Z-A)</option>
+            <option value="first_name" {% if order_by == 'first_name' %}selected{% endif %}>First Name (A-Z)</option>
+            <option value="-first_name" {% if order_by == '-first_name' %}selected{% endif %}>First Name (Z-A)</option>
+          </select>
+        </div>
+        <div class="col-md-1 mb-3 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary me-2">Filter</button>
+          <a href="{% url 'platform_admin:user_list' %}" class="btn btn-secondary">Clear</a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Users Table -->
+<div class="card shadow">
+  <div class="card-header py-3 d-flex justify-content-between align-items-center">
+    <h6 class="m-0 font-weight-bold text-primary">All Users</h6>
+    <div class="text-muted small">
+      Showing {{ users.start_index }}-{{ users.end_index }} of {{ users.paginator.count }}
+    </div>
+  </div>
+  <div class="card-body">
+    {% if users %}
+      <div class="table-responsive">
+        <table class="table table-bordered" id="usersTable">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Tenant</th>
+              <th>Status</th>
+              <th>Joined</th>
+              <th>Last Login</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+            <tr>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" 
+                       style="width: 32px; height: 32px;">
+                    {% if user.get_full_name %}
+                      {{ user.get_full_name|slice:":2"|upper }}
+                    {% else %}
+                      {{ user.email|slice:":2"|upper }}
+                    {% endif %}
+                  </div>
+                  <div>
+                    <div class="font-weight-bold">{{ user.get_full_name|default:user.email }}</div>
+                    <div class="small text-muted">@{{ user.username }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>{{ user.email }}</td>
+              <td>
+                <span class="badge bg-info">{{ user.get_role_display }}</span>
+              </td>
+              <td>
+                {% if user.tenant %}
+                  <a href="{% url 'platform_admin:tenant_detail' user.tenant.id %}" 
+                     class="text-decoration-none">
+                    {{ user.tenant.name }}
+                  </a>
+                {% else %}
+                  <span class="text-muted">No tenant</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if user.is_active %}
+                  <span class="badge bg-success">Active</span>
+                {% else %}
+                  <span class="badge bg-secondary">Inactive</span>
+                {% endif %}
+              </td>
+              <td>{{ user.date_joined|date:"M d, Y" }}</td>
+              <td>
+                {% if user.last_login %}
+                  {{ user.last_login|date:"M d, Y H:i" }}
+                {% else %}
+                  <span class="text-muted">Never</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if users.has_other_pages %}
+      <nav aria-label="User pagination">
+        <ul class="pagination justify-content-center">
+          {% if users.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ users.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if tenant_filter %}&tenant={{ tenant_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if order_by %}&order_by={{ order_by }}{% endif %}">Previous</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Previous</span>
+            </li>
+          {% endif %}
+
+          {% for num in users.paginator.page_range %}
+            {% if users.number == num %}
+              <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+              </li>
+            {% elif num > users.number|add:'-3' and num < users.number|add:'3' %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if tenant_filter %}&tenant={{ tenant_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if order_by %}&order_by={{ order_by }}{% endif %}">{{ num }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+          {% if users.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ users.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if tenant_filter %}&tenant={{ tenant_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if order_by %}&order_by={{ order_by }}{% endif %}">Next</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Next</span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    {% else %}
+      <div class="text-center py-5">
+        <i class="bi bi-people fa-3x text-gray-300 mb-3"></i>
+        <h5 class="text-gray-500">No users found</h5>
+        <p class="text-gray-400">Try adjusting your search or filter criteria.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+.avatar-sm {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.table th {
+  background-color: #f8f9fc;
+  font-weight: 600;
+  border-top: none;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.badge {
+  font-size: 0.75rem;
+}
+</style>
+{% endblock %}

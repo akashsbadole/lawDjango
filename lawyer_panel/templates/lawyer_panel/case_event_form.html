@@ -1,0 +1,120 @@
+{% extends "lawyer_panel/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if form.instance.pk %}Edit Event{% else %}Add Event{% endif %} - Lawyer Panel{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            {% if form.instance.pk %}Edit Event{% else %}Add New Event{% endif %}
+        </h1>
+        <a href="{% url 'lawyer_panel:case_detail' case.pk %}" class="btn btn-secondary">Back to Case</a>
+    </div>
+
+    <!-- Case Information -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Case Information</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Case Number:</strong> {{ case.case_number }}</p>
+                    <p><strong>Case Title:</strong> {{ case.title }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Client:</strong> {{ case.client.get_full_name }}</p>
+                    <p><strong>Status:</strong> 
+                        <span class="badge 
+                            {% if case.status == 'active' %}bg-success
+                            {% elif case.status == 'pending' %}bg-warning
+                            {% elif case.status == 'closed' %}bg-secondary
+                            {% else %}bg-danger{% endif %}">
+                            {{ case.get_status_display }}
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Form -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                {% if form.instance.pk %}Edit Event{% else %}Add New Event{% endif %}
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <div class="text-right mt-3">
+                    <button type="submit" class="btn btn-primary">
+                        {% if form.instance.pk %}Update Event{% else %}Add Event{% endif %}
+                    </button>
+                    <a href="{% url 'lawyer_panel:case_detail' case.pk %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Event Guidelines -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-info">Event Guidelines</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="font-weight-bold">Event Types</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>Meeting:</strong> Client meetings, consultations</li>
+                        <li><strong>Court Appearance:</strong> Hearings, trials, motions</li>
+                        <li><strong>Deadline:</strong> Filing deadlines, response dates</li>
+                        <li><strong>Research:</strong> Legal research, case preparation</li>
+                        <li><strong>Document Review:</strong> Contract review, evidence analysis</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="font-weight-bold">Best Practices</h6>
+                    <ul class="list-unstyled">
+                        <li>Be specific about event details and outcomes</li>
+                        <li>Include relevant participants and their roles</li>
+                        <li>Set reminders for important deadlines</li>
+                        <li>Document next steps and follow-up actions</li>
+                        <li>Attach relevant documents when applicable</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Set minimum date for event date to today
+        var today = new Date().toISOString().split('T')[0];
+        $('#id_event_date').attr('min', today);
+        
+        // Show/hide reminder options based on checkbox
+        $('#id_set_reminder').change(function() {
+            if ($(this).is(':checked')) {
+                $('#div_id_reminder_date, #div_id_reminder_time').show();
+            } else {
+                $('#div_id_reminder_date, #div_id_reminder_time').hide();
+            }
+        }).trigger('change');
+        
+        // Set reminder date minimum to event date
+        $('#id_event_date').change(function() {
+            $('#id_reminder_date').attr('max', $(this).val());
+        }).trigger('change');
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,219 @@
+{% extends "_tenant_base.html" %}
+
+{% block title %}Time Entries - {{ tenant.name }} - Lithium{% endblock title %}
+
+{% block page_header %}
+<h1 class="h2">Time Entries</h1>
+<div class="btn-toolbar mb-2 mb-md-0">
+  <div class="btn-group me-2">
+    <a href="{% url 'billing:time_entry_create' %}" class="btn btn-sm btn-primary">
+      <i class="fas fa-plus"></i> Log Time
+    </a>
+    <a href="{% url 'billing:invoice_generate' %}" class="btn btn-sm btn-info">
+      <i class="fas fa-magic"></i> Generate Invoice
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Time Entries</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <a href="{% url 'billing:time_entry_create' %}" class="btn btn-sm btn-primary">
+        <i class="fas fa-plus"></i> Log Time
+      </a>
+      <a href="{% url 'billing:invoice_generate' %}" class="btn btn-sm btn-info">
+        <i class="fas fa-magic"></i> Generate Invoice
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Search and Filter -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h6 class="m-0 font-weight-bold text-primary">Search and Filter</h6>
+  </div>
+  <div class="card-body">
+    <form method="get" class="row g-3">
+      <div class="col-md-3">
+        {{ search_form.query.label_tag }}
+        {{ search_form.query }}
+      </div>
+      <div class="col-md-2">
+        {{ search_form.lawyer.label_tag }}
+        {{ search_form.lawyer }}
+      </div>
+      <div class="col-md-2">
+        {{ search_form.case.label_tag }}
+        {{ search_form.case }}
+      </div>
+      <div class="col-md-1">
+        {{ search_form.date_from.label_tag }}
+        {{ search_form.date_from }}
+      </div>
+      <div class="col-md-1">
+        {{ search_form.date_to.label_tag }}
+        {{ search_form.date_to }}
+      </div>
+      <div class="col-md-1 d-flex align-items-end">
+        <div class="form-check">
+          {{ search_form.is_billable }}
+          {{ search_form.is_billable.label_tag }}
+        </div>
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-search"></i> Search
+        </button>
+        <a href="{% url 'billing:time_entry_list' %}" class="btn btn-secondary ms-2">
+          <i class="fas fa-times"></i> Clear
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Time Entries Table -->
+<div class="card">
+  <div class="card-header">
+    <h6 class="m-0 font-weight-bold text-primary">
+      Time Entries 
+      {% if is_paginated %}
+        (Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }})
+      {% endif %}
+    </h6>
+  </div>
+  <div class="card-body">
+    {% if time_entries %}
+      <div class="table-responsive">
+        <table class="table table-bordered" id="timeEntriesTable" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Lawyer</th>
+              <th>Case</th>
+              <th>Date</th>
+              <th>Hours</th>
+              <th>Rate</th>
+              <th>Amount</th>
+              <th>Billable</th>
+              <th>Billed</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in time_entries %}
+            <tr>
+              <td>{{ entry.lawyer.get_full_name }}</td>
+              <td>
+                {% if entry.case %}
+                <a href="{% url 'cases:detail' entry.case.pk %}">{{ entry.case.case_number }}</a>
+                {% else %}
+                <span class="text-muted">No case</span>
+                {% endif %}
+              </td>
+              <td>{{ entry.date|date:"M d, Y" }}</td>
+              <td>{{ entry.hours }}</td>
+              <td>${{ entry.rate }}</td>
+              <td>${{ entry.amount }}</td>
+              <td>
+                {% if entry.is_billable %}
+                <i class="fas fa-check text-success"></i>
+                {% else %}
+                <i class="fas fa-times text-danger"></i>
+                {% endif %}
+              </td>
+              <td>
+                {% if entry.is_billed %}
+                <span class="badge bg-success">Billed</span>
+                {% else %}
+                <span class="badge bg-warning">Not Billed</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <a href="{% url 'billing:time_entry_update' entry.pk %}" class="btn btn-sm btn-info">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  {% if not entry.is_billed %}
+                  <a href="{% url 'billing:invoice_create' %}?time_entry={{ entry.pk }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-file-invoice"></i>
+                  </a>
+                  {% endif %}
+                  <a href="{% url 'billing:time_entry_delete' entry.pk %}" class="btn btn-sm btn-danger">
+                    <i class="fas fa-trash"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Pagination -->
+      {% if is_paginated %}
+      <nav aria-label="Time Entries pagination">
+        <ul class="pagination justify-content-center">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page=1{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">First</a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">Previous</a>
+            </li>
+          {% endif %}
+          
+          <li class="page-item active">
+            <span class="page-link">
+              Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+          </li>
+          
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">Next</a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">Last</a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    {% else %}
+      <div class="text-center">
+        <i class="fas fa-clock fa-3x text-gray-300 mb-3"></i>
+        <p class="text-muted">No time entries found.</p>
+        <a href="{% url 'billing:time_entry_create' %}" class="btn btn-primary">Log Your First Time Entry</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+<script>
+// Initialize DataTable for time entries
+$(document).ready(function() {
+  $('#timeEntriesTable').DataTable({
+    "responsive": true,
+    "order": [[ 2, "desc" ]], // Sort by date descending
+    "pageLength": 25,
+    "language": {
+      "search": "Search time entries:",
+      "lengthMenu": "Show _MENU_ time entries per page",
+      "info": "Showing _START_ to _END_ of _TOTAL_ time entries",
+      "paginate": {
+        "first": "First",
+        "last": "Last",
+        "next": "Next",
+        "previous": "Previous"
+      }
+    }
+  });
+});
+</script>
+{% endblock javascript %}

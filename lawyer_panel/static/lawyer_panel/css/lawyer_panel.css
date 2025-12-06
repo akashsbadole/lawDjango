@@ -1,0 +1,323 @@
+/* Lawyer Panel Custom Styles */
+
+/* Dashboard Card Colors */
+.card.border-left-primary {
+    border-left: 0.25rem solid #4e73df !important;
+}
+
+.card.border-left-success {
+    border-left: 0.25rem solid #1cc88a !important;
+}
+
+.card.border-left-info {
+    border-left: 0.25rem solid #36b9cc !important;
+}
+
+.card.border-left-warning {
+    border-left: 0.25rem solid #f6c23e !important;
+}
+
+/* Badge Colors */
+.badge-success {
+    background-color: #1cc88a;
+}
+
+.badge-info {
+    background-color: #36b9cc;
+}
+
+.badge-warning {
+    background-color: #f6c23e;
+}
+
+.badge-secondary {
+    background-color: #858796;
+}
+
+/* Table Responsive Improvements */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table th {
+    border-top: none;
+    background-color: #f8f9fc;
+    font-weight: 600;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+/* Button Improvements */
+.btn-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0 5px;
+}
+
+.btn-icon-split .icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.5rem;
+}
+
+/* Timeline Styles */
+.timeline-item {
+    position: relative;
+    padding-left: 40px;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: 0;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.timeline-content {
+    background: #f8f9fc;
+    border: 1px solid #e3e6f6;
+    border-radius: 0.35rem;
+    padding: 1rem;
+    margin-left: 20px;
+}
+
+/* Search Form Improvements */
+.navbar-search {
+    width: 100%;
+    max-width: 400px;
+}
+
+/* Pagination Improvements */
+.pagination .page-item .page-link {
+    color: #4e73df;
+    border: 1px solid #ddd;
+}
+
+.pagination .page-item .page-link:hover {
+    background-color: #e3e6f6;
+    border-color: #ddd;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+
+/* Status Badge Colors */
+.badge-open {
+    background-color: #28a745;
+}
+
+.badge-closed {
+    background-color: #6c757d;
+}
+
+.badge-pending {
+    background-color: #ffc107;
+}
+
+.badge-suspended {
+    background-color: #dc3545;
+}
+
+/* Access Level Badge Colors */
+.badge-public {
+    background-color: #28a745;
+}
+
+.badge-internal {
+    background-color: #17a2b8;
+}
+
+.badge-confidential {
+    background-color: #ffc107;
+}
+
+.badge-restricted {
+    background-color: #dc3545;
+}
+
+/* Responsive Improvements */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .btn-circle {
+        width: 25px;
+        height: 25px;
+        font-size: 0.75rem;
+    }
+}
+
+/* Loading Spinner */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 2px solid #4e73df;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* File Type Icons */
+.file-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+}
+
+.file-pdf {
+    color: #dc3545;
+}
+
+.file-word {
+    color: #007bff;
+}
+
+.file-excel {
+    color: #28a745;
+}
+
+.file-image {
+    color: #17a2b8;
+}
+
+/* Quick Search Results */
+.search-results {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.search-result-item {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.search-result-item:hover {
+    background-color: #f8f9fc;
+}
+
+/* Form Validation */
+.is-invalid {
+    border-color: #dc3545;
+}
+
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 80%;
+    color: #dc3545;
+}
+
+/* Utility Classes */
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.shadow-sm {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.border-left-secondary {
+    border-left: 0.25rem solid #6c757d !important;
+}
+
+/* Chart Container */
+.chart-container {
+    position: relative;
+    height: 300px;
+}
+
+.chart-legend {
+    font-size: 0.875rem;
+    margin-top: 1rem;
+}
+
+/* Status Indicators */
+.status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.status-online {
+    background-color: #28a745;
+}
+
+.status-offline {
+    background-color: #6c757d;
+}
+
+.status-busy {
+    background-color: #ffc107;
+}
+
+/* Notification Styles */
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #dc3545;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 576px) {
+    .sidebar .nav-link {
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+}

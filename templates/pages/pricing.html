@@ -1,0 +1,720 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block title %}Pricing - Law Firm Management Platform{% endblock title %}
+
+{% block meta_description %}
+Transparent pricing plans for solo practitioners and small law firms. Choose from Starter, Professional, or Enterprise plans with a 30-day free trial.
+{% endblock meta_description %}
+
+{% block extra_css %}
+<style>
+/* Pricing page specific styles */
+.pricing-hero {
+    background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+    color: white;
+    padding: 80px 0;
+    text-align: center;
+}
+
+.pricing-hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.pricing-hero p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+    opacity: 0.95;
+}
+
+.pricing-section {
+    padding: 80px 0;
+    background: var(--brand-background);
+}
+
+.pricing-intro {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.pricing-intro h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--brand-text);
+    margin-bottom: 1rem;
+}
+
+.pricing-intro p {
+    font-size: 1.1rem;
+    color: var(--brand-secondary);
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.pricing-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.pricing-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.pricing-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.pricing-card.featured {
+    border-color: var(--brand-primary);
+    transform: scale(1.05);
+}
+
+.pricing-card.featured::before {
+    content: 'Most Popular';
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--brand-accent);
+    color: white;
+    padding: 8px 24px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.pricing-card-header {
+    margin-bottom: 2rem;
+}
+
+.pricing-card h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--brand-text);
+    margin-bottom: 0.5rem;
+}
+
+.pricing-card .subtitle {
+    color: var(--brand-secondary);
+    font-size: 1rem;
+}
+
+.pricing-card-price {
+    margin-bottom: 2rem;
+}
+
+.price-amount {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--brand-primary);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.price-currency {
+    font-size: 1.5rem;
+    vertical-align: top;
+}
+
+.price-period {
+    color: var(--brand-secondary);
+    font-size: 1.1rem;
+    font-weight: 400;
+}
+
+.pricing-description {
+    color: var(--brand-secondary);
+    margin-bottom: 2rem;
+    line-height: 1.5;
+}
+
+.pricing-features {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 2.5rem;
+    text-align: left;
+}
+
+.pricing-features li {
+    padding: 0.75rem 0;
+    color: var(--brand-text);
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.pricing-features li:last-child {
+    border-bottom: none;
+}
+
+.pricing-features li::before {
+    content: '✓';
+    color: var(--brand-accent);
+    font-weight: bold;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+    font-size: 1.2rem;
+}
+
+.pricing-card .btn {
+    width: 100%;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    border: none;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.pricing-card.featured .btn {
+    background: var(--brand-primary);
+    color: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.pricing-card.featured .btn:hover {
+    background: var(--brand-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+.pricing-card:not(.featured) .btn {
+    background: transparent;
+    color: var(--brand-primary);
+    border: 2px solid var(--brand-primary);
+}
+
+.pricing-card:not(.featured) .btn:hover {
+    background: var(--brand-primary);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.pricing-guarantee {
+    text-align: center;
+    margin-top: 3rem;
+    padding: 2rem;
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 15px;
+    border-left: 4px solid #4CAF50;
+}
+
+.guarantee-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #4CAF50;
+}
+
+.guarantee-text {
+    font-size: 1.1rem;
+    color: var(--brand-text);
+    line-height: 1.6;
+}
+
+.features-comparison {
+    padding: 80px 0;
+    background: white;
+}
+
+.comparison-table {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.table-header {
+    background: var(--brand-background);
+    padding: 2rem;
+    border-bottom: 2px solid var(--brand-primary);
+}
+
+.table-header h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--brand-text);
+    margin-bottom: 0.5rem;
+}
+
+.table-header p {
+    color: var(--brand-secondary);
+}
+
+.table-content {
+    overflow-x: auto;
+}
+
+.feature-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.feature-table th {
+    background: var(--brand-background);
+    padding: 1.5rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--brand-text);
+    border-bottom: 2px solid var(--brand-primary);
+}
+
+.feature-table td {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    color: var(--brand-text);
+}
+
+.feature-table tr:last-child td {
+    border-bottom: none;
+}
+
+.feature-table .feature-name {
+    font-weight: 600;
+    color: var(--brand-text);
+}
+
+.feature-table .check {
+    color: var(--brand-accent);
+    font-size: 1.2rem;
+}
+
+.feature-table .cross {
+    color: #e74c3c;
+    font-size: 1.2rem;
+}
+
+.feature-table .limited {
+    color: #f39c12;
+    font-size: 1.1rem;
+}
+
+.faq-section {
+    padding: 80px 0;
+    background: var(--brand-background);
+}
+
+.faq-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.faq-item {
+    background: white;
+    border-radius: 15px;
+    margin-bottom: 1rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.faq-question {
+    padding: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: var(--brand-text);
+    transition: background-color 0.3s ease;
+}
+
+.faq-question:hover {
+    background: rgba(0,0,0,0.02);
+}
+
+.faq-question::after {
+    content: '+';
+    font-size: 1.5rem;
+    color: var(--brand-primary);
+    transition: transform 0.3s ease;
+}
+
+.faq-question.active::after {
+    transform: rotate(45deg);
+}
+
+.faq-answer {
+    padding: 0 1.5rem;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    color: var(--brand-secondary);
+    line-height: 1.6;
+}
+
+.faq-item.active .faq-answer {
+    padding: 0 1.5rem 1.5rem;
+    max-height: 500px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .pricing-hero h1 {
+        font-size: 2rem;
+    }
+    
+    .pricing-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .pricing-card.featured {
+        transform: none;
+    }
+    
+    .comparison-table {
+        font-size: 0.9rem;
+    }
+    
+    .feature-table th,
+    .feature-table td {
+        padding: 1rem;
+    }
+}
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="pricing-hero">
+    <div class="container">
+        <h1>Simple, Transparent Pricing</h1>
+        <p>Choose the plan that's right for your firm. Start free and scale as you grow.</p>
+    </div>
+</section>
+
+<!-- Pricing Section -->
+<section class="pricing-section">
+    <div class="container">
+        <div class="pricing-intro">
+            <h2>Plans for Every Stage</h2>
+            <p>Whether you're a solo practitioner or a growing firm, we have a plan that fits your needs and budget.</p>
+        </div>
+        
+        <div class="pricing-cards">
+            <div class="pricing-card">
+                <div class="pricing-card-header">
+                    <h3>Starter</h3>
+                    <p class="subtitle">Perfect for solo practitioners</p>
+                </div>
+                
+                <div class="pricing-card-price">
+                    <span class="price-amount">0</span>
+                    <span class="price-currency">$</span>
+                    <span class="price-period">/month</span>
+                </div>
+                
+                <p class="pricing-description">Get started with essential features to manage your practice.</p>
+                
+                <ul class="pricing-features">
+                    <li>Up to 3 users</li>
+                    <li>10 cases</li>
+                    <li>1GB storage</li>
+                    <li>Basic case management</li>
+                    <li>Email support</li>
+                    <li>Mobile app access</li>
+                    <li>Basic reporting</li>
+                </ul>
+                
+                <a href="#" class="btn">Get Started</a>
+            </div>
+            
+            <div class="pricing-card featured">
+                <div class="pricing-card-header">
+                    <h3>Professional</h3>
+                    <p class="subtitle">Most popular choice</p>
+                </div>
+                
+                <div class="pricing-card-price">
+                    <span class="price-amount">49</span>
+                    <span class="price-currency">$</span>
+                    <span class="price-period">/month</span>
+                </div>
+                
+                <p class="pricing-description">Everything you need to run a successful small law firm.</p>
+                
+                <ul class="pricing-features">
+                    <li>Up to 10 users</li>
+                    <li>Unlimited cases</li>
+                    <li>50GB storage</li>
+                    <li>Advanced case management</li>
+                    <li>Time tracking & billing</li>
+                    <li>Client portal</li>
+                    <li>Document management</li>
+                    <li>Calendar & scheduling</li>
+                    <li>Priority email support</li>
+                    <li>Advanced reporting</li>
+                    <li>API access</li>
+                </ul>
+                
+                <a href="#" class="btn">Start Free Trial</a>
+            </div>
+            
+            <div class="pricing-card">
+                <div class="pricing-card-header">
+                    <h3>Enterprise</h3>
+                    <p class="subtitle">For larger firms</p>
+                </div>
+                
+                <div class="pricing-card-price">
+                    <span class="price-amount">99</span>
+                    <span class="price-currency">$</span>
+                    <span class="price-period">/month</span>
+                </div>
+                
+                <p class="pricing-description">Advanced features for firms with complex needs.</p>
+                
+                <ul class="pricing-features">
+                    <li>Unlimited users</li>
+                    <li>Unlimited cases</li>
+                    <li>500GB storage</li>
+                    <li>All Professional features</li>
+                    <li>Advanced analytics</li>
+                    <li>Custom integrations</li>
+                    <li>Dedicated support</li>
+                    <li>Custom workflows</li>
+                    <li>Advanced security</li>
+                    <li>White-label options</li>
+                    <li>On-premise deployment</li>
+                </ul>
+                
+                <a href="#" class="btn">Contact Sales</a>
+            </div>
+        </div>
+        
+        <div class="pricing-guarantee">
+            <div class="guarantee-icon">🛡️</div>
+            <p class="guarantee-text">
+                <strong>30-Day Money-Back Guarantee</strong><br>
+                Not satisfied? Get a full refund within 30 days. No questions asked.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Features Comparison Section -->
+<section class="features-comparison">
+    <div class="container">
+        <div class="pricing-intro">
+            <h2>Feature Comparison</h2>
+            <p>See exactly what's included in each plan</p>
+        </div>
+        
+        <div class="comparison-table">
+            <div class="table-header">
+                <h3>Feature Breakdown</h3>
+                <p>Detailed comparison of all features across plans</p>
+            </div>
+            
+            <div class="table-content">
+                <table class="feature-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Feature</th>
+                            <th width="23%">Starter</th>
+                            <th width="23%">Professional</th>
+                            <th width="23%">Enterprise</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="feature-name">Users</td>
+                            <td>Up to 3</td>
+                            <td>Up to 10</td>
+                            <td>Unlimited</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">Cases</td>
+                            <td>10</td>
+                            <td>Unlimited</td>
+                            <td>Unlimited</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">Storage</td>
+                            <td>1GB</td>
+                            <td>50GB</td>
+                            <td>500GB</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">Case Management</td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">Time Tracking</td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">Billing & Invoicing</td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">Client Portal</td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">Document Management</td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">Calendar & Scheduling</td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">Advanced Reporting</td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">API Access</td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">Custom Integrations</td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td class="feature-name">Dedicated Support</td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="check">✓</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="faq-section">
+    <div class="container">
+        <div class="pricing-intro">
+            <h2>Frequently Asked Questions</h2>
+            <p>Everything you need to know about our pricing plans</p>
+        </div>
+        
+        <div class="faq-container">
+            <div class="faq-item">
+                <div class="faq-question">
+                    Can I change my plan later?
+                </div>
+                <div class="faq-answer">
+                    Yes, you can upgrade or downgrade your plan at any time. When upgrading, you'll have immediate access to all new features. When downgrading, you'll retain access to your current features until the end of your billing period.
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    What payment methods do you accept?
+                </div>
+                <div class="faq-answer">
+                    We accept all major credit cards (Visa, MasterCard, American Express, Discover), as well as PayPal and bank transfers for annual subscriptions.
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    Is there a setup fee?
+                </div>
+                <div class="faq-answer">
+                    No, there are no setup fees or hidden costs. The price you see is the price you pay, with no surprises.
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    Can I cancel my subscription anytime?
+                </div>
+                <div class="faq-answer">
+                    Yes, you can cancel your subscription at any time. If you cancel, you'll continue to have access until the end of your current billing period, and you'll receive a prorated refund for any unused time.
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    Do you offer discounts for non-profits or educational institutions?
+                </div>
+                <div class="faq-answer">
+                    Yes, we offer special pricing for qualifying non-profit organizations and educational institutions. Contact our sales team to learn more about our discounted rates.
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+// FAQ Toggle Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const faqQuestions = document.querySelectorAll('.faq-question');
+    
+    faqQuestions.forEach(question => {
+        question.addEventListener('click', function() {
+            const faqItem = this.parentElement;
+            const isActive = faqItem.classList.contains('active');
+            
+            // Close all FAQ items
+            document.querySelectorAll('.faq-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Open clicked item if it wasn't active
+            if (!isActive) {
+                faqItem.classList.add('active');
+            }
+        });
+    });
+});
+
+// Add loading animation to buttons
+document.querySelectorAll('.btn').forEach(button => {
+    button.addEventListener('click', function(e) {
+        if (!this.classList.contains('loading')) {
+            e.preventDefault();
+            this.classList.add('loading');
+            this.disabled = true;
+            
+            // Simulate loading for demo purposes
+            setTimeout(() => {
+                this.classList.remove('loading');
+                this.disabled = false;
+                // Navigate to the actual URL
+                window.location.href = this.href;
+            }, 1000);
+        }
+    });
+});
+</script>
+{% endblock extra_js %}

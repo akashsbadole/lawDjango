@@ -1,0 +1,258 @@
+{% extends "_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} - Law Firm Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ title }}</h1>
+                <div>
+                    <a href="{% url 'import_export:import_job_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </a>
+                    {% if import_job.status in 'pending,processing' %}
+                        <a href="{% url 'import_export:import_job_cancel' import_job.id %}" 
+                           class="btn btn-warning" onclick="return confirm('Are you sure you want to cancel this import job?')">
+                            <i class="fas fa-stop"></i> Cancel
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Import Job Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="30%">ID:</th>
+                                    <td>{{ import_job.id }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Model Type:</th>
+                                    <td>{{ import_job.get_model_type_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Status:</th>
+                                    <td>
+                                        <span class="badge badge-{{ import_job.status_color }}">
+                                            {{ import_job.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>File Format:</th>
+                                    <td>{{ import_job.get_file_format_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>File:</th>
+                                    <td>
+                                        {% if import_job.file %}
+                                            <a href="{{ import_job.file.url }}" target="_blank">
+                                                {{ import_job.filename }}
+                                            </a>
+                                        {% else %}
+                                            No file uploaded
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Created By:</th>
+                                    <td>{{ import_job.user.get_full_name|default:import_job.user.username }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Created At:</th>
+                                    <td>{{ import_job.created_at|date:"Y-m-d H:i:s" }}</td>
+                                </tr>
+                                {% if import_job.completed_at %}
+                                    <tr>
+                                        <th>Completed At:</th>
+                                        <td>{{ import_job.completed_at|date:"Y-m-d H:i:s" }}</td>
+                                    </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Progress Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Progress</span>
+                                    <span>{{ import_job.progress_percentage }}%</span>
+                                </div>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {{ import_job.progress_percentage }}%"
+                                         aria-valuenow="{{ import_job.progress_percentage }}" 
+                                         aria-valuemin="0" aria-valuemax="100">
+                                        {{ import_job.progress_percentage }}%
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="50%">Total Records:</th>
+                                    <td>{{ import_job.total_records|default:"Not determined" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Processed Records:</th>
+                                    <td>{{ import_job.processed_records|default:"0" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Successful Records:</th>
+                                    <td>{{ import_job.successful_records|default:"0" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Failed Records:</th>
+                                    <td>{{ import_job.failed_records|default:"0" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if import_job.field_mappings %}
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Field Mappings</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>File Field</th>
+                                    <th>Model Field</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for file_field, model_field in import_job.field_mappings.items %}
+                                    <tr>
+                                        <td>{{ file_field }}</td>
+                                        <td>{{ model_field }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+            
+            {% if import_job.errors %}
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Errors</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if import_job.error_summary %}
+                            <div class="alert alert-danger">
+                                <h6>Error Summary:</h6>
+                                <ul>
+                                    {% for error_type, count in import_job.error_summary.items %}
+                                        <li>{{ error_type }}: {{ count }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Row</th>
+                                        <th>Error</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for error in import_job.errors %}
+                                        <tr>
+                                            <td>{{ error.row }}</td>
+                                            <td>{{ error.message }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh job status if still processing
+    $(document).ready(function() {
+        const currentStatus = "{{ import_job.status }}";
+        
+        if (currentStatus === 'pending' || currentStatus === 'processing') {
+            function refreshJobStatus() {
+                const statusUrl = `/import-export/imports/{{ import_job.id }}/status/`;
+                
+                $.get(statusUrl, function(data) {
+                    // Update status badge
+                    const statusBadge = $('.badge');
+                    statusBadge.removeClass('badge-pending badge-processing badge-completed badge-failed badge-cancelled')
+                              .addClass(`badge-${data.status_color}`)
+                              .text(data.status_display);
+                    
+                    // Update progress bar
+                    const progressBar = $('.progress-bar');
+                    progressBar.css('width', `${data.progress_percentage}%`)
+                              .attr('aria-valuenow', data.progress_percentage)
+                              .text(`${data.progress_percentage}%`);
+                    
+                    // Update statistics
+                    $('.table-borderless tr:eq(4) td').text(data.total_records || 'Not determined');
+                    $('.table-borderless tr:eq(5) td').text(data.processed_records || '0');
+                    $('.table-borderless tr:eq(6) td').text(data.successful_records || '0');
+                    $('.table-borderless tr:eq(7) td').text(data.failed_records || '0');
+                    
+                    // Update completion time if available
+                    if (data.completed_at) {
+                        const completedAtRow = $('.table-borderless tr:eq(8)');
+                        if (completedAtRow.length === 0) {
+                            const newRow = '<tr><th>Completed At:</th><td>' + data.completed_at + '</td></tr>';
+                            $('.table-borderless').append(newRow);
+                        } else {
+                            completedAtRow.find('td').text(data.completed_at);
+                        }
+                    }
+                    
+                    // Update actions if job is completed
+                    if (data.status === 'completed' || data.status === 'failed' || data.status === 'cancelled') {
+                        $('.btn-warning').remove();
+                        // Reload page to show errors if any
+                        if (data.errors && data.errors.length > 0) {
+                            setTimeout(() => location.reload(), 2000);
+                        }
+                    }
+                    
+                    // Stop refreshing if job is completed
+                    if (data.status !== 'pending' && data.status !== 'processing') {
+                        clearInterval(refreshInterval);
+                    }
+                });
+            }
+            
+            // Refresh every 3 seconds
+            const refreshInterval = setInterval(refreshJobStatus, 3000);
+        }
+    });
+</script>
+{% endblock %}

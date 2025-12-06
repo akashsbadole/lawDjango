@@ -1,0 +1,243 @@
+{% extends "backup_restore/base.html" %}
+{% load static %}
+
+{% block title %}Backup Jobs{% endblock %}
+
+{% block backup_restore_content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Backup Jobs</h1>
+    <a href="{% url 'backup_restore:backup_create' %}" class="btn btn-primary btn-sm">
+        <i class="fas fa-plus me-2"></i>Create Backup
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card shadow mb-4">
+    <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-filter me-2"></i>Filters
+        </h6>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="status" class="form-label">Status</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">All Status</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="backup_type" class="form-label">Backup Type</label>
+                <select name="backup_type" id="backup_type" class="form-select">
+                    <option value="">All Types</option>
+                    {% for value, label in backup_type_choices %}
+                        <option value="{{ value }}" {% if current_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="date_from" class="form-label">From Date</label>
+                <input type="date" name="date_from" id="date_from" class="form-control" value="{{ request.GET.date_from }}">
+            </div>
+            <div class="col-md-3">
+                <label for="date_to" class="form-label">To Date</label>
+                <input type="date" name="date_to" id="date_to" class="form-control" value="{{ request.GET.date_to }}">
+            </div>
+            <div class="col-md-12">
+                <button type="submit" class="btn btn-secondary">
+                    <i class="fas fa-search me-2"></i>Apply Filters
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Backup Jobs Table -->
+<div class="card shadow">
+    <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-list me-2"></i>Backup Jobs
+        </h6>
+    </div>
+    <div class="card-body">
+        {% if backups %}
+            <div class="table-responsive">
+                <table class="table table-bordered" id="backupsTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Size</th>
+                            <th>Progress</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for backup in backups %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'backup_restore:backup_detail' backup.pk %}">{{ backup.name }}</a>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ backup.backup_type|default:'secondary' }}">{{ backup.get_backup_type_display }}</span>
+                                </td>
+                                <td>
+                                    {% if backup.status == 'completed' %}
+                                        <span class="badge bg-success">{{ backup.get_status_display }}</span>
+                                    {% elif backup.status == 'running' %}
+                                        <span class="badge bg-primary">{{ backup.get_status_display }}</span>
+                                    {% elif backup.status == 'failed' %}
+                                        <span class="badge bg-danger">{{ backup.get_status_display }}</span>
+                                    {% elif backup.status == 'cancelled' %}
+                                        <span class="badge bg-warning">{{ backup.get_status_display }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ backup.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ backup.file_size_mb }} MB</td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: {{ backup.progress_percentage }}%;"
+                                             aria-valuenow="{{ backup.progress_percentage }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                            {{ backup.progress_percentage }}%
+                                        </div>
+                                    </div>
+                                    {% if backup.current_step %}
+                                        <small class="text-muted">{{ backup.current_step }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ backup.created_at|date:"Y-m-d H:i" }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'backup_restore:backup_detail' backup.pk %}" 
+                                           class="btn btn-sm btn-info" 
+                                           title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        
+                                        {% if backup.is_completed and backup.file_path %}
+                                            <a href="{% url 'backup_restore:backup_download' backup.pk %}" 
+                                               class="btn btn-sm btn-success" 
+                                               title="Download Backup">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                        {% endif %}
+                                        
+                                        {% if backup.status == 'pending' or backup.status == 'failed' %}
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-primary execute-backup" 
+                                                    data-backup-id="{{ backup.pk }}"
+                                                    title="Execute Backup">
+                                                <i class="fas fa-play"></i>
+                                            </button>
+                                        {% endif %}
+                                        
+                                        <a href="{% url 'backup_restore:backup_edit' backup.pk %}" 
+                                           class="btn btn-sm btn-warning" 
+                                           title="Edit Backup">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        
+                                        <a href="{% url 'backup_restore:backup_delete' backup.pk %}" 
+                                           class="btn btn-sm btn-danger" 
+                                           title="Delete Backup">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+                <div class="d-flex justify-content-between mt-4">
+                    <span class="text-muted">
+                        Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }}
+                    </span>
+                    <nav>
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                                <li>
+                                    <a href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="active"><span>{{ num }}</span></li>
+                                {% else %}
+                                    <li><a href="?page={{ num }}">{{ num }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                                <li>
+                                    <a href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-database fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No backup jobs found</h5>
+                <p class="text-muted">
+                    Get started by creating your first backup job.
+                </p>
+                <a href="{% url 'backup_restore:backup_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Create Your First Backup
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Execute backup buttons
+    $('.execute-backup').click(function() {
+        var backupId = $(this).data('backup-id');
+        var btn = $(this);
+        
+        if (confirm('Are you sure you want to execute this backup job?')) {
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Executing...');
+            
+            $.ajax({
+                url: '{% url "backup_restore:backup_execute" 0 %}'.replace('0', backupId),
+                type: 'POST',
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.message);
+                        btn.prop('disabled', false).html('<i class="fas fa-play"></i>');
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while executing the backup.');
+                    btn.prop('disabled', false).html('<i class="fas fa-play"></i>');
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

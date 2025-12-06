@@ -1,0 +1,198 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}Update Subscription - {{ user.tenant.name }}{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Update Subscription</h1>
+  <div>
+    <a href="{% url 'subscriptions:subscription_detail' subscription.pk %}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left"></i> Back to Subscription
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-exchange-alt"></i> 
+          Update Your Subscription
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-info mb-4">
+          <h5><i class="fas fa-info-circle"></i> Current Subscription</h5>
+          <div class="row">
+            <div class="col-md-6">
+              <p class="mb-1"><strong>Current Plan:</strong> {{ subscription.plan.name }}</p>
+              <p class="mb-1"><strong>Price:</strong> ${{ subscription.plan.price }} / {{ subscription.plan.get_billing_cycle_display }}</p>
+              <p class="mb-1"><strong>Status:</strong> {{ subscription.get_status_display }}</p>
+            </div>
+            <div class="col-md-6">
+              <p class="mb-1"><strong>Started:</strong> {{ subscription.start_date|date:"F j, Y" }}</p>
+              {% if subscription.end_date %}
+              <p class="mb-1"><strong>Renews:</strong> {{ subscription.end_date|date:"F j, Y" }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <form method="post">
+          {% csrf_token %}
+          
+          {% if form.non_field_errors %}
+          <div class="alert alert-danger">
+            {% for error in form.non_field_errors %}
+            <p class="mb-0">{{ error }}</p>
+            {% endfor %}
+          </div>
+          {% endif %}
+          
+          <div class="mb-3">
+            <label for="{{ form.plan.id_for_label }}" class="form-label">Select New Plan</label>
+            {{ form.plan }}
+            {% if form.plan.errors %}
+            <div class="form-text text-danger">
+              {% for error in form.plan.errors %}
+              {{ error }}
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="{{ form.immediate_change.name }}" 
+                     id="{{ form.immediate_change.id_for_label }}" 
+                     {% if form.immediate_change.value %}checked{% endif %}>
+              <label class="form-check-label" for="{{ form.immediate_change.id_for_label }}">
+                Apply changes immediately (prorated billing may apply)
+              </label>
+            </div>
+            {% if form.immediate_change.errors %}
+            <div class="form-text text-danger">
+              {% for error in form.immediate_change.errors %}
+              {{ error }}
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a href="{% url 'subscriptions:subscription_detail' subscription.pk %}" class="btn btn-outline-secondary">
+              Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save"></i> Update Subscription
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-exchange-alt"></i> 
+          Plan Comparison
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="card-text">Compare your current plan with available options:</p>
+        
+        {% if available_plans %}
+        <div class="table-responsive">
+          <table class="table table-striped table-sm">
+            <thead>
+              <tr>
+                <th>Plan</th>
+                <th>Price</th>
+                <th>Users</th>
+                <th>Storage</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for plan in available_plans %}
+              <tr {% if plan.id == subscription.plan.id %}class="table-active"{% endif %}>
+                <td>
+                  <strong>{{ plan.name }}</strong>
+                  {% if plan.id == subscription.plan.id %}
+                  <span class="badge bg-info ms-2">Current</span>
+                  {% endif %}
+                </td>
+                <td>${{ plan.price }}</td>
+                <td>
+                  {% if plan.max_users %}{{ plan.max_users }}{% else %}Unlimited{% endif %}
+                </td>
+                <td>
+                  {% if plan.max_storage_mb %}{{ plan.max_storage_mb }}MB{% else %}Unlimited{% endif %}
+                </td>
+                <td>
+                  {% if plan.id == subscription.plan.id %}
+                  <span class="text-muted">Current Plan</span>
+                  {% elif plan.price > subscription.plan.price %}
+                  <a href="#" class="btn btn-sm btn-primary" data-plan-id="{{ plan.id }}">Upgrade</a>
+                  {% else %}
+                  <a href="#" class="btn btn-sm btn-outline-secondary" data-plan-id="{{ plan.id }}">Downgrade</a>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-lightbulb"></i> 
+          Billing Information
+        </h5>
+      </div>
+      <div class="card-body">
+        <h6>Proration Explained</h6>
+        <p class="card-text">When you change plans mid-cycle, you'll receive a credit for unused time on your current plan and be charged for the remaining time on your new plan.</p>
+        
+        <h6>Immediate vs. Next Billing Cycle</h6>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <strong>Immediate:</strong> Changes take effect right away with prorated billing
+          </li>
+          <li class="mb-0">
+            <strong>Next Cycle:</strong> Changes take effect when your current billing cycle ends
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Handle plan selection buttons
+  const planButtons = document.querySelectorAll('[data-plan-id]');
+  planButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      const planId = this.getAttribute('data-plan-id');
+      const planSelect = document.getElementById('{{ form.plan.id_for_label }}');
+      planSelect.value = planId;
+      
+      // Submit form
+      document.querySelector('form').submit();
+    });
+  });
+});
+</script>
+{% endblock %}

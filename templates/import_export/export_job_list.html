@@ -1,0 +1,173 @@
+{% extends "_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} - Law Firm Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ title }}</h1>
+                <a href="{% url 'import_export:export_job_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Export Job
+                </a>
+            </div>
+            
+            {% if export_jobs %}
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Model Type</th>
+                                        <th>Export Type</th>
+                                        <th>Status</th>
+                                        <th>Progress</th>
+                                        <th>User</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for job in export_jobs %}
+                                        <tr>
+                                            <td>{{ job.id }}</td>
+                                            <td>{{ job.get_model_type_display }}</td>
+                                            <td>{{ job.get_export_type_display }}</td>
+                                            <td>
+                                                <span class="badge badge-{{ job.status_color }}">
+                                                    {{ job.get_status_display }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar" role="progressbar" 
+                                                         style="width: {{ job.progress_percentage }}%"
+                                                         aria-valuenow="{{ job.progress_percentage }}" 
+                                                         aria-valuemin="0" aria-valuemax="100">
+                                                        {{ job.progress_percentage }}%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>{{ job.user.get_full_name|default:job.user.username }}</td>
+                                            <td>{{ job.created_at|date:"Y-m-d H:i" }}</td>
+                                            <td>
+                                                <a href="{% url 'import_export:export_job_detail' job.id %}" 
+                                                   class="btn btn-sm btn-info" title="View Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if job.status == 'completed' %}
+                                                    <a href="{% url 'import_export:export_job_download' job.id %}" 
+                                                       class="btn btn-sm btn-success" title="Download File">
+                                                        <i class="fas fa-download"></i>
+                                                    </a>
+                                                {% endif %}
+                                                {% if job.status in 'pending,processing' %}
+                                                    <a href="{% url 'import_export:export_job_cancel' job.id %}" 
+                                                       class="btn btn-sm btn-warning" title="Cancel">
+                                                        <i class="fas fa-stop"></i>
+                                                    </a>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if is_paginated %}
+                            <nav aria-label="Export jobs pagination">
+                                <ul class="pagination justify-content-center">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1">First</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    <li class="page-item active">
+                                        <span class="page-link">
+                                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                                        </span>
+                                    </li>
+                                    
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">No Export Jobs Found</h5>
+                        <p class="card-text">You haven't created any export jobs yet.</p>
+                        <a href="{% url 'import_export:export_job_create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Create Your First Export Job
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh job status for pending/processing jobs
+    $(document).ready(function() {
+        function refreshJobStatus() {
+            $('.badge-pending, .badge-processing').each(function() {
+                const row = $(this).closest('tr');
+                const jobId = row.find('td:first').text();
+                const statusUrl = `/import-export/exports/${jobId}/status/`;
+                
+                $.get(statusUrl, function(data) {
+                    // Update status badge
+                    const statusBadge = row.find('.badge');
+                    statusBadge.removeClass('badge-pending badge-processing badge-completed badge-failed badge-cancelled')
+                              .addClass(`badge-${data.status_color}`)
+                              .text(data.status_display);
+                    
+                    // Update progress bar
+                    const progressBar = row.find('.progress-bar');
+                    progressBar.css('width', `${data.progress_percentage}%`)
+                              .attr('aria-valuenow', data.progress_percentage)
+                              .text(`${data.progress_percentage}%`);
+                    
+                    // Update actions if job is completed
+                    if (data.status === 'completed') {
+                        const actionsCell = row.find('td:last');
+                        if (!actionsCell.find('.btn-success').length) {
+                            const downloadBtn = `<a href="/import-export/exports/${jobId}/download/" class="btn btn-sm btn-success" title="Download File"><i class="fas fa-download"></i></a>`;
+                            actionsCell.find('.btn-warning').before(downloadBtn);
+                        }
+                    }
+                    
+                    // Remove cancel button if job is completed
+                    if (data.status === 'completed' || data.status === 'failed' || data.status === 'cancelled') {
+                        row.find('.btn-warning').remove();
+                    }
+                });
+            });
+        }
+        
+        // Refresh every 5 seconds
+        setInterval(refreshJobStatus, 5000);
+    });
+</script>
+{% endblock %}

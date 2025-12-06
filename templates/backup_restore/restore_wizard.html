@@ -1,0 +1,431 @@
+{% extends "backup_restore/base.html" %}
+
+{% block title %}Restore Data Wizard{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Restore Data Wizard</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <a href="{% url 'backup_restore:restore_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to List
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-3">
+    <!-- Wizard Steps -->
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Steps</h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+          <a href="#" class="list-group-item list-group-item-action {% if wizard.steps.current == '0' %}active{% endif %}">
+            <div class="d-flex w-100 justify-content-between">
+              <h6 class="mb-1">Step 1: Select Backup</h6>
+              {% if wizard.steps.current > '0' %}
+              <i class="fas fa-check-circle text-success"></i>
+              {% endif %}
+            </div>
+            <p class="mb-0">Choose a backup file or existing backup job</p>
+          </a>
+          <a href="#" class="list-group-item list-group-item-action {% if wizard.steps.current == '1' %}active{% endif %}">
+            <div class="d-flex w-100 justify-content-between">
+              <h6 class="mb-1">Step 2: Configure Options</h6>
+              {% if wizard.steps.current > '1' %}
+              <i class="fas fa-check-circle text-success"></i>
+              {% endif %}
+            </div>
+            <p class="mb-0">Select what to restore and conflict resolution</p>
+          </a>
+          <a href="#" class="list-group-item list-group-item-action {% if wizard.steps.current == '2' %}active{% endif %}">
+            <div class="d-flex w-100 justify-content-between">
+              <h6 class="mb-1">Step 3: Preview</h6>
+              {% if wizard.steps.current > '2' %}
+              <i class="fas fa-check-circle text-success"></i>
+              {% endif %}
+            </div>
+            <p class="mb-0">Review what will be restored</p>
+          </a>
+          <a href="#" class="list-group-item list-group-item-action {% if wizard.steps.current == '3' %}active{% endif %}">
+            <div class="d-flex w-100 justify-content-between">
+              <h6 class="mb-1">Step 4: Confirm</h6>
+              {% if wizard.steps.current > '3' %}
+              <i class="fas fa-check-circle text-success"></i>
+              {% endif %}
+            </div>
+            <p class="mb-0">Confirm and start the restore process</p>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-9">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          {% if wizard.steps.current == '0' %}Select Backup Source
+          {% elif wizard.steps.current == '1' %}Configure Restore Options
+          {% elif wizard.steps.current == '2' %}Preview Restore
+          {% elif wizard.steps.current == '3' %}Confirm Restore
+          {% endif %}
+        </h5>
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          {{ wizard.management_form }}
+          
+          <!-- Step 1: Select Backup -->
+          {% if wizard.steps.current == '0' %}
+          <div class="row">
+            <div class="col-md-6">
+              <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                  <h6 class="mb-0">Option 1: Use Existing Backup</h6>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <label for="{{ wizard.form.backup_job.id_for_label }}" class="form-label">
+                      Select a completed backup job:
+                    </label>
+                    {{ wizard.form.backup_job }}
+                    {% if wizard.form.backup_job.errors %}
+                    <div class="invalid-feedback d-block">
+                      {{ wizard.form.backup_job.errors }}
+                    </div>
+                    {% endif %}
+                  </div>
+                  
+                  {% if completed_backups %}
+                  <div class="table-responsive">
+                    <table class="table table-sm">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Type</th>
+                          <th>Created</th>
+                          <th>Size</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for backup in completed_backups %}
+                        <tr>
+                          <td>{{ backup.name }}</td>
+                          <td>{{ backup.get_backup_type_display }}</td>
+                          <td>{{ backup.created_at|date:"Y-m-d" }}</td>
+                          <td>{{ backup.file_size_mb }} MB</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                  {% else %}
+                  <p class="text-muted">No completed backups found.</p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                  <h6 class="mb-0">Option 2: Upload Backup File</h6>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <label for="{{ wizard.form.backup_file.id_for_label }}" class="form-label">
+                      Upload a backup file:
+                    </label>
+                    {{ wizard.form.backup_file }}
+                    {% if wizard.form.backup_file.errors %}
+                    <div class="invalid-feedback d-block">
+                      {{ wizard.form.backup_file.errors }}
+                    </div>
+                    {% endif %}
+                    <div class="form-text">
+                      Supported formats: .tar.gz, .zip, .sql
+                    </div>
+                  </div>
+                  
+                  <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Note:</strong> The backup file must have been created by this system
+                    or be compatible with the expected format.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          
+          <!-- Step 2: Configure Options -->
+          {% if wizard.steps.current == '1' %}
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Restore Options</h6>
+              <div class="mb-3">
+                {{ wizard.form.restore_database }}
+                <label for="{{ wizard.form.restore_database.id_for_label }}">
+                  <strong>Database</strong>
+                  <br><small class="text-muted">Restore database tables and data</small>
+                </label>
+              </div>
+              
+              <div class="mb-3">
+                {{ wizard.form.restore_media }}
+                <label for="{{ wizard.form.restore_media.id_for_label }}">
+                  <strong>Media Files</strong>
+                  <br><small class="text-muted">Restore uploaded media files</small>
+                </label>
+              </div>
+              
+              <div class="mb-3">
+                {{ wizard.form.restore_documents }}
+                <label for="{{ wizard.form.restore_documents.id_for_label }}">
+                  <strong>Documents</strong>
+                  <br><small class="text-muted">Restore document files and metadata</small>
+                </label>
+              </div>
+              
+              <div class="mb-3">
+                {{ wizard.form.restore_settings }}
+                <label for="{{ wizard.form.restore_settings.id_for_label }}">
+                  <strong>Settings</strong>
+                  <br><small class="text-muted">Restore system settings</small>
+                </label>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <h6>Conflict Resolution</h6>
+              <div class="mb-3">
+                <label for="{{ wizard.form.conflict_resolution.id_for_label }}" class="form-label">
+                  How to handle conflicts:
+                </label>
+                {{ wizard.form.conflict_resolution }}
+                {% if wizard.form.conflict_resolution.errors %}
+                <div class="invalid-feedback d-block">
+                  {{ wizard.form.conflict_resolution.errors }}
+                </div>
+                {% endif %}
+              </div>
+              
+              <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Important:</strong> Choose how to handle conflicts when the restore
+                encounters existing data that conflicts with the backup data.
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          
+          <!-- Step 3: Preview -->
+          {% if wizard.steps.current == '2' %}
+          <div id="preview-container">
+            <div class="text-center py-4">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="mt-3">Analyzing backup file...</p>
+            </div>
+          </div>
+          
+          <script>
+          // Load preview data via AJAX
+          $(document).ready(function() {
+            const backupJobId = '{{ wizard.form.backup_job.value|default:"" }}';
+            const backupFileInput = document.querySelector('input[type="file"]');
+            
+            if (backupJobId) {
+              // Load preview from existing backup job
+              loadPreviewFromJob(backupJobId);
+            } else if (backupFileInput && backupFileInput.files.length > 0) {
+              // Load preview from uploaded file
+              loadPreviewFromFile();
+            } else {
+              $('#preview-container').html(
+                '<div class="alert alert-warning">No backup source selected.</div>'
+              );
+            }
+          });
+          
+          function loadPreviewFromJob(jobId) {
+            fetch(`/backup-restore/api/preview-backup/${jobId}/`)
+              .then(response => response.json())
+              .then(data => {
+                displayPreview(data);
+              })
+              .catch(error => {
+                $('#preview-container').html(
+                  '<div class="alert alert-danger">Error loading preview: ' + error.message + '</div>'
+                );
+              });
+          }
+          
+          function loadPreviewFromFile() {
+            // This would require a more complex implementation with file upload
+            // For now, we'll show a placeholder
+            $('#preview-container').html(
+              '<div class="alert alert-info">Preview will be available after file upload.</div>'
+            );
+          }
+          
+          function displayPreview(data) {
+            let html = '<div class="row">';
+            
+            // Database preview
+            if (data.database) {
+              html += '<div class="col-md-6"><h6>Database Tables</h6><ul class="list-group">';
+              for (const table of data.database.tables) {
+                html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                  ${table.name}
+                  <span class="badge bg-primary rounded-pill">${table.records} records</span>
+                </li>`;
+              }
+              html += '</ul></div>';
+            }
+            
+            // Files preview
+            if (data.files) {
+              html += '<div class="col-md-6"><h6>Files</h6><ul class="list-group">';
+              for (const file of data.files) {
+                html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                  ${file.name}
+                  <span class="badge bg-info rounded-pill">${file.size}</span>
+                </li>`;
+              }
+              html += '</ul></div>';
+            }
+            
+            // Conflicts
+            if (data.conflicts && data.conflicts.length > 0) {
+              html += '<div class="col-12 mt-3"><h6 class="text-warning">Potential Conflicts</h6><div class="alert alert-warning">';
+              for (const conflict of data.conflicts) {
+                html += `<p><strong>${conflict.type}:</strong> ${conflict.description}</p>`;
+              }
+              html += '</div></div>';
+            }
+            
+            html += '</div>';
+            $('#preview-container').html(html);
+          }
+          </script>
+          {% endif %}
+          
+          <!-- Step 4: Confirm -->
+          {% if wizard.steps.current == '3' %}
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Warning:</strong> This will restore data to your system. 
+            Make sure you have a current backup before proceeding.
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Restore Summary</h6>
+              <table class="table table-sm">
+                <tr>
+                  <th>Name:</th>
+                  <td>{{ wizard.form.name.value }}</td>
+                </tr>
+                <tr>
+                  <th>Description:</th>
+                  <td>{{ wizard.form.description.value|default:"No description" }}</td>
+                </tr>
+                <tr>
+                  <th>Source:</th>
+                  <td>
+                    {% if wizard.form.backup_job.value %}
+                      {{ wizard.form.backup_job.instance.name }}
+                    {% elif wizard.form.backup_file.value %}
+                      {{ wizard.form.backup_file.value.name }}
+                    {% endif %}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Conflict Resolution:</th>
+                  <td>{{ wizard.form.conflict_resolution.instance.get_conflict_resolution_display }}</td>
+                </tr>
+              </table>
+            </div>
+            
+            <div class="col-md-6">
+              <h6>Items to Restore</h6>
+              <div class="list-group">
+                {% if wizard.form.restore_database.value %}
+                <div class="list-group-item">
+                  <i class="fas fa-database text-primary"></i> Database
+                </div>
+                {% endif %}
+                {% if wizard.form.restore_media.value %}
+                <div class="list-group-item">
+                  <i class="fas fa-images text-success"></i> Media Files
+                </div>
+                {% endif %}
+                {% if wizard.form.restore_documents.value %}
+                <div class="list-group-item">
+                  <i class="fas fa-file-alt text-info"></i> Documents
+                </div>
+                {% endif %}
+                {% if wizard.form.restore_settings.value %}
+                <div class="list-group-item">
+                  <i class="fas fa-cog text-warning"></i> Settings
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="confirmRestore" required>
+            <label class="form-check-label" for="confirmRestore">
+              I understand that this will modify my data and I have a current backup
+            </label>
+          </div>
+          {% endif %}
+          
+          <!-- Navigation Buttons -->
+          <div class="d-flex justify-content-between mt-4">
+            {% if wizard.steps.prev %}
+            <button name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}" 
+                    class="btn btn-outline-secondary">
+              <i class="fas fa-arrow-left"></i> Previous
+            </button>
+            {% else %}
+            <div></div>
+            {% endif %}
+            
+            {% if wizard.steps.current == '3' %}
+            <button type="submit" class="btn btn-success" id="startRestoreBtn" disabled>
+              <i class="fas fa-play"></i> Start Restore
+            </button>
+            {% else %}
+            <button type="submit" class="btn btn-primary">
+              Next <i class="fas fa-arrow-right"></i>
+            </button>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+// Enable confirm checkbox for step 3
+{% if wizard.steps.current == '3' %}
+document.getElementById('confirmRestore').addEventListener('change', function() {
+  document.getElementById('startRestoreBtn').disabled = !this.checked;
+});
+{% endif %}
+</script>
+{% endblock %}

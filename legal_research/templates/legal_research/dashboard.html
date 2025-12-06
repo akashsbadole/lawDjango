@@ -1,0 +1,218 @@
+{% extends 'legal_research/base.html' %}
+
+{% block research_content %}
+<div class="row">
+    <!-- Statistics Cards -->
+    <div class="col-md-3 mb-4">
+        <div class="stats-card">
+            <div class="stats-number">{{ total_queries }}</div>
+            <div class="stats-label">Total Queries</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="stats-card">
+            <div class="stats-number">{{ completed_queries }}</div>
+            <div class="stats-label">Completed</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="stats-card">
+            <div class="stats-number">{{ processing_queries }}</div>
+            <div class="stats-label">Processing</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="stats-card">
+            <div class="stats-number">{{ total_tokens|default:0 }}</div>
+            <div class="stats-label">Tokens Used</div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- Quick Research Form -->
+    <div class="col-12 mb-4">
+        <div class="quick-research-form">
+            <h4 class="mb-3"><i class="fas fa-bolt mr-2"></i>Quick Research</h4>
+            <form method="post" action="{% url 'legal_research:quick_research' %}" onsubmit="submitQuickResearch(this)">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label for="quick_query" class="form-label">Ask a legal research question:</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="quick_query" 
+                               name="query" 
+                               placeholder="e.g., What are the elements of negligence in California?"
+                               required>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="query_type" class="form-label">Type</label>
+                        <select class="form-control" id="query_type" name="query_type">
+                            <option value="case_law">Case Law</option>
+                            <option value="statute">Statute</option>
+                            <option value="legal_analysis">Legal Analysis</option>
+                            <option value="document_review">Document Review</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="jurisdiction" class="form-label">Jurisdiction</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="jurisdiction" 
+                               name="jurisdiction" 
+                               placeholder="e.g., California">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-search mr-2"></i>Research
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Queries -->
+    <div class="col-lg-8 mb-4">
+        <div class="research-card card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-history mr-2"></i>Recent Research Queries</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_queries %}
+                    {% for query in recent_queries %}
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ query.title }}</h6>
+                            <small class="text-muted">
+                                <span class="query-type-badge">{{ query.get_query_type_display }}</span>
+                                • {{ query.created_at|date:"M d, Y H:i" }}
+                            </small>
+                        </div>
+                        <div class="ml-3">
+                            {% if query.status == 'pending' %}
+                                <span class="query-status status-pending">Pending</span>
+                            {% elif query.status == 'processing' %}
+                                <span class="query-status status-processing">
+                                    <span class="loading-spinner mr-1"></span>Processing
+                                </span>
+                            {% elif query.status == 'completed' %}
+                                <span class="query-status status-completed">Completed</span>
+                            {% elif query.status == 'failed' %}
+                                <span class="query-status status-failed">Failed</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center py-4">
+                        <i class="fas fa-search fa-3x mb-3 d-block"></i>
+                        No research queries yet. Start with a quick research above!
+                    </p>
+                {% endif %}
+                
+                <div class="text-center mt-3">
+                    <a href="{% url 'legal_research:query_list' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-list mr-2"></i>View All Queries
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Query Types Distribution -->
+    <div class="col-lg-4 mb-4">
+        <div class="research-card card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie mr-2"></i>Query Types</h5>
+            </div>
+            <div class="card-body">
+                {% if query_types %}
+                    {% for type_data in query_types %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>{{ type_data.query_type|title|replace:'_',' ' }}</span>
+                        <span class="badge badge-primary">{{ type_data.count }}</span>
+                    </div>
+                    <div class="progress mb-3">
+                        {% with total_queries=total_queries|default:1 %}
+                        <div class="progress-bar-fill" style="width: {{ type_data.count|div:total_queries|mul:100|floatformat:0 }}%"></div>
+                        {% endwith %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No query data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Quick Actions -->
+    <div class="col-12 mb-4">
+        <div class="research-card card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-rocket mr-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'legal_research:query_create' %}" class="btn btn-outline-primary btn-block h-100 d-flex flex-column align-items-center justify-content-center">
+                            <i class="fas fa-plus fa-2x mb-2"></i>
+                            New Research Query
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'legal_research:document_analysis' %}" class="btn btn-outline-success btn-block h-100 d-flex flex-column align-items-center justify-content-center">
+                            <i class="fas fa-file-alt fa-2x mb-2"></i>
+                            Analyze Documents
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'legal_research:session_list' %}" class="btn btn-outline-info btn-block h-100 d-flex flex-column align-items-center justify-content-center">
+                            <i class="fas fa-folder fa-2x mb-2"></i>
+                            Research Sessions
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'legal_research:query_list' %}" class="btn btn-outline-warning btn-block h-100 d-flex flex-column align-items-center justify-content-center">
+                            <i class="fas fa-history fa-2x mb-2"></i>
+                            View History
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Rate -->
+{% if total_queries > 0 %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="research-card card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-line mr-2"></i>Performance Metrics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h4 class="text-success">{{ success_rate|floatformat:1 }}%</h4>
+                        <p class="mb-0">Success Rate</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h4 class="text-info">{{ total_queries|div:completed_queries|floatformat:1 }}</h4>
+                        <p class="mb-0">Avg. Queries/Day</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h4 class="text-primary">{{ total_tokens|div:completed_queries|default:0|floatformat:0 }}</h4>
+                        <p class="mb-0">Avg. Tokens/Query</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

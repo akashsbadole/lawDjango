@@ -1,0 +1,217 @@
+{% extends "lawyer_panel/base.html" %}
+{% load static %}
+{% load documents_tags %}
+
+{% block title %}{{ document.title }} - Lawyer Panel{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'lawyer_panel/css/lawyer_panel.css' %}">
+<style>
+    .document-preview {
+        max-height: 600px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        padding: 10px;
+        background-color: #f8f9fa;
+    }
+    .document-meta {
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    .access-badge {
+        font-size: 0.8rem;
+    }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ document.title }}</h1>
+        <div>
+            <a href="{% url 'lawyer_panel:document_list' %}" class="btn btn-secondary">Back to Documents</a>
+            {% if can_edit %}
+                <a href="{% url 'lawyer_panel:document_update' document.pk %}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Document Details -->
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Document Preview -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Document Preview</h6>
+                    <div>
+                        <a href="{{ document.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                            <i class="fas fa-external-link-alt"></i> Open in New Tab
+                        </a>
+                        <a href="{{ document.file.url }}" download="{{ document.filename }}" class="btn btn-sm btn-outline-success">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if document.is_pdf %}
+                        <div class="document-preview">
+                            <iframe src="{{ document.file.url }}" width="100%" height="600px" frameborder="0"></iframe>
+                        </div>
+                    {% elif document.is_image %}
+                        <div class="text-center">
+                            <img src="{{ document.file.url }}" class="img-fluid" alt="{{ document.title }}">
+                        </div>
+                    {% elif document.is_text %}
+                        <div class="document-preview">
+                            <pre>{{ document.content|truncatewords:500 }}</pre>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-file fa-4x text-gray-400 mb-3"></i>
+                            <h5 class="text-gray-500">Preview not available</h5>
+                            <p class="text-gray-400">Download the file to view its contents.</p>
+                            <a href="{{ document.file.url }}" download="{{ document.filename }}" class="btn btn-primary">
+                                <i class="fas fa-download"></i> Download {{ document.get_file_type_display }}
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Document Description -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Description</h6>
+                </div>
+                <div class="card-body">
+                    {% if document.description %}
+                        <p>{{ document.description|linebreaks }}</p>
+                    {% else %}
+                        <p class="text-muted">No description provided.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Document Metadata -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Document Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="document-meta">
+                        <div class="row mb-2">
+                            <div class="col-sm-4 font-weight-bold">Type:</div>
+                            <div class="col-sm-8">{{ document.get_file_type_display }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-sm-4 font-weight-bold">Size:</div>
+                            <div class="col-sm-8">{{ document.size|filesizeformat }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-sm-4 font-weight-bold">Category:</div>
+                            <div class="col-sm-8">{{ document.get_category_display }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-sm-4 font-weight-bold">Access:</div>
+                            <div class="col-sm-8">
+                                <span class="badge access-badge 
+                                    {% if document.access_level == 'public' %}bg-success
+                                    {% elif document.access_level == 'internal' %}bg-info
+                                    {% else %}bg-warning{% endif %}">
+                                    {{ document.get_access_level_display }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-sm-4 font-weight-bold">Created:</div>
+                            <div class="col-sm-8">{{ document.created_at|date:"M d, Y H:i" }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-sm-4 font-weight-bold">Updated:</div>
+                            <div class="col-sm-8">{{ document.updated_at|date:"M d, Y H:i" }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-sm-4 font-weight-bold">Uploaded by:</div>
+                            <div class="col-sm-8">{{ document.uploaded_by.get_full_name|default:document.uploaded_by.username }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Case -->
+            {% if document.case %}
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Related Case</h6>
+                    </div>
+                    <div class="card-body">
+                        <h6><a href="{% url 'lawyer_panel:case_detail' document.case.pk %}">{{ document.case.case_number }}</a></h6>
+                        <p class="text-muted">{{ document.case.title }}</p>
+                        <a href="{% url 'lawyer_panel:case_detail' document.case.pk %}" class="btn btn-sm btn-outline-primary">
+                            View Case Details
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Document Actions -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ document.file.url }}" download="{{ document.filename }}" class="btn btn-outline-success">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                        {% if can_edit %}
+                            <a href="{% url 'lawyer_panel:document_update' document.pk %}" class="btn btn-outline-primary">
+                                <i class="fas fa-edit"></i> Edit Details
+                            </a>
+                        {% endif %}
+                        <button class="btn btn-outline-info" onclick="shareDocument()">
+                            <i class="fas fa-share"></i> Share
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="printDocument()">
+                            <i class="fas fa-print"></i> Print
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function shareDocument() {
+        if (navigator.share) {
+            navigator.share({
+                title: '{{ document.title }}',
+                text: '{{ document.description|default:"Check out this document" }}',
+                url: window.location.href
+            }).catch(err => console.log('Error sharing:', err));
+        } else {
+            // Fallback - copy link to clipboard
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                alert('Link copied to clipboard!');
+            });
+        }
+    }
+
+    function printDocument() {
+        window.open('{{ document.file.url }}', '_blank');
+        setTimeout(() => {
+            window.print();
+        }, 1000);
+    }
+</script>
+{% endblock %}

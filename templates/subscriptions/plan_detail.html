@@ -1,0 +1,219 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}{{ plan.name }} Plan - {{ user.tenant.name }}{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">{{ plan.name }} Plan</h1>
+  <div>
+    <a href="{% url 'subscriptions:plan_selection' %}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left"></i> Back to Plans
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-info-circle"></i> Plan Details
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <h4 class="text-primary">${{ plan.price }}</h4>
+            <p class="text-muted">per {{ plan.get_billing_cycle_display }}</p>
+            {% if plan.setup_fee > 0 %}
+            <p class="mb-0">One-time setup fee: ${{ plan.setup_fee }}</p>
+            {% endif %}
+          </div>
+          <div class="col-md-6">
+            {% if plan.trial_days > 0 %}
+            <h4 class="text-info">{{ plan.trial_days }} Days</h4>
+            <p class="text-muted">Free trial period</p>
+            {% else %}
+            <h4 class="text-muted">No Trial</h4>
+            <p class="text-muted">No trial period</p>
+            {% endif %}
+          </div>
+        </div>
+        
+        <p class="mb-0">{{ plan.description }}</p>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-list"></i> Plan Features
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Feature</th>
+                <th>Included</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if plan.max_users %}
+              <tr>
+                <td>Users</td>
+                <td><i class="fas fa-check text-success"></i></td>
+                <td>Up to {{ plan.max_users }} users</td>
+              </tr>
+              {% endif %}
+              
+              {% if plan.max_storage_mb %}
+              <tr>
+                <td>Storage</td>
+                <td><i class="fas fa-check text-success"></i></td>
+                <td>{{ plan.max_storage_mb }}MB storage space</td>
+              </tr>
+              {% endif %}
+              
+              {% for feature in features %}
+              <tr>
+                <td>{{ feature.feature.name }}</td>
+                <td>
+                  {% if feature.is_included %}
+                  <i class="fas fa-check text-success"></i>
+                  {% else %}
+                  <i class="fas fa-times text-danger"></i>
+                  {% endif %}
+                </td>
+                <td>{{ feature.value|default:"-" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-shopping-cart"></i> Subscribe Now
+        </h5>
+      </div>
+      <div class="card-body text-center">
+        {% if current_subscription and current_subscription.plan.id == plan.id %}
+        <div class="alert alert-info">
+          <h5><i class="fas fa-info-circle"></i> Current Plan</h5>
+          <p>You are currently subscribed to this plan.</p>
+          <a href="{% url 'subscriptions:subscription_detail' current_subscription.pk %}" class="btn btn-primary">
+            Manage Subscription
+          </a>
+        </div>
+        {% else %}
+        <form method="post" action="{% url 'subscriptions:subscribe' %}">
+          {% csrf_token %}
+          <input type="hidden" name="plan_id" value="{{ plan.id }}">
+          
+          {% if payment_methods %}
+          <div class="mb-3">
+            <label for="payment_method" class="form-label">Payment Method</label>
+            <select name="payment_method" class="form-select" required>
+              <option value="">Select payment method</option>
+              {% for method in payment_methods %}
+              <option value="{{ method.id }}">
+                {% if method.is_default %}{{ method.get_method_type_display }} (Default){% else %}{{ method.get_method_type_display }}{% endif %}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endif %}
+          
+          <button type="submit" class="btn btn-primary btn-lg w-100">
+            {% if current_subscription and plan.price > current_subscription.plan.price %}
+            <i class="fas fa-arrow-up"></i> Upgrade to {{ plan.name }}
+            {% elif current_subscription and plan.price < current_subscription.plan.price %}
+            <i class="fas fa-arrow-down"></i> Downgrade to {{ plan.name }}
+            {% else %}
+            <i class="fas fa-plus"></i> Subscribe to {{ plan.name }}
+            {% endif %}
+          </button>
+          
+          {% if not payment_methods %}
+          <div class="mt-3">
+            <a href="{% url 'subscriptions:payment_method_create' %}" class="btn btn-outline-secondary btn-sm">
+              <i class="fas fa-plus"></i> Add Payment Method First
+            </a>
+          </div>
+          {% endif %}
+        </form>
+        {% endif %}
+      </div>
+    </div>
+    
+    {% if current_subscription %}
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-exchange-alt"></i> Compare Plans
+        </h5>
+      </div>
+      <div class="card-body">
+        <p>See how this plan compares to your current subscription:</p>
+        
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <span><strong>Price:</strong></span>
+            <span>
+              {% if plan.price > current_subscription.plan.price %}
+              <span class="text-danger">+${{ plan.price|sub:current_subscription.plan.price }}</span>
+              {% elif plan.price < current_subscription.plan.price %}
+              <span class="text-success">-${{ current_subscription.plan.price|sub:plan.price }}</span>
+              {% else %}
+              <span class="text-muted">Same</span>
+              {% endif %}
+            </span>
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <span><strong>Users:</strong></span>
+            <span>
+              {% if plan.max_users > current_subscription.plan.max_users %}
+              <span class="text-success">+{{ plan.max_users|sub:current_subscription.plan.max_users }}</span>
+              {% elif plan.max_users < current_subscription.plan.max_users %}
+              <span class="text-danger">-{{ current_subscription.plan.max_users|sub:plan.max_users }}</span>
+              {% else %}
+              <span class="text-muted">Same</span>
+              {% endif %}
+            </span>
+          </div>
+        </div>
+        
+        <div class="mb-0">
+          <div class="d-flex justify-content-between align-items-center">
+            <span><strong>Storage:</strong></span>
+            <span>
+              {% if plan.max_storage_mb > current_subscription.plan.max_storage_mb %}
+              <span class="text-success">+{{ plan.max_storage_mb|sub:current_subscription.plan.max_storage_mb }}MB</span>
+              {% elif plan.max_storage_mb < current_subscription.plan.max_storage_mb %}
+              <span class="text-danger">-{{ current_subscription.plan.max_storage_mb|sub:plan.max_storage_mb }}MB</span>
+              {% else %}
+              <span class="text-muted">Same</span>
+              {% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

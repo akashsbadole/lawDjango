@@ -1,0 +1,85 @@
+{% extends "lawyer_panel/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if form.instance.pk %}Edit Expense{% else %}Add Expense{% endif %} - Lawyer Panel{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            {% if form.instance.pk %}Edit Expense{% else %}Add New Expense{% endif %}
+        </h1>
+        <a href="{% url 'lawyer_panel:expense_list' %}" class="btn btn-secondary">Back to Expenses</a>
+    </div>
+
+    <!-- Expense Form -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                {% if form.instance.pk %}Edit Expense{% else %}Add New Expense{% endif %}
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <div class="text-right mt-3">
+                    <button type="submit" class="btn btn-primary">
+                        {% if form.instance.pk %}Update Expense{% else %}Add Expense{% endif %}
+                    </button>
+                    <a href="{% url 'lawyer_panel:expense_list' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Expense Guidelines -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-info">Expense Guidelines</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="font-weight-bold">Allowed Expenses</h6>
+                    <ul class="list-unstyled">
+                        <li>Business travel (flights, hotels, transportation)</li>
+                        <li>Client meals and entertainment</li>
+                        <li>Office supplies and equipment</li>
+                        <li>Court filing fees and legal research</li>
+                        <li>Professional development and training</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="font-weight-bold">Submission Requirements</h6>
+                    <ul class="list-unstyled">
+                        <li>Keep original receipts for all expenses</li>
+                        <li>Submit expenses within 30 days of incurring</li>
+                        <li>Include detailed descriptions for each expense</li>
+                        <li>Associate expenses with specific cases when applicable</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Auto-calculate total amount when quantity and unit price change
+        $('#id_quantity, #id_unit_price').on('input', function() {
+            var quantity = parseFloat($('#id_quantity').val()) || 0;
+            var unitPrice = parseFloat($('#id_unit_price').val()) || 0;
+            var total = quantity * unitPrice;
+            
+            if (total > 0) {
+                $('#id_amount').val(total.toFixed(2));
+            }
+        });
+    });
+</script>
+{% endblock %}

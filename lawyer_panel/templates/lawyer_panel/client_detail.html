@@ -1,0 +1,270 @@
+{% extends "lawyer_panel/base.html" %}
+{% load static %}
+{% load clients_tags %}
+
+{% block title %}{{ client.get_full_name }} - Lawyer Panel{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'lawyer_panel/css/lawyer_panel.css' %}">
+<style>
+    .client-contact-info {
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    .case-card {
+        transition: transform 0.2s;
+    }
+    .case-card:hover {
+        transform: translateY(-2px);
+    }
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 10px;
+        top: 0;
+        height: 100%;
+        width: 2px;
+        background: #e9ecef;
+    }
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+    }
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -25px;
+        top: 5px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #4e73df;
+    }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ client.get_full_name }}</h1>
+        <div>
+            <a href="{% url 'lawyer_panel:client_list' %}" class="btn btn-secondary">Back to Clients</a>
+            <a href="{% url 'lawyer_panel:client_update' client.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Edit Client
+            </a>
+        </div>
+    </div>
+
+    <!-- Client Details -->
+    <div class="row">
+        <div class="col-lg-4">
+            <!-- Client Information -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Client Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        {% if client.profile_picture %}
+                            <img src="{{ client.profile_picture.url }}" class="rounded-circle img-fluid" style="max-width: 150px;" alt="{{ client.get_full_name }}">
+                        {% else %}
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto" style="width: 150px; height: 150px; font-size: 3rem;">
+                                {{ client.first_name|first }}{{ client.last_name|first }}
+                            </div>
+                        {% endif %}
+                        <h5 class="mt-3 mb-1">{{ client.get_full_name }}</h5>
+                        <p class="text-muted">{{ client.client_type|title }}</p>
+                    </div>
+
+                    <div class="client-contact-info">
+                        <div class="row mb-2">
+                            <div class="col-sm-4 font-weight-bold">Email:</div>
+                            <div class="col-sm-8">{{ client.email }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-sm-4 font-weight-bold">Phone:</div>
+                            <div class="col-sm-8">{{ client.phone|default:"Not provided" }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-sm-4 font-weight-bold">Mobile:</div>
+                            <div class="col-sm-8">{{ client.mobile|default:"Not provided" }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-sm-4 font-weight-bold">Address:</div>
+                            <div class="col-sm-8">
+                                {% if client.address %}
+                                    {{ client.address }}<br>
+                                    {% if client.city %}{{ client.city }}, {% endif %}
+                                    {% if client.state %}{{ client.state }}{% endif %}
+                                    {% if client.postal_code %}{{ client.postal_code }}{% endif %}
+                                {% else %}
+                                    Not provided
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-sm-4 font-weight-bold">Since:</div>
+                            <div class="col-sm-8">{{ client.created_at|date:"M d, Y" }}</div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="mailto:{{ client.email }}" class="btn btn-outline-primary">
+                            <i class="fas fa-envelope"></i> Send Email
+                        </a>
+                        {% if client.phone %}
+                            <a href="tel:{{ client.phone }}" class="btn btn-outline-success">
+                                <i class="fas fa-phone"></i> Call Client
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'lawyer_panel:case_create' %}?client={{ client.pk }}" class="btn btn-outline-info">
+                            <i class="fas fa-plus"></i> New Case
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Information -->
+            {% if client.notes %}
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Notes</h6>
+                    </div>
+                    <div class="card-body">
+                        <p>{{ client.notes|linebreaks }}</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-8">
+            <!-- Client Cases -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Cases ({{ cases.count }})</h6>
+                    <a href="{% url 'lawyer_panel:case_create' %}?client={{ client.pk }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> New Case
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if cases %}
+                        <div class="row">
+                            {% for case in cases %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card case-card h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <a href="{% url 'lawyer_panel:case_detail' case.pk %}">{{ case.case_number }}</a>
+                                            </h6>
+                                            <p class="card-text">{{ case.title|truncatewords:10 }}</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="badge 
+                                                    {% if case.status == 'active' %}bg-success
+                                                    {% elif case.status == 'pending' %}bg-warning
+                                                    {% elif case.status == 'closed' %}bg-secondary
+                                                    {% else %}bg-danger{% endif %}">
+                                                    {{ case.get_status_display }}
+                                                </span>
+                                                <small class="text-muted">{{ case.created_at|date:"M d, Y" }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{% url 'lawyer_panel:case_list' %}?client={{ client.pk }}" class="btn btn-outline-primary">
+                                View All Cases
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-briefcase fa-3x text-gray-400 mb-3"></i>
+                            <h5 class="text-gray-500">No cases yet</h5>
+                            <p class="text-gray-400">Create the first case for this client.</p>
+                            <a href="{% url 'lawyer_panel:case_create' %}?client={{ client.pk }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Create First Case
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Client Documents -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Documents ({{ documents.count }})</h6>
+                    <a href="{% url 'lawyer_panel:document_list' %}?client={{ client.pk }}" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if documents %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Type</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for document in documents|slice:":5" %}
+                                        <tr>
+                                            <td><a href="{% url 'lawyer_panel:document_detail' document.pk %}">{{ document.title }}</a></td>
+                                            <td>{{ document.get_file_type_display }}</td>
+                                            <td>{{ document.created_at|date:"M d, Y" }}</td>
+                                            <td>
+                                                <a href="{{ document.file.url }}" download="{{ document.filename }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-file fa-3x text-gray-400 mb-3"></i>
+                            <h5 class="text-gray-500">No documents yet</h5>
+                            <p class="text-gray-400">Upload the first document for this client.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Activity</h6>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        {% for case in recent_cases %}
+                            <div class="timeline-item">
+                                <h6 class="mb-1">
+                                    <a href="{% url 'lawyer_panel:case_detail' case.pk %}">{{ case.case_number }}</a>
+                                </h6>
+                                <p class="mb-1">{{ case.title|truncatewords:15 }}</p>
+                                <small class="text-muted">{{ case.created_at|date:"M d, Y H:i" }}</small>
+                            </div>
+                        {% empty %}
+                            <p class="text-muted">No recent activity to show.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{{ tenant.name }} - Law Firm Management System
+===============================================
+
+WELCOME TO {{ subscription.plan.name|upper }}!
+=====================================
+
+Thank you for subscribing to our law firm management system. 
+Your account is now active and ready to use.
+
+SUBSCRIPTION DETAILS
+====================
+
+Plan: {{ subscription.plan.name }}
+Price: ${{ subscription.plan.price }}/{{ subscription.plan.get_billing_cycle_display }}
+Start Date: {{ subscription.start_date|date:"F j, Y" }}
+Next Billing Date: {{ subscription.end_date|date:"F j, Y" }}
+Status: {{ subscription.get_status_display }}
+
+YOUR PLAN FEATURES
+==================
+
+{% for feature in plan_features %}
+{{ feature.feature.name }}
+{% if feature.value %}Limit: {{ feature.value }}{% endif %}
+{% if feature.feature.description %}{{ feature.feature.description }}{% endif %}
+
+{% endfor %}
+
+GETTING STARTED
+===============
+
+Here's what you can do to get the most out of your new subscription:
+
+✓ Add Team Members: Invite your colleagues to join your firm
+✓ Import Client Data: Migrate your existing client information
+✓ Set Up Cases: Create your first cases and organize matters
+✓ Upload Documents: Store and manage important legal documents
+✓ Configure Billing: Set up your billing rates and invoice templates
+✓ Customize Settings: Tailor the system to your firm's needs
+
+QUICK LINKS
+===========
+
+Dashboard: {{ site_url }}{% url 'dashboard' %}
+Manage Clients: {{ site_url }}{% url 'clients:client_list' %}
+Manage Cases: {{ site_url }}{% url 'cases:case_list' %}
+Manage Documents: {{ site_url }}{% url 'documents:document_list' %}
+Manage Billing: {{ site_url }}{% url 'billing:invoice_list' %}
+Manage Subscription: {{ site_url }}{% url 'subscriptions:subscription_detail' %}
+
+NEED HELP?
+==========
+
+We're here to help you make the most of your new subscription:
+
+• Help Center: Browse our documentation and tutorials
+• Video Tutorials: Watch step-by-step guides
+• Community Forum: Connect with other law firms
+• Support Team: Get personalized assistance
+
+PRO TIPS FOR SUCCESS
+====================
+
+• Take advantage of our mobile app to manage your practice on the go
+• Set up automated reminders for important dates and deadlines
+• Use our reporting tools to track your firm's performance
+• Explore integrations with other legal tools you use
+• Regularly back up your data for security
+
+BILLING INFORMATION
+===================
+
+Your subscription will automatically renew on {{ subscription.end_date|date:"F j, Y" }}. 
+You can manage your billing preferences, payment methods, and subscription details 
+at any time from your account settings.
+
+Billing Dashboard: {{ site_url }}{% url 'subscriptions:billing_dashboard' %}
+
+---
+Thank you for choosing {{ tenant.name }} for your law firm management needs.
+We're committed to helping you succeed and look forward to supporting your practice.
+
+© {% now "Y" %} {{ tenant.name }}. All rights reserved.

@@ -1,11 +1,200 @@
 {% extends '_base.html' %}
 {% load static %}
 
-{% block title %}Home page{% endblock title %}
+{% block title %}Manage Your Law Firm Effortlessly - All-in-One Legal Practice Management{% endblock title %}
+
+{% block meta_description %}
+Streamline case management, billing, and client communication in one platform. Designed for solo practitioners and small law firms to save time and grow their practice.
+{% endblock meta_description %}
 
 {% block content %}
-<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
-  <img src="{% static 'images/lithium.png' %}" class="img-fluid" alt="Lithium logo"/>
-  <p class="lead">A Django starter project with batteries.</p>
-</div>
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container hero-content">
+        <div class="hero-text fade-in-up">
+            <h1>Manage Your Law Firm with Modern Technology</h1>
+            <p class="subtitle">Streamline case management, billing, and client communication in one platform designed for solo practitioners and small law firms.</p>
+            
+            <div class="hero-actions">
+                <a href="{% url 'auth' %}" class="btn btn-primary">Start Free Trial</a>
+                <a href="{% url 'demo' %}" class="btn btn-outline">Request Demo</a>
+            </div>
+        </div>
+        
+        <div class="hero-image-wrapper fade-in-up" style="animation-delay: 0.2s;">
+            <div class="hero-image">
+                <img src="{% static 'images/lawyer-dashboard.png' %}" alt="Law Firm Dashboard" style="width:100%; border-radius: var(--radius-md);">
+                <!-- Fallback if image doesn't exist, we can use a placeholder div or styled block, but assuming image exists -->
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <h3>1,000+</h3>
+                <p>Law Firms Trust Us</p>
+            </div>
+            <div class="stat-item">
+                <h3>50,000+</h3>
+                <p>Cases Managed</p>
+            </div>
+            <div class="stat-item">
+                <h3>$10M+</h3>
+                <p>Invoices Processed</p>
+            </div>
+            <div class="stat-item">
+                <h3>99.9%</h3>
+                <p>Uptime Guaranteed</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="section">
+    <div class="container">
+        <div class="text-center mb-lg">
+            <h2>Everything You Need in One Platform</h2>
+            <p class="text-muted" style="max-width: 600px; margin: 0 auto;">Powerful features designed to help you run your legal practice more efficiently and effectively.</p>
+        </div>
+        
+        <div class="grid grid-3">
+            <!-- Feature 1 -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                </div>
+                <h4>Case Management</h4>
+                <p class="text-muted">Track and manage case files, deadlines, and court dates with an intuitive interface designed for legal professionals.</p>
+            </div>
+            
+            <!-- Feature 2 -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+                </div>
+                <h4>Billing & Invoicing</h4>
+                <p class="text-muted">Automated billing, time tracking, and invoice generation with seamless payment processing integration.</p>
+            </div>
+            
+            <!-- Feature 3 -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+                </div>
+                <h4>Document Management</h4>
+                <p class="text-muted">Secure storage and easy access to documents with version control and advanced sharing features.</p>
+            </div>
+            
+            <!-- Feature 4 -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </div>
+                <h4>Client Portal</h4>
+                <p class="text-muted">Allow clients to view case updates, upload documents, and communicate securely with lawyers.</p>
+            </div>
+            
+            <!-- Feature 5 -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+                </div>
+                <h4>Calendar & Scheduling</h4>
+                <p class="text-muted">Manage appointments, court dates, and meetings with integrated calendar features and reminders.</p>
+            </div>
+            
+            <!-- Feature 6 -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+                <h4>Task Automation</h4>
+                <p class="text-muted">Automate repetitive tasks, reminders, and deadlines for better workflow and productivity.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing Section -->
+<section class="section section-bg">
+    <div class="container">
+        <div class="text-center mb-lg">
+            <h2>Simple, Transparent Pricing</h2>
+            <p class="text-muted">Choose the plan that's right for your firm. Start free and scale as you grow.</p>
+        </div>
+        
+        <div class="grid grid-3">
+            <!-- Starter -->
+            <div class="pricing-card">
+                <h4>Starter</h4>
+                <div class="price">$0 <span>/month</span></div>
+                <p class="text-muted mb-md">Perfect for solo practitioners just getting started</p>
+                
+                <ul class="benefits-list">
+                    <li>Up to 3 users</li>
+                    <li>10 cases</li>
+                    <li>1GB storage</li>
+                    <li>Basic case management</li>
+                    <li>Email support</li>
+                </ul>
+                
+                <a href="#" class="btn btn-outline" style="width:100%">Get Started</a>
+            </div>
+            
+            <!-- Professional -->
+            <div class="pricing-card featured">
+                <h4>Professional</h4>
+                <div class="price">$49 <span>/month</span></div>
+                <p class="text-muted mb-md">Most popular choice for growing firms</p>
+                
+                <ul class="benefits-list">
+                    <li>Up to 10 users</li>
+                    <li>Unlimited cases</li>
+                    <li>50GB storage</li>
+                    <li>Advanced case management</li>
+                    <li>Time tracking & billing</li>
+                    <li>Client portal</li>
+                </ul>
+                
+                <a href="#" class="btn btn-primary" style="width:100%">Start Free Trial</a>
+            </div>
+            
+            <!-- Enterprise -->
+            <div class="pricing-card">
+                <h4>Enterprise</h4>
+                <div class="price">$99 <span>/month</span></div>
+                <p class="text-muted mb-md">For larger firms with advanced needs</p>
+                
+                <ul class="benefits-list">
+                    <li>Unlimited users</li>
+                    <li>Unlimited cases</li>
+                    <li>500GB storage</li>
+                    <li>All Professional features</li>
+                    <li>Advanced analytics</li>
+                    <li>Dedicated support</li>
+                </ul>
+                
+                <a href="#" class="btn btn-outline" style="width:100%">Contact Sales</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="section" style="background: var(--color-primary-dark); color: white; text-align: center;">
+    <div class="container">
+        <h2 style="color: white; margin-bottom: var(--spacing-md);">Ready to Transform Your Practice?</h2>
+        <p style="color: rgba(255,255,255,0.8); max-width: 600px; margin: 0 auto var(--spacing-lg);">Join thousands of legal professionals who have already streamlined their practice with our platform.</p>
+        
+        <div class="flex-center flex-wrap">
+            <a href="{% url 'auth' %}" class="btn btn-accent">Start Your Free Trial</a>
+            <a href="{% url 'demo' %}" class="btn btn-white" style="margin-left: var(--spacing-sm);">Schedule a Demo</a>
+        </div>
+    </div>
+</section>
 {% endblock content %}

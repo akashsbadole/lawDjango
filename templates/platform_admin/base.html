@@ -1,0 +1,190 @@
+{% extends "_base.html" %}
+{% load static %}
+
+{% block title %}Platform Admin - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+      <div class="position-sticky pt-3">
+        <h5 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+          <span>Platform Admin</span>
+        </h5>
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'platform_admin:dashboard' %}active{% endif %}" 
+               href="{% url 'platform_admin:dashboard' %}">
+              <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'tenant' in request.resolver_match.url_name %}active{% endif %}" 
+               href="{% url 'platform_admin:tenant_list' %}">
+              <i class="bi bi-building"></i> Tenants
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'user' in request.resolver_match.url_name %}active{% endif %}" 
+               href="{% url 'platform_admin:user_list' %}">
+              <i class="bi bi-people"></i> Users
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'note' in request.resolver_match.url_name %}active{% endif %}" 
+               href="{% url 'platform_admin:note_list' %}">
+              <i class="bi bi-journal-text"></i> Admin Notes
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'announcement' in request.resolver_match.url_name %}active{% endif %}" 
+               href="{% url 'platform_admin:announcement_list' %}">
+              <i class="bi bi-megaphone"></i> Announcements
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'health' in request.resolver_match.url_name %}active{% endif %}" 
+               href="{% url 'platform_admin:system_health' %}">
+              <i class="bi bi-heart-pulse"></i> System Health
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'revenue' in request.resolver_match.url_name %}active{% endif %}" 
+               href="{% url 'platform_admin:revenue_report' %}">
+              <i class="bi bi-currency-dollar"></i> Revenue
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'activity' in request.resolver_match.url_name %}active{% endif %}" 
+               href="{% url 'platform_admin:activity_log' %}">
+              <i class="bi bi-clock-history"></i> Activity Log
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'settings' in request.resolver_match.url_name %}active{% endif %}" 
+               href="{% url 'platform_admin:system_settings' %}">
+              <i class="bi bi-gear"></i> Settings
+            </a>
+          </li>
+        </ul>
+
+        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+          <span>Quick Actions</span>
+        </h6>
+        <ul class="nav flex-column mb-2">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'platform_admin:note_create' %}">
+              <i class="bi bi-plus-circle"></i> Add Note
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'platform_admin:announcement_create' %}">
+              <i class="bi bi-plus-circle"></i> Add Announcement
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'platform_admin:export_data' %}?type=tenants">
+              <i class="bi bi-download"></i> Export Data
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">{% block page_title %}Dashboard{% endblock %}</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          {% block page_actions %}{% endblock %}
+        </div>
+      </div>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {% block admin_content %}
+      <!-- Main content will go here -->
+      {% endblock %}
+    </main>
+  </div>
+</div>
+
+<style>
+.sidebar {
+  position: fixed;
+  top: 56px; /* Height of navbar */
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  padding: 48px 0 0;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar-heading {
+  font-size: .75rem;
+  text-transform: uppercase;
+}
+
+.nav-link {
+  font-weight: 500;
+  color: #333;
+}
+
+.nav-link.active {
+  color: #007bff;
+}
+
+.nav-link:hover {
+  color: #007bff;
+}
+
+@media (max-width: 767.98px) {
+  .sidebar {
+    top: 5rem;
+  }
+}
+
+main {
+  margin-top: 1rem;
+}
+
+.card {
+  margin-bottom: 1.5rem;
+}
+
+.metric-card {
+  transition: transform 0.2s;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.metric-label {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.status-badge {
+  font-size: 0.75rem;
+}
+</style>
+{% endblock %}
+
+{% block javascript %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"></script>
+{% endblock %}

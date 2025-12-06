@@ -1,0 +1,216 @@
+{% extends "_tenant_base.html" %}
+
+{% block title %}Permission Matrix{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Permission Matrix</h1>
+        <a href="{% url 'permissions:role_list' %}" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i> Back to Roles
+        </a>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          {% if roles and permissions %}
+            <div class="table-responsive">
+              <table class="table table-bordered permission-matrix">
+                <thead>
+                  <tr>
+                    <th class="sticky-col bg-light">Permission / Role</th>
+                    {% for role in roles %}
+                      <th class="text-center">
+                        {{ role.name }}
+                        {% if role.is_system_role %}
+                          <br><small class="badge bg-info">System</small>
+                        {% endif %}
+                      </th>
+                    {% endfor %}
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for permission in permissions %}
+                    <tr>
+                      <td class="sticky-col bg-light">
+                        <div>
+                          <strong>{{ permission.name }}</strong>
+                          <br>
+                          <small class="text-muted">
+                            <span class="badge bg-secondary">{{ permission.module }}</span>
+                            {{ permission.codename }}
+                          </small>
+                        </div>
+                      </td>
+                      {% for role in roles %}
+                        <td class="text-center">
+                          {% if role.id in role_permissions and permission.codename in role_permissions|lookup:role.id %}
+                            <i class="fas fa-check text-success"></i>
+                          {% else %}
+                            <i class="fas fa-times text-muted"></i>
+                          {% endif %}
+                        </td>
+                      {% endfor %}
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="text-center py-4">
+              <i class="fas fa-th fa-3x text-muted mb-3"></i>
+              <p class="text-muted">
+                {% if not roles %}No roles found.{% endif %}
+                {% if not permissions %}No permissions found.{% endif %}
+              </p>
+              <div class="mt-3">
+                {% if not roles %}
+                  <a href="{% url 'permissions:role_create' %}" class="btn btn-primary me-2">
+                    <i class="fas fa-plus"></i> Create Role
+                  </a>
+                {% endif %}
+                {% if not permissions %}
+                  <a href="{% url 'permissions:permission_list' %}" class="btn btn-info">
+                    <i class="fas fa-list"></i> View Permissions
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="card-title mb-0">Legend</h5>
+              </div>
+              <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                  <i class="fas fa-check text-success me-2"></i>
+                  <span>Permission granted to role</span>
+                </div>
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-times text-muted me-2"></i>
+                  <span>Permission not granted to role</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="card-title mb-0">Permission Modules</h5>
+              </div>
+              <div class="card-body">
+                {% regroup permissions by module as module_list %}
+                {% for module in module_list %}
+                  <div class="mb-2">
+                    <span class="badge bg-secondary">{{ module.grouper }}</span>
+                    <small class="text-muted">({{ module.list|length }} permissions)</small>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.permission-matrix {
+  font-size: 0.9rem;
+}
+
+.permission-matrix th,
+.permission-matrix td {
+  padding: 0.5rem;
+  vertical-align: middle;
+}
+
+.sticky-col {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  min-width: 200px;
+  max-width: 250px;
+}
+
+.permission-matrix th {
+  white-space: nowrap;
+}
+
+.permission-matrix .sticky-col {
+  border-right: 2px solid #dee2e6;
+}
+
+.permission-matrix th:not(.sticky-col) {
+  min-width: 80px;
+}
+
+.permission-matrix td:not(.sticky-col) {
+  text-align: center;
+  min-width: 80px;
+}
+
+.permission-matrix .fa-check,
+.permission-matrix .fa-times {
+  font-size: 1.2rem;
+}
+</style>
+
+<script>
+// Add interactive features to the matrix
+document.addEventListener('DOMContentLoaded', function() {
+  const table = document.querySelector('.permission-matrix');
+  if (!table) return;
+  
+  // Highlight rows and columns on hover
+  const rows = table.querySelectorAll('tbody tr');
+  const headers = table.querySelectorAll('thead th:not(.sticky-col)');
+  
+  rows.forEach((row, rowIndex) => {
+    row.addEventListener('mouseenter', function() {
+      // Highlight current row
+      this.classList.add('table-active');
+      
+      // Highlight corresponding cells in other rows
+      const cells = this.querySelectorAll('td:not(.sticky-col)');
+      cells.forEach((cell, cellIndex) => {
+        const columnCells = table.querySelectorAll(`tbody tr td:nth-child(${cellIndex + 2})`);
+        columnCells.forEach(colCell => {
+          colCell.classList.add('table-secondary');
+        });
+      });
+    });
+    
+    row.addEventListener('mouseleave', function() {
+      // Remove highlights
+      this.classList.remove('table-active');
+      table.querySelectorAll('td.table-secondary').forEach(cell => {
+        cell.classList.remove('table-secondary');
+      });
+    });
+  });
+  
+  // Add click functionality to toggle permission details
+  const permissionCells = table.querySelectorAll('td.sticky-col');
+  permissionCells.forEach(cell => {
+    cell.style.cursor = 'pointer';
+    cell.addEventListener('click', function() {
+      const permissionName = this.querySelector('strong').textContent;
+      const permissionCode = this.querySelector('.badge').nextSibling.textContent.trim();
+      
+      // Create a simple info popup (could be enhanced with a modal)
+      alert(`Permission: ${permissionName}\nCode: ${permissionCode}`);
+    });
+  });
+});
+</script>
+{% endblock %}

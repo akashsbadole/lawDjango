@@ -1,0 +1,361 @@
+{% extends "_tenant_base.html" %}
+
+{% block title %}Billing Dashboard - {{ tenant.name }} - Lithium{% endblock title %}
+
+{% block page_header %}
+<h1 class="h2">Billing Dashboard</h1>
+<div class="btn-toolbar mb-2 mb-md-0">
+  <div class="btn-group me-2">
+    <a href="{% url 'billing:invoice_create' %}" class="btn btn-sm btn-primary">
+      <i class="fas fa-plus"></i> New Invoice
+    </a>
+    <a href="{% url 'billing:time_entry_create' %}" class="btn btn-sm btn-info">
+      <i class="fas fa-clock"></i> Log Time
+    </a>
+    <a href="{% url 'billing:expense_create' %}" class="btn btn-sm btn-warning">
+      <i class="fas fa-receipt"></i> Add Expense
+    </a>
+    <a href="{% url 'billing:payment_create' %}" class="btn btn-sm btn-success">
+      <i class="fas fa-money-bill"></i> Record Payment
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Billing Dashboard</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <a href="{% url 'billing:invoice_create' %}" class="btn btn-sm btn-primary">
+        <i class="fas fa-plus"></i> New Invoice
+      </a>
+      <a href="{% url 'billing:time_entry_create' %}" class="btn btn-sm btn-info">
+        <i class="fas fa-clock"></i> Log Time
+      </a>
+      <a href="{% url 'billing:expense_create' %}" class="btn btn-sm btn-warning">
+        <i class="fas fa-receipt"></i> Add Expense
+      </a>
+      <a href="{% url 'billing:payment_create' %}" class="btn btn-sm btn-success">
+        <i class="fas fa-money-bill"></i> Record Payment
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Enhanced Statistics Cards -->
+<div class="row mb-4">
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-primary h-100 fade-in-up">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="flex-grow-1">
+            <div class="stat-label">Unpaid Invoices</div>
+            <div class="stat-number">{{ unpaid_invoices_count }}</div>
+            <div class="text-muted small">Awaiting payment</div>
+            {% if unpaid_invoices_count > 0 %}
+            <div class="progress mt-2" style="height: 6px;">
+              <div class="progress-bar bg-danger" style="width: 75%;"></div>
+            </div>
+            {% endif %}
+          </div>
+          <div class="ms-3">
+            <div class="text-primary" style="font-size: 2.5rem;">
+              <i class="fas fa-file-invoice-dollar"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-warning h-100 fade-in-up" style="animation-delay: 0.1s;">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="flex-grow-1">
+            <div class="stat-label">Monthly Revenue</div>
+            <div class="stat-number">${{ monthly_revenue }}</div>
+            <div class="text-muted small">This month</div>
+            <div class="d-flex align-items-center mt-2">
+              <i class="fas fa-arrow-up text-success me-1"></i>
+              <span class="text-success small">+12.5%</span>
+              <span class="text-muted small">vs last month</span>
+            </div>
+          </div>
+          <div class="ms-3">
+            <div class="text-warning" style="font-size: 2.5rem;">
+              <i class="fas fa-chart-line"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-success h-100 fade-in-up" style="animation-delay: 0.2s;">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="flex-grow-1">
+            <div class="stat-label">Unbilled Time</div>
+            <div class="stat-number">{{ unbilled_time_entries|length }}</div>
+            <div class="text-muted small">Hours to invoice</div>
+            {% if unbilled_time_entries %}
+            <div class="progress mt-2" style="height: 6px;">
+              <div class="progress-bar bg-success" style="width: 60%;"></div>
+            </div>
+            {% endif %}
+          </div>
+          <div class="ms-3">
+            <div class="text-success" style="font-size: 2.5rem;">
+              <i class="fas fa-clock"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-info h-100 fade-in-up" style="animation-delay: 0.3s;">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="flex-grow-1">
+            <div class="stat-label">Outstanding</div>
+            <div class="stat-number">${{ unpaid_invoices_total }}</div>
+            <div class="text-muted small">Total amount</div>
+            <div class="d-flex align-items-center mt-2">
+              <i class="fas fa-exclamation-triangle text-warning me-1"></i>
+              <span class="text-warning small">{{ unpaid_invoices_count }} invoices</span>
+            </div>
+          </div>
+          <div class="ms-3">
+            <div class="text-info" style="font-size: 2.5rem;">
+              <i class="fas fa-dollar-sign"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Enhanced Recent Items -->
+<div class="row">
+  <!-- Recent Invoices -->
+  <div class="col-lg-6 mb-4">
+    <div class="card fade-in-up" style="animation-delay: 0.4s;">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary d-flex align-items-center justify-content-between">
+          <span><i class="fas fa-file-invoice me-2"></i> Recent Invoices</span>
+          <a href="{% url 'billing:invoice_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+        </h6>
+      </div>
+      <div class="card-body">
+        {% if recent_invoices %}
+          <div class="list-group list-group-flush">
+            {% for invoice in recent_invoices %}
+            <a href="{% url 'billing:invoice_detail' invoice.pk %}" class="list-group-item list-group-item-action d-flex align-items-center">
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="mb-1">{{ invoice.invoice_number }}</h6>
+                  <span class="badge bg-{% if invoice.status == 'paid' %}success{% elif invoice.status == 'overdue' %}danger{% else %}primary{% endif %}">{{ invoice.get_status_display }}</span>
+                </div>
+                <p class="mb-1 text-muted">{{ invoice.client.full_name }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">{{ invoice.issue_date|date:"M d, Y" }}</small>
+                  <span class="fw-bold">${{ invoice.total_amount }}</span>
+                </div>
+              </div>
+              <i class="fas fa-chevron-right text-muted"></i>
+            </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-4">
+            <i class="fas fa-file-invoice fa-3x text-muted mb-3"></i>
+            <h6 class="text-muted">No invoices yet</h6>
+            <p class="text-muted">Create your first invoice to start billing clients.</p>
+            <a href="{% url 'billing:invoice_create' %}" class="btn btn-primary">
+              <i class="fas fa-plus me-2"></i> Create First Invoice
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Unbilled Time Entries -->
+  <div class="col-lg-6 mb-4">
+    <div class="card fade-in-up" style="animation-delay: 0.5s;">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary d-flex align-items-center justify-content-between">
+          <span><i class="fas fa-clock me-2"></i> Unbilled Time</span>
+          <a href="{% url 'billing:time_entry_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+        </h6>
+      </div>
+      <div class="card-body">
+        {% if unbilled_time_entries %}
+          <div class="list-group list-group-flush">
+            {% for entry in unbilled_time_entries %}
+            <a href="{% url 'billing:time_entry_update' entry.pk %}" class="list-group-item list-group-item-action d-flex align-items-center">
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="mb-1">{{ entry.lawyer.get_full_name }}</h6>
+                  <span class="badge bg-info">${{ entry.amount }}</span>
+                </div>
+                <p class="mb-1 text-muted">{{ entry.description|truncatechars:50 }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">{{ entry.case.case_number }}</small>
+                  <small class="text-muted">{{ entry.date|date:"M d, Y" }}</small>
+                </div>
+              </div>
+              <i class="fas fa-chevron-right text-muted"></i>
+            </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-4">
+            <i class="fas fa-clock fa-3x text-muted mb-3"></i>
+            <h6 class="text-muted">No unbilled time</h6>
+            <p class="text-muted">Log your time entries to track billable hours.</p>
+            <a href="{% url 'billing:time_entry_create' %}" class="btn btn-primary">
+              <i class="fas fa-plus me-2"></i> Log Time Entry
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Overdue Invoices -->
+  <div class="col-lg-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-danger">Overdue Invoices</h6>
+      </div>
+      <div class="card-body">
+        {% if overdue_invoices %}
+          <div class="list-group list-group-flush">
+            {% for invoice in overdue_invoices %}
+            <a href="{% url 'billing:invoice_detail' invoice.pk %}" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1">{{ invoice.invoice_number }}</h6>
+                <small class="text-danger">{{ invoice.due_date|date:"M d" }}</small>
+              </div>
+              <p class="mb-1">{{ invoice.client.full_name }}</p>
+              <div class="d-flex justify-content-between">
+                <span class="badge bg-danger">Overdue</span>
+                <span class="text-muted">${{ invoice.total_amount }}</span>
+              </div>
+            </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center">
+            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+            <p class="text-muted">No overdue invoices.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Payments -->
+  <div class="col-lg-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">Recent Payments</h6>
+      </div>
+      <div class="card-body">
+        {% if recent_payments %}
+          <div class="list-group list-group-flush">
+            {% for payment in recent_payments %}
+            <a href="{% url 'billing:payment_update' payment.pk %}" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1">{{ payment.invoice.invoice_number }}</h6>
+                <small>{{ payment.payment_date|date:"M d" }}</small>
+              </div>
+              <p class="mb-1">{{ payment.get_payment_method_display }}</p>
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">{{ payment.reference|default:"No reference" }}</span>
+                <span class="text-success">${{ payment.amount }}</span>
+              </div>
+            </a>
+            {% endfor %}
+          </div>
+          <div class="text-center mt-3">
+            <a href="{% url 'billing:payment_list' %}" class="btn btn-primary btn-sm">View All Payments</a>
+          </div>
+        {% else %}
+          <div class="text-center">
+            <i class="fas fa-money-bill fa-3x text-gray-300 mb-3"></i>
+            <p class="text-muted">No payments recorded yet.</p>
+            <a href="{% url 'billing:payment_create' %}" class="btn btn-primary btn-sm">Record Payment</a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Enhanced Quick Actions -->
+<div class="row">
+  <div class="col-12">
+    <div class="card fade-in-up" style="animation-delay: 0.6s;">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary d-flex align-items-center">
+          <i class="fas fa-bolt me-2"></i> Quick Actions
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="row g-4">
+          <div class="col-md-3">
+            <div class="text-center">
+              <a href="{% url 'billing:invoice_create' %}" class="btn btn-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center fade-in-up">
+                <i class="fas fa-file-invoice fa-2x mb-3"></i>
+                <h5 class="mb-2">Create Invoice</h5>
+                <small class="text-muted">Generate new invoices for clients</small>
+              </a>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="text-center">
+              <a href="{% url 'billing:time_entry_create' %}" class="btn btn-info w-100 h-100 d-flex flex-column align-items-center justify-content-center fade-in-up" style="animation-delay: 0.1s;">
+                <i class="fas fa-clock fa-2x mb-3"></i>
+                <h5 class="mb-2">Log Time</h5>
+                <small class="text-muted">Track billable hours for cases</small>
+              </a>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="text-center">
+              <a href="{% url 'billing:expense_create' %}" class="btn btn-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center fade-in-up" style="animation-delay: 0.2s;">
+                <i class="fas fa-receipt fa-2x mb-3"></i>
+                <h5 class="mb-2">Add Expense</h5>
+                <small class="text-muted">Record expenses for reimbursement</small>
+              </a>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="text-center">
+              <a href="{% url 'billing:payment_create' %}" class="btn btn-success w-100 h-100 d-flex flex-column align-items-center justify-content-center fade-in-up" style="animation-delay: 0.3s;">
+                <i class="fas fa-money-bill fa-2x mb-3"></i>
+                <h5 class="mb-2">Record Payment</h5>
+                <small class="text-muted">Record payments from clients</small>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+<script>
+// Add any billing dashboard-specific JavaScript here
+</script>
+{% endblock javascript %}

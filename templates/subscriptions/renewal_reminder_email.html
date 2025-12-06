@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Renewal Reminder - {{ tenant.name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid #007bff;
+        }
+        .content {
+            padding: 20px;
+        }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+        }
+        .alert-danger {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .renewal-box {
+            background-color: #e9ecef;
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .countdown {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            margin: 10px 0;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .table th, .table td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: left;
+        }
+        .table th {
+            background-color: #f8f9fa;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #dee2e6;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        .plan-card {
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .plan-card.current {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+        .plan-card.upgrade {
+            border-color: #28a745;
+        }
+        .feature-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .feature-list li {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        .check-icon {
+            color: #28a745;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ tenant.name }}</h1>
+        <p>Law Firm Management System</p>
+    </div>
+    
+    <div class="content">
+        {% if days_until_renewal <= 3 %}
+        <div class="alert alert-danger">
+            <h2><i>⚠️</i> Urgent: Subscription Renewal Required</h2>
+            <p>Your subscription will expire in {{ days_until_renewal }} day(s). Please renew immediately to avoid service interruption.</p>
+        </div>
+        {% elif days_until_renewal <= 7 %}
+        <div class="alert alert-warning">
+            <h2><i>⏰</i> Subscription Renewal Reminder</h2>
+            <p>Your subscription will expire in {{ days_until_renewal }} day(s). Please renew soon to continue using our services.</p>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <h2><i>📅</i> Subscription Renewal Notice</h2>
+            <p>Your subscription will expire in {{ days_until_renewal }} day(s). This is a friendly reminder to renew your subscription.</p>
+        </div>
+        {% endif %}
+        
+        <div class="renewal-box">
+            <h3>Subscription Renewal</h3>
+            <div class="countdown">{{ days_until_renewal }} Days</div>
+            <p>Until your {{ subscription.plan.name }} subscription expires on {{ subscription.end_date|date:"F j, Y" }}</p>
+        </div>
+        
+        <h3>Current Subscription Details</h3>
+        <table class="table">
+            <tr>
+                <th>Current Plan</th>
+                <td>{{ subscription.plan.name }}</td>
+            </tr>
+            <tr>
+                <th>Price</th>
+                <td>${{ subscription.plan.price }}/{{ subscription.plan.get_billing_cycle_display }}</td>
+            </tr>
+            <tr>
+                <th>Start Date</th>
+                <td>{{ subscription.start_date|date:"F j, Y" }}</td>
+            </tr>
+            <tr>
+                <th>Renewal Date</th>
+                <td>{{ subscription.end_date|date:"F j, Y" }}</td>
+            </tr>
+            <tr>
+                <th>Status</th>
+                <td>{{ subscription.get_status_display }}</td>
+            </tr>
+        </table>
+        
+        <h3>Renewal Options</h3>
+        
+        <div class="plan-card current">
+            <h4>Current Plan - {{ subscription.plan.name }}</h4>
+            <p>${{ subscription.plan.price }}/{{ subscription.plan.get_billing_cycle_display }}</p>
+            <ul class="feature-list">
+                {% for feature in current_plan_features %}
+                <li><i class="check-icon">✓</i> {{ feature.feature.name }}{% if feature.value %}: {{ feature.value }}{% endif %}</li>
+                {% endfor %}
+            </ul>
+            <div style="text-align: center; margin-top: 15px;">
+                <a href="{{ site_url }}{% url 'subscriptions:subscription_update' %}?renew=true" class="btn btn-primary">
+                    Renew Current Plan
+                </a>
+            </div>
+        </div>
+        
+        {% if available_plans %}
+        <h4>Consider Upgrading Your Plan</h4>
+        {% for plan in available_plans %}
+        <div class="plan-card upgrade">
+            <h4>{{ plan.name }}</h4>
+            <p>${{ plan.price }}/{{ plan.get_billing_cycle_display }}</p>
+            <ul class="feature-list">
+                {% for feature in plan_features %}
+                {% if feature.plan.id == plan.id %}
+                <li><i class="check-icon">✓</i> {{ feature.feature.name }}{% if feature.value %}: {{ feature.value }}{% endif %}</li>
+                {% endif %}
+                {% endfor %}
+            </ul>
+            <div style="text-align: center; margin-top: 15px;">
+                <a href="{{ site_url }}{% url 'subscriptions:subscription_update' %}?plan={{ plan.id }}" class="btn btn-success">
+                    Upgrade to {{ plan.name }}
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ site_url }}{% url 'subscriptions:plan_selection' %}" class="btn btn-secondary">
+                View All Plans
+            </a>
+            <a href="{{ site_url }}{% url 'subscriptions:subscription_detail' %}" class="btn btn-secondary">
+                Manage Subscription
+            </a>
+        </div>
+        
+        <h3>What Happens if You Don't Renew?</h3>
+        <div class="alert alert-warning">
+            <p><strong>Service Interruption:</strong> If your subscription expires, you will lose access to premium features and your account will be limited to read-only mode.</p>
+            <p><strong>Data Preservation:</strong> Your data will be safely preserved and you can reactivate your subscription at any time to regain full access.</p>
+            <p><strong>No Additional Charges:</strong> You will not be charged if you choose not to renew your subscription.</p>
+        </div>
+        
+        <h3>Payment Methods</h3>
+        <p>Your subscription will be automatically renewed using your default payment method. You can update your payment preferences at any time.</p>
+        
+        {% if payment_methods %}
+        <h4>Current Payment Methods</h4>
+        {% for method in payment_methods %}
+        <div style="padding: 10px; border: 1px solid #eee; margin-bottom: 5px; border-radius: 4px;">
+            <strong>{{ method.get_method_type_display }}</strong>
+            {% if method.is_default %}<span class="badge bg-primary">Default</span>{% endif %}
+            {% if method.method_type == 'card' %}
+            <br><small>Card ending in {{ method.details.card_last4 }}</small>
+            {% elif method.method_type == 'bank' %}
+            <br><small>Account ending in {{ method.details.account_last4 }}</small>
+            {% endif %}
+        </div>
+        {% endfor %}
+        {% endif %}
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ site_url }}{% url 'subscriptions:payment_method_list' %}" class="btn btn-secondary">
+                Manage Payment Methods
+            </a>
+        </div>
+        
+        <h3>Need Help?</h3>
+        <p>If you have questions about your subscription renewal or need assistance with upgrading your plan, our support team is here to help.</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="#" class="btn btn-secondary">
+                Contact Support
+            </a>
+            <a href="{{ site_url }}{% url 'about' %}" class="btn btn-secondary">
+                Learn More
+            </a>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>This is an automated renewal reminder from {{ tenant.name }} Law Firm Management System.</p>
+        <p>If you have already renewed your subscription, please disregard this message.</p>
+        <p>&copy; {% now "Y" %} {{ tenant.name }}. All rights reserved.</p>
+    </div>
+</body>
+</html>

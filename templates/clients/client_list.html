@@ -1,0 +1,194 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}Clients - {{ user.tenant.name }} - Lithium{% endblock title %}
+
+{% block page_header %}
+<h1 class="h2">Clients</h1>
+<div class="btn-toolbar mb-2 mb-md-0">
+  <div class="btn-group me-2">
+    <a href="{% url 'clients:create' %}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Add New Client
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- Enhanced Search Form -->
+<div class="card mb-4 fade-in-up">
+  <div class="card-header">
+    <h6 class="m-0 font-weight-bold text-primary d-flex align-items-center">
+      <i class="fas fa-search me-2"></i> Search Clients
+    </h6>
+  </div>
+  <div class="card-body">
+    <form method="get" class="row g-3">
+      <div class="col-md-10">
+        <label class="form-label small text-muted">Search by name, email, or company</label>
+        {{ search_form.query }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small text-muted">&nbsp;</label>
+        <button type="submit" class="btn btn-primary w-100">
+          <i class="fas fa-search me-2"></i> Search
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Enhanced Clients Table -->
+<div class="card fade-in-up" style="animation-delay: 0.1s;">
+  <div class="card-header">
+    <h6 class="m-0 font-weight-bold text-primary d-flex align-items-center justify-content-between">
+      <span>
+        <i class="fas fa-user-tie me-2"></i>
+        Client List
+        {% if search_form.query.value %}
+          - Search Results
+        {% endif %}
+      </span>
+      <span class="badge bg-primary">{{ clients|length }} clients</span>
+    </h6>
+  </div>
+  <div class="card-body">
+    {% if clients %}
+      <div class="table-responsive">
+        <table class="table table-hover" id="dataTable" width="100%" cellspacing="0">
+          <thead class="table-light">
+            <tr>
+              <th><i class="fas fa-user me-1"></i> Name</th>
+              <th><i class="fas fa-envelope me-1"></i> Email</th>
+              <th><i class="fas fa-phone me-1"></i> Phone</th>
+              <th><i class="fas fa-building me-1"></i> Company</th>
+              <th><i class="fas fa-calendar me-1"></i> Created</th>
+              <th><i class="fas fa-cogs me-1"></i> Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for client in clients %}
+            <tr class="fade-in-up" style="animation-delay: {{ forloop.counter0|add:2 }}0s;">
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="me-2">
+                    <i class="fas fa-user-circle fa-2x text-primary"></i>
+                  </div>
+                  <div>
+                    <a href="{% url 'clients:detail' client.pk %}" class="text-decoration-none fw-bold text-primary">
+                      {{ client.full_name }}
+                    </a>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <a href="mailto:{{ client.email }}" class="text-decoration-none">
+                  <i class="fas fa-envelope me-1"></i>
+                  {{ client.email }}
+                </a>
+              </td>
+              <td>
+                {% if client.phone %}
+                  <a href="tel:{{ client.phone }}" class="text-decoration-none">
+                    <i class="fas fa-phone me-1"></i>
+                    {{ client.phone }}
+                  </a>
+                {% else %}
+                  <span class="text-muted">-</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if client.company %}
+                  <span class="badge bg-light text-dark">{{ client.company|truncatechars:20 }}</span>
+                {% else %}
+                  <span class="text-muted">-</span>
+                {% endif %}
+              </td>
+              <td>
+                <i class="fas fa-calendar me-1"></i>
+                {{ client.created_at|date:"M d, Y" }}
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm" role="group">
+                  <a href="{% url 'clients:detail' client.pk %}" class="btn btn-info" title="View Client">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a href="{% url 'clients:update' client.pk %}" class="btn btn-warning" title="Edit Client">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <a href="{% url 'clients:delete' client.pk %}" class="btn btn-danger" title="Delete Client">
+                    <i class="fas fa-trash"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Pagination -->
+      {% if is_paginated %}
+      <nav aria-label="Client list pagination">
+        <ul class="pagination justify-content-center">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_form.query.value %}&query={{ search_form.query.value }}{% endif %}">Previous</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Previous</span>
+            </li>
+          {% endif %}
+          
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+              </li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if search_form.query.value %}&query={{ search_form.query.value }}{% endif %}">{{ num }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+          
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_form.query.value %}&query={{ search_form.query.value }}{% endif %}">Next</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Next</span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    {% else %}
+      <div class="text-center py-5">
+        <i class="fas fa-users fa-4x text-muted mb-3"></i>
+        <h5 class="text-muted mb-3">No clients found</h5>
+        <p class="text-muted mb-4">
+          {% if search_form.query.value %}
+            No clients match your search criteria.
+            <a href="{% url 'clients:list' %}" class="btn btn-outline-primary">Clear search</a> to see all clients.
+          {% else %}
+            You haven't added any clients yet.
+            <a href="{% url 'clients:create' %}" class="btn btn-primary">
+              <i class="fas fa-plus me-2"></i> Add Your First Client
+            </a> to get started.
+          {% endif %}
+        </p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+<script>
+// Add any client list-specific JavaScript here
+</script>
+{% endblock javascript %}

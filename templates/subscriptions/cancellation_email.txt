@@ -1,0 +1,94 @@
+{{ tenant.name }} - Law Firm Management System
+===============================================
+
+SUBSCRIPTION CANCELLED
+======================
+
+Your subscription has been cancelled as requested.
+
+IMPORTANT INFORMATION
+=====================
+
+Your subscription will remain active until {{ subscription.end_date|date:"F j, Y" }}. 
+After this date, you will lose access to premium features.
+
+CANCELLATION DETAILS
+====================
+
+Cancelled Plan: {{ subscription.plan.name }}
+Cancelled Date: {{ subscription.cancelled_at|date:"F j, Y" }}
+Access Until: {{ subscription.end_date|date:"F j, Y" }}
+Days Remaining: {{ days_remaining }} days
+Status: {{ subscription.get_status_display }}
+
+WHAT HAPPENS NEXT?
+==================
+
+• Until {{ subscription.end_date|date:"F j, Y" }}: Full access to all features in your current plan
+• After {{ subscription.end_date|date:"F j, Y" }}: Limited access to your data (read-only)
+• Data Preservation: All your data will be safely preserved
+• Reactivation: You can reactivate your subscription at any time
+
+FEATURE ACCESS CHANGES
+======================
+
+Until Expiry:
+✓ Full access to all current features
+✓ Create and manage cases
+✓ Upload and manage documents
+✓ Generate invoices and track billing
+✓ Add and manage team members
+
+After Expiry:
+✗ Create new records
+✗ Upload new files
+✗ Generate new invoices
+✓ View existing data
+✓ Export your information
+
+DATA EXPORT OPTIONS
+===================
+
+Before your subscription expires, you may want to export your data for your records:
+
+Export Client Data: {{ site_url }}{% url 'dashboard' %}
+Export Case Data: {{ site_url }}{% url 'dashboard' %}
+Download Documents: {{ site_url }}{% url 'dashboard' %}
+
+CHANGE YOUR MIND?
+==================
+
+If you'd like to continue using our services, you can reactivate your subscription at any time:
+
+Reactivate Subscription: {{ site_url }}{% url 'subscriptions:subscription_create' %}
+View All Plans: {{ site_url }}{% url 'subscriptions:plan_selection' %}
+
+FEEDBACK
+========
+
+We're sorry to see you go! If you have a moment, we'd appreciate your feedback 
+to help us improve our service.
+
+Provide Feedback: {{ site_url }}{% url 'dashboard' %}
+
+BILLING INFORMATION
+===================
+
+No further charges will be made to your account. Your final invoice will reflect 
+any prorated amounts if applicable.
+
+View Invoices: {{ site_url }}{% url 'subscriptions:invoice_list' %}
+
+NEED HELP?
+==========
+
+If you have questions about your cancellation or need assistance with data export, 
+our support team is here to help.
+
+Contact Support: {{ site_url }}{% url 'dashboard' %}
+Go to Dashboard: {{ site_url }}{% url 'dashboard' %}
+
+---
+This is an automated cancellation confirmation from {{ tenant.name }} Law Firm Management System.
+If you did not request this cancellation, please contact our support team immediately.
+© {% now "Y" %} {{ tenant.name }}. All rights reserved.

@@ -1,0 +1,200 @@
+{% extends "platform_admin/base.html" %}
+{% load static %}
+
+{% block page_title %}Activity Log{% endblock %}
+
+{% block admin_content %}
+<!-- Search and Filter Form -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h6 class="m-0 font-weight-bold text-primary">Search and Filter</h6>
+  </div>
+  <div class="card-body">
+    <form method="get" action="{% url 'platform_admin:activity_log' %}">
+      <div class="row">
+        <div class="col-md-2 mb-3">
+          <label for="admin" class="form-label">Admin User</label>
+          <select class="form-select" id="admin" name="admin">
+            <option value="">All Admins</option>
+            {% for admin in admin_choices %}
+            <option value="{{ admin.id }}" {% if admin_filter == admin.id|stringformat:"s" %}selected{% endif %}>{{ admin.email }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2 mb-3">
+          <label for="action" class="form-label">Action Type</label>
+          <select class="form-select" id="action" name="action">
+            <option value="">All Actions</option>
+            {% for action_value, action_label in action_choices %}
+            <option value="{{ action_value }}" {% if action_filter == action_value %}selected{% endif %}>{{ action_label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2 mb-3">
+          <label for="tenant" class="form-label">Tenant</label>
+          <select class="form-select" id="tenant" name="tenant">
+            <option value="">All Tenants</option>
+            {% for tenant in tenant_choices %}
+            <option value="{{ tenant.id }}" {% if tenant_filter == tenant.id|stringformat:"s" %}selected{% endif %}>{{ tenant.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2 mb-3">
+          <label for="date_from" class="form-label">From Date</label>
+          <input type="date" class="form-control" id="date_from" name="date_from" 
+                 value="{{ date_from }}">
+        </div>
+        <div class="col-md-2 mb-3">
+          <label for="date_to" class="form-label">To Date</label>
+          <input type="date" class="form-control" id="date_to" name="date_to" 
+                 value="{{ date_to }}">
+        </div>
+        <div class="col-md-2 mb-3 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary me-2">Filter</button>
+          <a href="{% url 'platform_admin:activity_log' %}" class="btn btn-secondary">Clear</a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Activity Log Table -->
+<div class="card shadow">
+  <div class="card-header py-3 d-flex justify-content-between align-items-center">
+    <h6 class="m-0 font-weight-bold text-primary">Admin Activity Log</h6>
+    <div class="text-muted small">
+      Showing {{ logs.start_index }}-{{ logs.end_index }} of {{ logs.paginator.count }}
+    </div>
+  </div>
+  <div class="card-body">
+    {% if logs %}
+      <div class="table-responsive">
+        <table class="table table-bordered" id="logsTable">
+          <thead>
+            <tr>
+              <th>Date/Time</th>
+              <th>Admin User</th>
+              <th>Action</th>
+              <th>Description</th>
+              <th>Tenant</th>
+              <th>IP Address</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in logs %}
+            <tr>
+              <td>{{ log.created_at|date:"M d, Y H:i:s" }}</td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" 
+                       style="width: 28px; height: 28px; font-size: 0.75rem;">
+                    {{ log.admin_user.email|slice:":2"|upper }}
+                  </div>
+                  <div>
+                    <div class="font-weight-bold">{{ log.admin_user.email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-info">{{ log.get_action_type_display }}</span>
+              </td>
+              <td>
+                <div>{{ log.action_description }}</div>
+                {% if log.target_user %}
+                <div class="small text-muted">Target: {{ log.target_user.email }}</div>
+                {% endif %}
+              </td>
+              <td>
+                {% if log.tenant %}
+                  <a href="{% url 'platform_admin:tenant_detail' log.tenant.id %}" 
+                     class="text-decoration-none">
+                    {{ log.tenant.name }}
+                  </a>
+                {% else %}
+                  <span class="text-muted">System</span>
+                {% endif %}
+              </td>
+              <td>
+                <code>{{ log.ip_address|default:"Unknown" }}</code>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if logs.has_other_pages %}
+      <nav aria-label="Activity Log pagination">
+        <ul class="pagination justify-content-center">
+          {% if logs.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ logs.previous_page_number }}{% if admin_filter %}&admin={{ admin_filter }}{% endif %}{% if action_filter %}&action={{ action_filter }}{% endif %}{% if tenant_filter %}&tenant={{ tenant_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">Previous</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Previous</span>
+            </li>
+          {% endif %}
+
+          {% for num in logs.paginator.page_range %}
+            {% if logs.number == num %}
+              <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+              </li>
+            {% elif num > logs.number|add:'-3' and num < logs.number|add:'3' %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if admin_filter %}&admin={{ admin_filter }}{% endif %}{% if action_filter %}&action={{ action_filter }}{% endif %}{% if tenant_filter %}&tenant={{ tenant_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">{{ num }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+          {% if logs.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ logs.next_page_number }}{% if admin_filter %}&admin={{ admin_filter }}{% endif %}{% if action_filter %}&action={{ action_filter }}{% endif %}{% if tenant_filter %}&tenant={{ tenant_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">Next</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Next</span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    {% else %}
+      <div class="text-center py-5">
+        <i class="bi bi-clock-history fa-3x text-gray-300 mb-3"></i>
+        <h5 class="text-gray-500">No activity logs found</h5>
+        <p class="text-gray-400">Try adjusting your search or filter criteria.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+.avatar-sm {
+  font-weight: 500;
+}
+
+.table th {
+  background-color: #f8f9fc;
+  font-weight: 600;
+  border-top: none;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.badge {
+  font-size: 0.75rem;
+}
+
+code {
+  font-size: 0.875rem;
+  background-color: #f8f9fc;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+}
+</style>
+{% endblock %}

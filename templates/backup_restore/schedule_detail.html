@@ -1,0 +1,456 @@
+{% extends "backup_restore/base.html" %}
+
+{% block title %}Schedule Details - {{ schedule.name }}{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Schedule Details</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <button class="btn btn-sm btn-success" onclick="runScheduleNow({{ schedule.pk }})">
+        <i class="fas fa-play"></i> Run Now
+      </button>
+      <a href="{% url 'backup_restore:schedule_update' schedule.pk %}" class="btn btn-sm btn-outline-secondary">
+        <i class="fas fa-edit"></i> Edit
+      </a>
+      <a href="{% url 'backup_restore:schedule_delete' schedule.pk %}" class="btn btn-sm btn-outline-danger">
+        <i class="fas fa-trash"></i> Delete
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">{{ schedule.name }}</h5>
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" 
+            {% if schedule.is_active %}checked{% endif %} 
+            onchange="toggleScheduleStatus({{ schedule.pk }}, this.checked)"
+            id="schedule-status">
+          <label class="form-check-label" for="schedule-status">
+            {% if schedule.is_active %}Active{% else %}Inactive{% endif %}
+          </label>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Description:</strong></div>
+          <div class="col-sm-9">{{ schedule.description|default:"No description" }}</div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Frequency:</strong></div>
+          <div class="col-sm-9">{{ schedule.get_frequency_display }}</div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Backup Type:</strong></div>
+          <div class="col-sm-9">{{ schedule.get_backup_type_display }}</div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Run At:</strong></div>
+          <div class="col-sm-9">{{ schedule.run_at|time:"H:i" }}</div>
+        </div>
+        
+        {% if schedule.run_day %}
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Run Day:</strong></div>
+          <div class="col-sm-9">Day {{ schedule.run_day }} of the month</div>
+        </div>
+        {% endif %}
+        
+        {% if schedule.run_weekday is not None %}
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Run Day:</strong></div>
+          <div class="col-sm-9">{{ schedule.run_weekday|weekday_name }}</div>
+        </div>
+        {% endif %}
+        
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Created By:</strong></div>
+          <div class="col-sm-9">{{ schedule.created_by.get_full_name|default:schedule.created_by.email }}</div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Created At:</strong></div>
+          <div class="col-sm-9">{{ schedule.created_at|date:"Y-m-d H:i:s" }}</div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Last Run:</strong></div>
+          <div class="col-sm-9">
+            {% if schedule.last_run %}
+              {{ schedule.last_run|date:"Y-m-d H:i:s" }}
+            {% else %}
+              <span class="text-muted">Never</span>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Next Run:</strong></div>
+          <div class="col-sm-9">
+            {% if schedule.next_run %}
+              {% if schedule.is_due %}
+                <strong class="text-warning">{{ schedule.next_run|date:"Y-m-d H:i:s" }}</strong>
+                <br><small class="text-warning">Due now!</small>
+              {% else %}
+                {{ schedule.next_run|date:"Y-m-d H:i:s" }}
+              {% endif %}
+            {% else %}
+              <span class="text-muted">Not scheduled</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Backup Options -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h5 class="mb-0">Backup Options</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="include_database" 
+                {% if schedule.include_database %}checked{% endif %} disabled>
+              <label class="form-check-label" for="include_database">
+                Include Database
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="include_media" 
+                {% if schedule.include_media %}checked{% endif %} disabled>
+              <label class="form-check-label" for="include_media">
+                Include Media Files
+              </label>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="include_documents" 
+                {% if schedule.include_documents %}checked{% endif %} disabled>
+              <label class="form-check-label" for="include_documents">
+                Include Documents
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="include_settings" 
+                {% if schedule.include_settings %}checked{% endif %} disabled>
+              <label class="form-check-label" for="include_settings">
+                Include Settings
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <hr>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="compress" 
+                {% if schedule.compress %}checked{% endif %} disabled>
+              <label class="form-check-label" for="compress">
+                Compressed
+              </label>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="encrypt" 
+                {% if schedule.encrypt %}checked{% endif %} disabled>
+              <label class="form-check-label" for="encrypt">
+                Encrypted
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Retention Policy -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h5 class="mb-0">Retention Policy</h5>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Retention Days:</strong></div>
+          <div class="col-sm-9">{{ schedule.retention_days }} days</div>
+        </div>
+        
+        {% if schedule.retention_count %}
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Retention Count:</strong></div>
+          <div class="col-sm-9">{{ schedule.retention_count }} backups</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    
+    <!-- Email Notifications -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h5 class="mb-0">Email Notifications</h5>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Enabled:</strong></div>
+          <div class="col-sm-9">
+            {% if schedule.email_notification %}
+              <span class="badge bg-success">Yes</span>
+            {% else %}
+              <span class="badge bg-secondary">No</span>
+            {% endif %}
+          </div>
+        </div>
+        
+        {% if schedule.email_notification and schedule.email_recipients %}
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Recipients:</strong></div>
+          <div class="col-sm-9">{{ schedule.email_recipients }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <!-- Status -->
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Status</h5>
+      </div>
+      <div class="card-body">
+        <div class="text-center mb-3">
+          {% if schedule.is_active %}
+            <i class="fas fa-check-circle fa-3x text-success"></i>
+            <h6 class="mt-2">Active</h6>
+            <p class="text-muted">Schedule is active and will run as configured</p>
+          {% else %}
+            <i class="fas fa-pause-circle fa-3x text-warning"></i>
+            <h6 class="mt-2">Inactive</h6>
+            <p class="text-muted">Schedule is paused and will not run</p>
+          {% endif %}
+        </div>
+        
+        {% if schedule.is_due %}
+        <div class="alert alert-warning">
+          <i class="fas fa-exclamation-triangle"></i>
+          <strong>This schedule is due to run now!</strong>
+        </div>
+        {% endif %}
+        
+        <div class="d-grid gap-2">
+          <button class="btn btn-success" onclick="runScheduleNow({{ schedule.pk }})">
+            <i class="fas fa-play"></i> Run Now
+          </button>
+          <a href="{% url 'backup_restore:schedule_update' schedule.pk %}" class="btn btn-outline-secondary">
+            <i class="fas fa-edit"></i> Edit Schedule
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Recent Backup Jobs -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h5 class="mb-0">Recent Backup Jobs</h5>
+      </div>
+      <div class="card-body">
+        {% if recent_backups %}
+        <div class="list-group list-group-flush">
+          {% for backup in recent_backups %}
+          <a href="{% url 'backup_restore:backup_detail' backup.pk %}" class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between">
+              <h6 class="mb-1">{{ backup.name }}</h6>
+              <small>{{ backup.created_at|date:"M d" }}</small>
+            </div>
+            <p class="mb-1">
+              <span class="badge 
+                {% if backup.status == 'completed' %}bg-success
+                {% elif backup.status == 'running' %}bg-primary
+                {% elif backup.status == 'failed' %}bg-danger
+                {% else %}bg-secondary{% endif %}">
+                {{ backup.get_status_display }}
+              </span>
+              <span class="badge bg-info">{{ backup.file_size_mb }} MB</span>
+            </p>
+          </a>
+          {% endfor %}
+        </div>
+        <div class="text-center mt-3">
+          <a href="{% url 'backup_restore:backup_list' %}?schedule={{ schedule.pk }}" class="btn btn-sm btn-outline-primary">
+            View All Backups
+          </a>
+        </div>
+        {% else %}
+        <div class="text-center py-3">
+          <i class="fas fa-database fa-2x text-gray-300 mb-2"></i>
+          <p class="text-muted mb-0">No backup jobs yet</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    
+    <!-- Actions -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h5 class="mb-0">Actions</h5>
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <a href="{% url 'backup_restore:schedule_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to List
+          </a>
+          <a href="{% url 'backup_restore:schedule_update' schedule.pk %}" class="btn btn-outline-primary">
+            <i class="fas fa-edit"></i> Edit Schedule
+          </a>
+          <button class="btn btn-outline-info" onclick="calculateNextRun({{ schedule.pk }})">
+            <i class="fas fa-calculator"></i> Recalculate Next Run
+          </button>
+          <a href="{% url 'backup_restore:schedule_delete' schedule.pk %}" class="btn btn-outline-danger">
+            <i class="fas fa-trash"></i> Delete Schedule
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+function toggleScheduleStatus(scheduleId, isActive) {
+  const url = `/backup-restore/api/schedule/${scheduleId}/toggle/`;
+  
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    },
+    body: JSON.stringify({ is_active: isActive })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Update the label text
+      const label = document.querySelector('label[for="schedule-status"]');
+      label.textContent = isActive ? 'Active' : 'Inactive';
+      
+      // Show success message
+      showAlert('Schedule status updated successfully', 'success');
+    } else {
+      // Revert the checkbox
+      const checkbox = document.getElementById('schedule-status');
+      checkbox.checked = !isActive;
+      
+      // Show error message
+      showAlert('Failed to update schedule status', 'danger');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    showAlert('An error occurred while updating schedule status', 'danger');
+  });
+}
+
+function runScheduleNow(scheduleId) {
+  if (confirm('Are you sure you want to run this backup schedule now?')) {
+    const url = `/backup-restore/api/schedule/${scheduleId}/run-now/`;
+    
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        showAlert('Backup job created successfully', 'success');
+        // Redirect to the backup job detail page
+        window.location.href = `/backup-restore/backup/${data.backup_job_id}/`;
+      } else {
+        showAlert('Failed to create backup job', 'danger');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      showAlert('An error occurred while creating backup job', 'danger');
+    });
+  }
+}
+
+function calculateNextRun(scheduleId) {
+  const url = `/backup-restore/api/schedule/${scheduleId}/calculate-next-run/`;
+  
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      showAlert('Next run time recalculated successfully', 'success');
+      // Reload the page to show the updated next run time
+      setTimeout(() => location.reload(), 1500);
+    } else {
+      showAlert('Failed to recalculate next run time', 'danger');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    showAlert('An error occurred while recalculating next run time', 'danger');
+  });
+}
+
+function showAlert(message, type) {
+  const alertDiv = document.createElement('div');
+  alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+  alertDiv.innerHTML = `
+    ${message}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  `;
+  
+  // Insert at the top of the main content area
+  const mainContent = document.querySelector('main');
+  mainContent.insertBefore(alertDiv, mainContent.firstChild);
+  
+  // Auto-remove after 5 seconds
+  setTimeout(() => {
+    alertDiv.remove();
+  }, 5000);
+}
+
+// Helper function to get CSRF token
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}Subscription Plans - {{ user.tenant.name }}{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Choose Your Subscription Plan</h1>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  {% if subscription %}
+  <div class="col-12 mb-4">
+    <div class="alert alert-info">
+      <h5><i class="fas fa-info-circle"></i> Current Subscription</h5>
+      <p>You are currently on the <strong>{{ subscription.plan.name }}</strong> plan.</p>
+      {% if subscription.status == 'trial' %}
+      <p class="mb-0">Your trial expires on <strong>{{ subscription.end_date|date:"F j, Y" }}</strong>. 
+        Choose a plan below to continue using the service.</p>
+      {% elif subscription.status == 'active' %}
+      <p class="mb-0">Your subscription renews on <strong>{{ subscription.end_date|date:"F j, Y" }}</strong>. 
+        You can change your plan at any time.</p>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% for plan in plans %}
+  <div class="col-md-4 mb-4">
+    <div class="card h-100 {% if subscription and plan.id == subscription.plan.id %}border-primary{% endif %}">
+      {% if subscription and plan.id == subscription.plan.id %}
+      <div class="card-header bg-primary text-white text-center">
+        <strong>Current Plan</strong>
+      </div>
+      {% endif %}
+      
+      <div class="card-body d-flex flex-column">
+        <h5 class="card-title text-center">{{ plan.name }}</h5>
+        <div class="text-center mb-3">
+          <h2 class="text-primary">${{ plan.price }}</h2>
+          <p class="text-muted">per {{ plan.get_billing_cycle_display }}</p>
+        </div>
+        
+        <p class="card-text">{{ plan.description }}</p>
+        
+        <ul class="list-unstyled mb-4">
+          {% if plan.max_users %}
+          <li class="mb-2">
+            <i class="fas fa-users text-success"></i> 
+            Up to {{ plan.max_users }} users
+          </li>
+          {% endif %}
+          
+          {% if plan.max_storage_mb %}
+          <li class="mb-2">
+            <i class="fas fa-hdd text-success"></i> 
+            {{ plan.max_storage_mb }}MB storage
+          </li>
+          {% endif %}
+          
+          {% for feature in plan.features.all %}
+          <li class="mb-2">
+            {% if feature.is_included %}
+            <i class="fas fa-check text-success"></i> 
+            {% else %}
+            <i class="fas fa-times text-danger"></i> 
+            {% endif %}
+            {{ feature.feature.name }}
+            {% if feature.value %}: {{ feature.value }}{% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+        
+        <div class="mt-auto">
+          {% if subscription and plan.id == subscription.plan.id %}
+          <button class="btn btn-primary btn-lg w-100" disabled>Current Plan</button>
+          {% else %}
+          <form method="post" action="{% url 'subscriptions:subscribe' %}">
+            {% csrf_token %}
+            <input type="hidden" name="plan_id" value="{{ plan.id }}">
+            {% if subscription %}
+            <button type="submit" class="btn btn-outline-primary btn-lg w-100">
+              {% if plan.price > subscription.plan.price %}Upgrade{% else %}Downgrade{% endif %}
+            </button>
+            {% else %}
+            <button type="submit" class="btn btn-primary btn-lg w-100">Select Plan</button>
+            {% endif %}
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% if not plans %}
+<div class="col-12">
+  <div class="alert alert-warning">
+    <h5><i class="fas fa-exclamation-triangle"></i> No Plans Available</h5>
+    <p>There are currently no subscription plans available. Please contact support for assistance.</p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

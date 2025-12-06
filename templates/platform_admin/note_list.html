@@ -1,0 +1,267 @@
+{% extends "platform_admin/base.html" %}
+{% load static %}
+
+{% block page_title %}Admin Notes{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+  <a href="{% url 'platform_admin:note_create' %}" class="btn btn-sm btn-primary">
+    <i class="bi bi-plus-circle"></i> Add Note
+  </a>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+<!-- Search and Filter Form -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h6 class="m-0 font-weight-bold text-primary">Search and Filter</h6>
+  </div>
+  <div class="card-body">
+    <form method="get" action="{% url 'platform_admin:note_list' %}">
+      <div class="row">
+        <div class="col-md-3 mb-3">
+          <label for="tenant" class="form-label">Tenant</label>
+          <select class="form-select" id="tenant" name="tenant">
+            <option value="">All Tenants</option>
+            {% for tenant in tenant_choices %}
+            <option value="{{ tenant.id }}" {% if tenant_filter == tenant.id|stringformat:"s" %}selected{% endif %}>{{ tenant.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3 mb-3">
+          <label for="note_type" class="form-label">Note Type</label>
+          <select class="form-select" id="note_type" name="note_type">
+            <option value="">All Types</option>
+            {% for type_value, type_label in note_type_choices %}
+            <option value="{{ type_value }}" {% if note_type_filter == type_value %}selected{% endif %}>{{ type_label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3 mb-3">
+          <label for="status" class="form-label">Status</label>
+          <select class="form-select" id="status" name="status">
+            <option value="">All Status</option>
+            <option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>Resolved</option>
+            <option value="unresolved" {% if status_filter == 'unresolved' %}selected{% endif %}>Unresolved</option>
+            <option value="follow_up" {% if status_filter == 'follow_up' %}selected{% endif %}>Requires Follow-up</option>
+          </select>
+        </div>
+        <div class="col-md-3 mb-3 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary me-2">Filter</button>
+          <a href="{% url 'platform_admin:note_list' %}" class="btn btn-secondary">Clear</a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Notes Table -->
+<div class="card shadow">
+  <div class="card-header py-3 d-flex justify-content-between align-items-center">
+    <h6 class="m-0 font-weight-bold text-primary">Admin Notes</h6>
+    <div class="text-muted small">
+      Showing {{ notes.start_index }}-{{ notes.end_index }} of {{ notes.paginator.count }}
+    </div>
+  </div>
+  <div class="card-body">
+    {% if notes %}
+      <div class="table-responsive">
+        <table class="table table-bordered" id="notesTable">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Type</th>
+              <th>Tenant</th>
+              <th>Admin</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th width="120">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for note in notes %}
+            <tr>
+              <td>
+                <div>
+                  <div class="font-weight-bold">{{ note.title }}</div>
+                  {% if note.is_overdue %}
+                  <span class="badge bg-danger">Overdue</span>
+                  {% endif %}
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-info">{{ note.get_note_type_display }}</span>
+                {% if note.is_private %}
+                <i class="bi bi-lock-fill text-muted" title="Private"></i>
+                {% endif %}
+              </td>
+              <td>
+                {% if note.tenant %}
+                  <a href="{% url 'platform_admin:tenant_detail' note.tenant.id %}" 
+                     class="text-decoration-none">
+                    {{ note.tenant.name }}
+                  </a>
+                {% else %}
+                  <span class="text-muted">Platform</span>
+                {% endif %}
+              </td>
+              <td>{{ note.admin_user.email }}</td>
+              <td>
+                {% if note.is_resolved %}
+                  <span class="badge bg-success">Resolved</span>
+                {% elif note.requires_follow_up %}
+                  <span class="badge bg-warning">Follow-up</span>
+                {% else %}
+                  <span class="badge bg-secondary">Open</span>
+                {% endif %}
+              </td>
+              <td>{{ note.created_at|date:"M d, Y H:i" }}</td>
+              <td>
+                <div class="btn-group btn-group-sm" role="group">
+                  <button type="button" class="btn btn-outline-primary" title="View" 
+                          data-bs-toggle="modal" data-bs-target="#noteModal{{ note.id }}">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if notes.has_other_pages %}
+      <nav aria-label="Note pagination">
+        <ul class="pagination justify-content-center">
+          {% if notes.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ notes.previous_page_number }}{% if tenant_filter %}&tenant={{ tenant_filter }}{% endif %}{% if note_type_filter %}&note_type={{ note_type_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Previous</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Previous</span>
+            </li>
+          {% endif %}
+
+          {% for num in notes.paginator.page_range %}
+            {% if notes.number == num %}
+              <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+              </li>
+            {% elif num > notes.number|add:'-3' and num < notes.number|add:'3' %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if tenant_filter %}&tenant={{ tenant_filter }}{% endif %}{% if note_type_filter %}&note_type={{ note_type_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+          {% if notes.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ notes.next_page_number }}{% if tenant_filter %}&tenant={{ tenant_filter }}{% endif %}{% if note_type_filter %}&note_type={{ note_type_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Next</span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    {% else %}
+      <div class="text-center py-5">
+        <i class="bi bi-journal-text fa-3x text-gray-300 mb-3"></i>
+        <h5 class="text-gray-500">No notes found</h5>
+        <p class="text-gray-400">Try adjusting your search or filter criteria.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Note Detail Modals -->
+{% for note in notes %}
+<div class="modal fade" id="noteModal{{ note.id }}" tabindex="-1" aria-labelledby="noteModalLabel{{ note.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="noteModalLabel{{ note.id }}">{{ note.title }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Type:</strong> {{ note.get_note_type_display }}
+          </div>
+          <div class="col-md-6">
+            <strong>Status:</strong> 
+            {% if note.is_resolved %}
+              <span class="badge bg-success">Resolved</span>
+            {% elif note.requires_follow_up %}
+              <span class="badge bg-warning">Follow-up</span>
+            {% else %}
+              <span class="badge bg-secondary">Open</span>
+            {% endif %}
+          </div>
+        </div>
+        
+        {% if note.tenant %}
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Tenant:</strong> {{ note.tenant.name }}
+          </div>
+          <div class="col-md-6">
+            <strong>Related User:</strong> {{ note.related_user.email|default:"None" }}
+          </div>
+        </div>
+        {% endif %}
+        
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Created by:</strong> {{ note.admin_user.email }}
+          </div>
+          <div class="col-md-6">
+            <strong>Created:</strong> {{ note.created_at|date:"M d, Y H:i" }}
+          </div>
+        </div>
+        
+        {% if note.follow_up_date %}
+        <div class="row mb-3">
+          <div class="col-md-12">
+            <strong>Follow-up Date:</strong> {{ note.follow_up_date|date:"M d, Y H:i" }}
+            {% if note.is_overdue %}
+              <span class="badge bg-danger ms-2">Overdue</span>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+        
+        <div class="mb-3">
+          <strong>Content:</strong>
+          <div class="mt-2 p-3 bg-light rounded">{{ note.content|linebreaks }}</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<style>
+.table th {
+  background-color: #f8f9fc;
+  font-weight: 600;
+  border-top: none;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.badge {
+  font-size: 0.75rem;
+}
+</style>
+{% endblock %}

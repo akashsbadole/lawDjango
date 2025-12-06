@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usage Alert - {{ tenant.name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid #007bff;
+        }
+        .content {
+            padding: 20px;
+        }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+        }
+        .alert-danger {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .usage-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-left: 4px solid #007bff;
+            background-color: #f8f9fa;
+        }
+        .usage-item.danger {
+            border-left-color: #dc3545;
+        }
+        .usage-item.warning {
+            border-left-color: #ffc107;
+        }
+        .progress {
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #007bff;
+            transition: width 0.3s ease;
+        }
+        .progress-bar.warning {
+            background-color: #ffc107;
+        }
+        .progress-bar.danger {
+            background-color: #dc3545;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #dee2e6;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .table th, .table td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: left;
+        }
+        .table th {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ tenant.name }}</h1>
+        <p>Law Firm Management System</p>
+    </div>
+    
+    <div class="content">
+        {% if notification_type == 'warning' %}
+        <div class="alert alert-warning">
+            <h2><i>⚠️</i> Usage Warning</h2>
+            <p>You are approaching your subscription limits for the following features. Consider upgrading your plan to avoid service interruption.</p>
+        </div>
+        {% elif notification_type == 'critical' %}
+        <div class="alert alert-danger">
+            <h2><i>🚨</i> Critical Usage Alert</h2>
+            <p>You have reached or exceeded your subscription limits. Please upgrade your plan immediately to continue using these features.</p>
+        </div>
+        {% elif notification_type == 'info' %}
+        <div class="alert alert-info">
+            <h2><i>ℹ️</i> Usage Summary</h2>
+            <p>Here's your current usage summary for your {{ subscription.plan.name }} plan.</p>
+        </div>
+        {% endif %}
+        
+        <h3>Current Usage</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th>Current Usage</th>
+                    <th>Limit</th>
+                    <th>Usage %</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usage in usage_records %}
+                <tr>
+                    <td>{{ usage.feature.name }}</td>
+                    <td>{{ usage.current_usage }}</td>
+                    <td>{{ usage.limit }}</td>
+                    <td>
+                        {% if usage.usage_percentage >= 90 %}
+                        <span style="color: #dc3545; font-weight: bold;">{{ usage.usage_percentage|floatformat:1 }}%</span>
+                        {% elif usage.usage_percentage >= 75 %}
+                        <span style="color: #ffc107; font-weight: bold;">{{ usage.usage_percentage|floatformat:1 }}%</span>
+                        {% else %}
+                        <span style="color: #28a745;">{{ usage.usage_percentage|floatformat:1 }}%</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <h3>Detailed Usage Breakdown</h3>
+        {% for usage in usage_records %}
+        <div class="usage-item {% if usage.usage_percentage >= 90 %}danger{% elif usage.usage_percentage >= 75 %}warning{% endif %}">
+            <h4>{{ usage.feature.name }}</h4>
+            <p>{{ usage.feature.description|default:"No description available" }}</p>
+            
+            <div class="progress">
+                <div class="progress-bar {% if usage.usage_percentage >= 90 %}danger{% elif usage.usage_percentage >= 75 %}warning{% endif %}" 
+                     style="width: {{ usage.usage_percentage }}%"></div>
+            </div>
+            
+            <p>
+                <strong>Current Usage:</strong> {{ usage.current_usage }} / {{ usage.limit }} 
+                ({{ usage.usage_percentage|floatformat:1 }}%)
+            </p>
+            
+            {% if usage.usage_percentage >= 90 %}
+            <p style="color: #dc3545; font-weight: bold;">
+                <strong>Action Required:</strong> You have reached your limit. Upgrade your plan to continue using this feature.
+            </p>
+            {% elif usage.usage_percentage >= 75 %}
+            <p style="color: #ffc107; font-weight: bold;">
+                <strong>Warning:</strong> You are approaching your limit. Consider upgrading your plan soon.
+            </p>
+            {% endif %}
+        </div>
+        {% endfor %}
+        
+        <h3>Subscription Details</h3>
+        <div class="usage-item">
+            <p><strong>Current Plan:</strong> {{ subscription.plan.name }}</p>
+            <p><strong>Price:</strong> ${{ subscription.plan.price }}/{{ subscription.plan.get_billing_cycle_display }}</p>
+            <p><strong>Status:</strong> {{ subscription.get_status_display }}</p>
+            <p><strong>Next Billing Date:</strong> {{ subscription.end_date|date:"F j, Y" }}</p>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ site_url }}{% url 'subscriptions:usage_dashboard' %}" class="btn btn-primary">
+                View Usage Dashboard
+            </a>
+            {% if notification_type != 'info' %}
+            <a href="{{ site_url }}{% url 'subscriptions:plan_selection' %}" class="btn btn-primary">
+                Upgrade Plan
+            </a>
+            {% endif %}
+            <a href="{{ site_url }}{% url 'subscriptions:subscription_detail' %}" class="btn btn-secondary">
+                Manage Subscription
+            </a>
+        </div>
+        
+        {% if notification_type == 'critical' %}
+        <div class="alert alert-danger">
+            <h3>Immediate Action Required</h3>
+            <p>Your account will experience service interruptions for the features listed above until you upgrade your plan or reduce usage.</p>
+            <p>To ensure uninterrupted service, please upgrade your plan immediately.</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="footer">
+        <p>This is an automated message from {{ tenant.name }} Law Firm Management System.</p>
+        <p>If you have questions about your subscription or usage, please contact our support team.</p>
+        <p>&copy; {% now "Y" %} {{ tenant.name }}. All rights reserved.</p>
+    </div>
+</body>
+</html>

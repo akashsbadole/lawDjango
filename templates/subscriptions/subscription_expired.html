@@ -1,0 +1,247 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}Subscription Expired - {{ user.tenant.name }}{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Subscription Expired</h1>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header bg-danger text-white text-center">
+        <h3 class="mb-0">
+          <i class="fas fa-times-circle"></i> 
+          Subscription Expired
+        </h3>
+      </div>
+      <div class="card-body text-center">
+        <div class="mb-4">
+          <i class="fas fa-times-circle text-danger" style="font-size: 4rem;"></i>
+        </div>
+        
+        <h4 class="mb-3">Your Subscription Has Expired</h4>
+        
+        <p class="lead mb-4">
+          Your subscription expired on {{ expired_date|date:"F j, Y" }}. To continue using our premium features, please renew your subscription.
+        </p>
+        
+        <div class="alert alert-warning mb-4">
+          <h5><i class="fas fa-exclamation-triangle"></i> Limited Access</h5>
+          <p class="mb-2">
+            Your account is now in limited access mode. You can still view your data, but many features are unavailable.
+          </p>
+          <p class="mb-0">
+            <strong>Available:</strong> View existing data, export your information<br>
+            <strong>Unavailable:</strong> Create new records, upload files, use premium features
+          </p>
+        </div>
+        
+        <div class="mb-4">
+          <h5>What happens to your data?</h5>
+          <div class="row text-start">
+            <div class="col-md-6">
+              <p class="mb-2">
+                <i class="fas fa-check text-success"></i> 
+                Your data is safe and preserved
+              </p>
+              <p class="mb-2">
+                <i class="fas fa-check text-success"></i> 
+                You can export your data at any time
+              </p>
+              <p class="mb-0">
+                <i class="fas fa-check text-success"></i> 
+                Reactivation restores full access
+              </p>
+            </div>
+            <div class="col-md-6">
+              <p class="mb-2">
+                <i class="fas fa-times text-danger"></i> 
+                Cannot create new records
+              </p>
+              <p class="mb-2">
+                <i class="fas fa-times text-danger"></i> 
+                Cannot upload new files
+              </p>
+              <p class="mb-0">
+                <i class="fas fa-times text-danger"></i> 
+                Premium features unavailable
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center mb-4">
+          <a href="{% url 'subscriptions:plan_selection' %}" class="btn btn-primary">
+            <i class="fas fa-credit-card"></i> Renew Subscription
+          </a>
+          <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-tachometer-alt"></i> Limited Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card mt-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-star"></i> 
+          Choose a New Plan
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="mb-4">
+          Select a plan that best fits your needs. All plans include core features with varying limits.
+        </p>
+        
+        <div class="row">
+          {% for plan in available_plans %}
+          <div class="col-md-4 mb-3">
+            <div class="card h-100">
+              <div class="card-header text-center">
+                <h6 class="mb-0">{{ plan.name }}</h6>
+                <h4 class="text-primary mb-0">${{ plan.price }}</h4>
+                <small class="text-muted">/{{ plan.get_billing_cycle_display }}</small>
+              </div>
+              <div class="card-body">
+                <ul class="list-unstyled">
+                  <li class="mb-1">
+                    <i class="fas fa-users text-success"></i> 
+                    {{ plan.max_users }} users
+                  </li>
+                  <li class="mb-1">
+                    <i class="fas fa-database text-success"></i> 
+                    {{ plan.max_storage_mb }}MB storage
+                  </li>
+                  <li class="mb-1">
+                    <i class="fas fa-file-alt text-success"></i> 
+                    {{ plan.max_cases }} cases
+                  </li>
+                </ul>
+              </div>
+              <div class="card-footer text-center">
+                <a href="{% url 'subscriptions:subscription_create' %}?plan={{ plan.id }}" class="btn btn-outline-primary btn-sm">
+                  Select Plan
+                </a>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        
+        <div class="text-center mt-3">
+          <a href="{% url 'subscriptions:plan_selection' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-th-list"></i> View All Plans
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card mt-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-download"></i> 
+          Export Your Data
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="mb-3">
+          If you don't plan to renew your subscription, you can export all your data for your records.
+        </p>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <div class="d-grid">
+              <button class="btn btn-outline-secondary">
+                <i class="fas fa-file-csv"></i> Export Clients
+              </button>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="d-grid">
+              <button class="btn btn-outline-secondary">
+                <i class="fas fa-file-csv"></i> Export Cases
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row mt-2">
+          <div class="col-md-6">
+            <div class="d-grid">
+              <button class="btn btn-outline-secondary">
+                <i class="fas fa-file-archive"></i> Download Documents
+              </button>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="d-grid">
+              <button class="btn btn-outline-secondary">
+                <i class="fas fa-file-csv"></i> Export All Data
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card mt-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-question-circle"></i> 
+          Have Questions?
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="mb-3">
+          We're here to help with any questions about your expired subscription or renewal options.
+        </p>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+          <a href="#" class="btn btn-outline-secondary">
+            <i class="fas fa-envelope"></i> Contact Support
+          </a>
+          <a href="{% url 'about' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-info-circle"></i> Learn More
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Handle export buttons
+  const exportButtons = document.querySelectorAll('button[class*="btn-outline-secondary"]');
+  exportButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      // Show loading state
+      const originalText = this.innerHTML;
+      this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+      this.disabled = true;
+      
+      // Simulate export process
+      setTimeout(() => {
+        // Reset button
+        this.innerHTML = originalText;
+        this.disabled = false;
+        
+        // Show success message
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-success alert-dismissible fade show mt-3';
+        alert.innerHTML = `
+          <strong>Export Started!</strong> Your export is being processed. You will receive an email when it's ready.
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        this.parentNode.appendChild(alert);
+      }, 2000);
+    });
+  });
+});
+</script>
+{% endblock %}

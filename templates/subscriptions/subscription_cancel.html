@@ -1,0 +1,177 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}Cancel Subscription - {{ user.tenant.name }}{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Cancel Subscription</h1>
+  <div>
+    <a href="{% url 'subscriptions:subscription_detail' subscription.pk %}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left"></i> Back to Subscription
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">
+          <i class="fas fa-exclamation-triangle"></i> 
+          Cancel Your Subscription
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-danger mb-4">
+          <h5><i class="fas fa-exclamation-circle"></i> Important Notice</h5>
+          <p class="mb-2">Cancelling your subscription will have the following effects:</p>
+          <ul>
+            <li>Your access to premium features will end immediately</li>
+            <li>Your data will remain accessible for 30 days after cancellation</li>
+            <li>You can reactivate your subscription within 30 days</li>
+            <li>After 30 days, your data may be permanently deleted</li>
+          </ul>
+        </div>
+        
+        <form method="post">
+          {% csrf_token %}
+          
+          <div class="mb-4">
+            <h5>Current Subscription Details</h5>
+            <div class="row">
+              <div class="col-md-6">
+                <p class="mb-1"><strong>Plan:</strong> {{ subscription.plan.name }}</p>
+                <p class="mb-1"><strong>Price:</strong> ${{ subscription.plan.price }} / {{ subscription.plan.get_billing_cycle_display }}</p>
+                <p class="mb-1"><strong>Status:</strong> {{ subscription.get_status_display }}</p>
+              </div>
+              <div class="col-md-6">
+                <p class="mb-1"><strong>Started:</strong> {{ subscription.start_date|date:"F j, Y" }}</p>
+                {% if subscription.end_date %}
+                <p class="mb-1"><strong>Ends:</strong> {{ subscription.end_date|date:"F j, Y" }}</p>
+                {% endif %}
+                <p class="mb-1"><strong>Auto-renew:</strong> 
+                  {% if subscription.auto_renew %}
+                  <i class="fas fa-check text-success"></i> Enabled
+                  {% else %}
+                  <i class="fas fa-times text-danger"></i> Disabled
+                  {% endif %}
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <h5>Cancellation Reason</h5>
+            <div class="mb-3">
+              <label for="{{ form.reason.id_for_label }}" class="form-label">Please tell us why you're cancelling</label>
+              {{ form.reason }}
+              {% if form.reason.errors %}
+              <div class="form-text text-danger">
+                {% for error in form.reason.errors %}
+                {{ error }}
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+            
+            <div class="mb-3">
+              <label for="{{ form.comments.id_for_label }}" class="form-label">Additional comments (optional)</label>
+              {{ form.comments }}
+              {% if form.comments.errors %}
+              <div class="form-text text-danger">
+                {% for error in form.comments.errors %}
+                {{ error }}
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="{{ form.confirm_cancellation.name }}" 
+                     id="{{ form.confirm_cancellation.id_for_label }}" required>
+              <label class="form-check-label" for="{{ form.confirm_cancellation.id_for_label }}">
+                I understand that cancelling my subscription will end my access to premium features
+              </label>
+              {% if form.confirm_cancellation.errors %}
+              <div class="form-text text-danger">
+                {% for error in form.confirm_cancellation.errors %}
+                {{ error }}
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a href="{% url 'subscriptions:subscription_detail' subscription.pk %}" class="btn btn-outline-secondary">
+              Keep Subscription
+            </a>
+            <button type="submit" class="btn btn-danger">
+              <i class="fas fa-times-circle"></i> Cancel Subscription
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-lightbulb"></i> Alternatives to Cancellation
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="mb-3">Before you cancel, consider these options:</p>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-3">
+            <h6><i class="fas fa-arrow-down text-primary"></i> Downgrade Your Plan</h6>
+            <p class="text-muted">Switch to a lower-cost plan with fewer features</p>
+            <a href="{% url 'subscriptions:plan_selection' %}" class="btn btn-sm btn-outline-primary">View Plans</a>
+          </li>
+          <li class="mb-0">
+            <h6><i class="fas fa-pause text-warning"></i> Pause Subscription</h6>
+            <p class="text-muted">Temporarily pause your subscription for up to 3 months</p>
+            <a href="{% url 'subscriptions:subscription_update' subscription.pk %}" class="btn btn-sm btn-outline-warning">Manage Subscription</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-question-circle"></i> Need Help?
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="mb-3">If you're having issues with our service, we'd like to help:</p>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <i class="fas fa-envelope text-primary"></i> 
+            Email our support team
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-book text-primary"></i> 
+            Check our documentation
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-comments text-primary"></i> 
+            Start a live chat
+          </li>
+          <li class="mb-0">
+            <i class="fas fa-phone text-primary"></i> 
+            Call our support line
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

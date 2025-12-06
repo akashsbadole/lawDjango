@@ -1,0 +1,143 @@
+{% if form %}
+    <div class="row">
+        <div class="col-md-12">
+            <p class="text-muted">Use these filters to limit the data that will be exported.</p>
+        </div>
+    </div>
+    
+    {% if form.model_type == 'clients' %}
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="{{ form.name_filter.id_for_label }}">Name Filter</label>
+                    {{ form.name_filter }}
+                    <small class="form-text text-muted">Filter clients by name (contains).</small>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="{{ form.email_filter.id_for_label }}">Email Filter</label>
+                    {{ form.email_filter }}
+                    <small class="form-text text-muted">Filter clients by email (contains).</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="{{ form.company_filter.id_for_label }}">Company Filter</label>
+                    {{ form.company_filter }}
+                    <small class="form-text text-muted">Filter clients by company (contains).</small>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="{{ form.created_after.id_for_label }}">Created After</label>
+                    {{ form.created_after }}
+                    <small class="form-text text-muted">Filter clients created after this date.</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="{{ form.created_before.id_for_label }}">Created Before</label>
+                    {{ form.created_before }}
+                    <small class="form-text text-muted">Filter clients created before this date.</small>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="{{ form.has_active_cases.id_for_label }}">Active Cases</label>
+                    {{ form.has_active_cases }}
+                    <small class="form-text text-muted">Filter clients with active cases only.</small>
+                </div>
+            </div>
+        </div>
+    {% elif form.model_type == 'cases' %}
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="{{ form.title_filter.id_for_label }}">Title Filter</label>
+                    {{ form.title_filter }}
+                    <small class="form-text text-muted">Filter cases by title (contains).</small>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="{{ form.case_number_filter.id_for_label }}">Case Number Filter</label>
+                    {{ form.case_number_filter }}
+                    <small class="form-text text-muted">Filter cases by case number (contains).</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="{{ form.status_filter.id_for_label }}">Status Filter</label>
+                    {{ form.status_filter }}
+                    <small class="form-text text-muted">Filter cases by status.</small>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="{{ form.case_type_filter.id_for_label }}">Case Type Filter</label>
+                    {{ form.case_type_filter }}
+                    <small class="form-text text-muted">Filter cases by type.</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="{{ form.client_filter.id_for_label }}">Client Filter</label>
+                    {{ form.client_filter }}
+                    <small class="form-text text-muted">Filter cases by client.</small>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="{{ form.start_date_after.id_for_label }}">Start Date After</label>
+                    {{ form.start_date_after }}
+                    <small class="form-text text-muted">Filter cases started after this date.</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="{{ form.start_date_before.id_for_label }}">Start Date Before</label>
+                    {{ form.start_date_before }}
+                    <small class="form-text text-muted">Filter cases started before this date.</small>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="{{ form.end_date_after.id_for_label }}">End Date After</label>
+                    {{ form.end_date_after }}
+                    <small class="form-text text-muted">Filter cases ended after this date.</small>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-warning">
+            No filters are available for this model type.
+        </div>
+    {% endif %}
+{% else %}
+    <div class="alert alert-info">
+        Select a model type to see available filters.
+    </div>
+{% endif %}

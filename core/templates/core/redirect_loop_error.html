@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Redirect Loop Detected{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-sync-alt text-warning fa-3x fa-spin"></i>
+                    </div>
+                    
+                    <h2 class="text-center mb-3">Redirect Loop Detected</h2>
+                    
+                    <p class="text-muted text-center mb-4">
+                        We detected a redirect loop while trying to load this page. 
+                        This usually happens when there's a configuration issue with your account or tenant.
+                    </p>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>What happened:</strong><br>
+                        The system tried to redirect you multiple times to the same page, 
+                        which indicates a problem with your account setup or permissions.
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>What to do next:</strong><br>
+                        <ul class="mb-0">
+                            <li>Try logging out and logging back in</li>
+                            <li>Contact your system administrator</li>
+                            <li>Check if your account is properly assigned to a law firm</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'account_logout' %}" class="btn btn-primary">
+                            <i class="fas fa-sign-out-alt me-2"></i>Sign Out
+                        </a>
+                        
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-home me-2"></i>Go to Home
+                        </a>
+                    </div>
+                    
+                    {% if messages %}
+                        <div class="mt-4">
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

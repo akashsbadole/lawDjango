@@ -1,0 +1,193 @@
+{% extends "_base.html" %}
+{% load static %}
+
+{% block title %}{{ client.full_name }} - {{ tenant.name }} - Lithium{% endblock title %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">{{ client.full_name }}</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <a href="{% url 'clients:update' client.pk %}" class="btn btn-warning">
+        <i class="fas fa-edit"></i> Edit Client
+      </a>
+      <a href="{% url 'clients:delete' client.pk %}" class="btn btn-danger">
+        <i class="fas fa-trash"></i> Delete
+      </a>
+      <a href="{% url 'clients:list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to List
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Client Information Cards -->
+<div class="row">
+  <!-- Basic Information -->
+  <div class="col-lg-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">Basic Information</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-sm-4"><strong>Full Name:</strong></div>
+          <div class="col-sm-8">{{ client.full_name }}</div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-4"><strong>Email:</strong></div>
+          <div class="col-sm-8">
+            <a href="mailto:{{ client.email }}">{{ client.email }}</a>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-4"><strong>Phone:</strong></div>
+          <div class="col-sm-8">{{ client.phone|default:"Not provided" }}</div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-4"><strong>Address:</strong></div>
+          <div class="col-sm-8">{{ client.address|default:"Not provided"|linebreaks }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Professional Information -->
+  <div class="col-lg-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-success">Professional Information</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-sm-4"><strong>Company:</strong></div>
+          <div class="col-sm-8">{{ client.company|default:"Not provided" }}</div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-4"><strong>Occupation:</strong></div>
+          <div class="col-sm-8">{{ client.occupation|default:"Not provided" }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Legal Information -->
+<div class="row">
+  <!-- Case History -->
+  <div class="col-lg-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-info">Case History</h6>
+      </div>
+      <div class="card-body">
+        {% if client.case_history %}
+          {{ client.case_history|linebreaks }}
+        {% else %}
+          <p class="text-muted">No case history recorded.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="col-lg-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-warning">Additional Notes</h6>
+      </div>
+      <div class="card-body">
+        {% if client.notes %}
+          {{ client.notes|linebreaks }}
+        {% else %}
+          <p class="text-muted">No additional notes recorded.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Audit Information -->
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-secondary">Audit Information</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-3">
+            <strong>Created:</strong><br>
+            {{ client.created_at|date:"F d, Y" }} at {{ client.created_at|time:"g:i A" }}
+          </div>
+          <div class="col-md-3">
+            <strong>Last Updated:</strong><br>
+            {{ client.updated_at|date:"F d, Y" }} at {{ client.updated_at|time:"g:i A" }}
+          </div>
+          <div class="col-md-3">
+            <strong>Created By:</strong><br>
+            {% if client.created_by %}
+              {{ client.created_by.email }}
+            {% else %}
+              System
+            {% endif %}
+          </div>
+          <div class="col-md-3">
+            <strong>Status:</strong><br>
+            {% if client.is_deleted %}
+              <span class="badge bg-danger">Deleted</span>
+            {% else %}
+              <span class="badge bg-success">Active</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-3 mb-2">
+            <a href="#" class="btn btn-primary btn-user w-100">
+              <i class="fas fa-folder-plus"></i> Create New Case
+            </a>
+          </div>
+          <div class="col-md-3 mb-2">
+            <a href="#" class="btn btn-info btn-user w-100">
+              <i class="fas fa-file-invoice"></i> Create Invoice
+            </a>
+          </div>
+          <div class="col-md-3 mb-2">
+            <a href="#" class="btn btn-success btn-user w-100">
+              <i class="fas fa-calendar-plus"></i> Schedule Appointment
+            </a>
+          </div>
+          <div class="col-md-3 mb-2">
+            <a href="#" class="btn btn-warning btn-user w-100">
+              <i class="fas fa-envelope"></i> Send Email
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+<script>
+// Add any client detail-specific JavaScript here
+</script>
+{% endblock javascript %}

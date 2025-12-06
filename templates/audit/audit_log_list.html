@@ -1,0 +1,206 @@
+{% extends "_tenant_base.html" %}
+{% load audit_tags %}
+
+{% block title %}Audit Logs{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Audit Logs</h1>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="?export=csv">Export as CSV</a></li>
+                        <li><a class="dropdown-item" href="?export=json">Export as JSON</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            {{ form.date_from.label_tag }}
+                            {{ form.date_from }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form.date_to.label_tag }}
+                            {{ form.date_to }}
+                        </div>
+                        <div class="col-md-2">
+                            {{ form.user.label_tag }}
+                            {{ form.user }}
+                        </div>
+                        <div class="col-md-2">
+                            {{ form.action.label_tag }}
+                            {{ form.action }}
+                        </div>
+                        <div class="col-md-2">
+                            {{ form.model_name.label_tag }}
+                            {{ form.model_name }}
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter"></i> Apply Filters
+                            </button>
+                            <a href="?" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Clear
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Audit Logs Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Audit Log Entries</h5>
+                </div>
+                <div class="card-body">
+                    {% if object_list %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>User</th>
+                                        <th>Action</th>
+                                        <th>Model</th>
+                                        <th>Object ID</th>
+                                        <th>IP Address</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for log in object_list %}
+                                        <tr>
+                                            <td>{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+                                            <td>{{ log.user.get_full_name|default:log.user.email }}</td>
+                                            <td>{% action_badge log.action %}</td>
+                                            <td>{{ log.model_name }}</td>
+                                            <td>{{ log.object_id }}</td>
+                                            <td>{{ log.ip_address }}</td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#logDetailModal{{ log.id }}">
+                                                    <i class="fas fa-eye"></i> Details
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if is_paginated %}
+                            <nav aria-label="Audit logs pagination">
+                                <ul class="pagination justify-content-center">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1">&laquo; First</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                                        </li>
+                                    {% endif %}
+
+                                    {% for num in page_obj.paginator.page_range %}
+                                        {% if page_obj.number == num %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ num }}</span>
+                                            </li>
+                                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                            <h5>No audit logs found</h5>
+                            <p class="text-muted">Try adjusting your filters or check back later.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detail Modals -->
+{% for log in object_list %}
+    <div class="modal fade" id="logDetailModal{{ log.id }}" tabindex="-1" aria-labelledby="logDetailModalLabel{{ log.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logDetailModalLabel{{ log.id }}">Audit Log Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>Timestamp:</strong></div>
+                        <div class="col-sm-9">{{ log.timestamp|date:"Y-m-d H:i:s" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>User:</strong></div>
+                        <div class="col-sm-9">{{ log.user.get_full_name|default:log.user.email }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>Action:</strong></div>
+                        <div class="col-sm-9">{% action_badge log.action %}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>Model:</strong></div>
+                        <div class="col-sm-9">{{ log.model_name }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>Object ID:</strong></div>
+                        <div class="col-sm-9">{{ log.object_id }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>IP Address:</strong></div>
+                        <div class="col-sm-9">{{ log.ip_address }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>User Agent:</strong></div>
+                        <div class="col-sm-9">{{ log.user_agent|default:"N/A" }}</div>
+                    </div>
+                    
+                    {% if log.old_values or log.new_values %}
+                        <div class="row mb-3">
+                            <div class="col-sm-3"><strong>Changes:</strong></div>
+                            <div class="col-sm-9">
+                                {% audit_log_changes log %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+{% endblock %}

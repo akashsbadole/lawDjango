@@ -1,0 +1,768 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block title %}Blog - Legal Tech & Law Firm Management Tips{% endblock title %}
+
+{% block meta_description %}
+Stay updated with the latest legal technology trends, law firm management tips, and best practices. Expert insights to help you run your legal practice more efficiently.
+{% endblock meta_description %}
+
+{% block extra_css %}
+<style>
+/* Blog page specific styles */
+.blog-hero {
+    background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+    color: white;
+    padding: 80px 0;
+    text-align: center;
+}
+
+.blog-hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.blog-hero p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+    opacity: 0.95;
+}
+
+.blog-section {
+    padding: 80px 0;
+    background: var(--brand-background);
+}
+
+.blog-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.blog-filters {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 10px 24px;
+    border: 2px solid transparent;
+    background: white;
+    color: var(--brand-text);
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+    background: var(--brand-primary);
+    color: white;
+    border-color: var(--brand-primary);
+    transform: translateY(-2px);
+}
+
+.blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2.5rem;
+    margin-bottom: 4rem;
+}
+
+.blog-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.blog-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.blog-image {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+}
+
+.blog-content {
+    padding: 2rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.blog-category {
+    display: inline-block;
+    background: var(--brand-primary);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.blog-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--brand-text);
+    margin-bottom: 1rem;
+    line-height: 1.4;
+    flex-grow: 1;
+}
+
+.blog-excerpt {
+    color: var(--brand-secondary);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    flex-grow: 1;
+}
+
+.blog-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--brand-secondary);
+}
+
+.blog-author {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.author-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.blog-read-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--brand-primary);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.blog-read-more:hover {
+    gap: 1rem;
+    transform: translateX(5px);
+}
+
+.blog-read-more::after {
+    content: '→';
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+.blog-read-more:hover::after {
+    transform: translateX(3px);
+}
+
+.categories-section {
+    padding: 80px 0;
+    background: white;
+}
+
+.categories-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.category-card {
+    background: var(--brand-background);
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.category-card:hover {
+    border-color: var(--brand-primary);
+    transform: translateY(-5px);
+}
+
+.category-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.category-card h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--brand-text);
+    margin-bottom: 0.5rem;
+}
+
+.category-card p {
+    color: var(--brand-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.category-count {
+    color: var(--brand-primary);
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+}
+
+.newsletter-section {
+    padding: 80px 0;
+    background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+    color: white;
+    text-align: center;
+}
+
+.newsletter-section h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.newsletter-section p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: 0.95;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.newsletter-form {
+    max-width: 500px;
+    margin: 0 auto;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.newsletter-input {
+    flex: 1;
+    min-width: 250px;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 50px;
+    font-size: 1rem;
+    outline: none;
+}
+
+.newsletter-btn {
+    padding: 15px 30px;
+    background: white;
+    color: var(--brand-primary);
+    border: none;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.newsletter-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.sidebar {
+    margin-top: 3rem;
+}
+
+.search-widget {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.search-widget h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--brand-text);
+    margin-bottom: 1rem;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e1e5e9;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.search-input:focus {
+    border-color: var(--brand-primary);
+}
+
+.popular-posts {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.popular-posts h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--brand-text);
+    margin-bottom: 1.5rem;
+}
+
+.popular-post {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #f1f3f5;
+}
+
+.popular-post:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.popular-post-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.popular-post-content {
+    flex-grow: 1;
+}
+
+.popular-post-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--brand-text);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.popular-post-meta {
+    font-size: 0.85rem;
+    color: var(--brand-secondary);
+}
+
+.tags-widget {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.tags-widget h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--brand-text);
+    margin-bottom: 1rem;
+}
+
+.tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tag {
+    display: inline-block;
+    padding: 6px 12px;
+    background: var(--brand-background);
+    color: var(--brand-text);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.tag:hover {
+    background: var(--brand-primary);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .blog-hero h1 {
+        font-size: 2rem;
+    }
+    
+    .blog-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .newsletter-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .newsletter-input,
+    .newsletter-btn {
+        width: 100%;
+    }
+    
+    .categories-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="blog-hero">
+    <div class="container">
+        <h1>Legal Tech Insights & Tips</h1>
+        <p>Stay ahead with the latest trends, strategies, and best practices for modern law firm management</p>
+    </div>
+</section>
+
+<!-- Blog Section -->
+<section class="blog-section">
+    <div class="blog-container">
+        <div class="blog-filters">
+            <button class="filter-btn active" data-category="all">All Posts</button>
+            <button class="filter-btn" data-category="practice-management">Practice Management</button>
+            <button class="filter-btn" data-category="legal-tech">Legal Technology</button>
+            <button class="filter-btn" data-category="productivity">Productivity</button>
+            <button class="filter-btn" data-category="client-relations">Client Relations</button>
+            <button class="filter-btn" data-category="compliance">Compliance</button>
+        </div>
+        
+        <div class="blog-grid">
+            <article class="blog-card" data-category="practice-management">
+                <img src="{% static 'images/blog-post1.jpg' %}" alt="10 Ways to Streamline Your Law Firm Operations" class="blog-image">
+                <div class="blog-content">
+                    <span class="blog-category">Practice Management</span>
+                    <h3 class="blog-title">10 Ways to Streamline Your Law Firm Operations</h3>
+                    <p class="blog-excerpt">Discover practical strategies to optimize your law firm's workflow, reduce administrative overhead, and improve overall efficiency without sacrificing quality of service.</p>
+                    <div class="blog-meta">
+                        <div class="blog-author">
+                            <img src="{% static 'images/author1.jpg' %}" alt="Sarah Johnson" class="author-avatar">
+                            <span>Sarah Johnson</span>
+                        </div>
+                        <span>December 15, 2023</span>
+                    </div>
+                    <a href="#" class="blog-read-more">Read More</a>
+                </div>
+            </article>
+            
+            <article class="blog-card" data-category="legal-tech">
+                <img src="{% static 'images/blog-post2.jpg' %}" alt="The Future of AI in Legal Practice" class="blog-image">
+                <div class="blog-content">
+                    <span class="blog-category">Legal Technology</span>
+                    <h3 class="blog-title">The Future of AI in Legal Practice</h3>
+                    <p class="blog-excerpt">Explore how artificial intelligence is transforming the legal landscape, from contract analysis to legal research, and how your firm can leverage these emerging technologies.</p>
+                    <div class="blog-meta">
+                        <div class="blog-author">
+                            <img src="{% static 'images/author2.jpg' %}" alt="Michael Chen" class="author-avatar">
+                            <span>Michael Chen</span>
+                        </div>
+                        <span>December 12, 2023</span>
+                    </div>
+                    <a href="#" class="blog-read-more">Read More</a>
+                </div>
+            </article>
+            
+            <article class="blog-card" data-category="productivity">
+                <img src="{% static 'images/blog-post3.jpg' %}" alt="Time Management Strategies for Busy Lawyers" class="blog-image">
+                <div class="blog-content">
+                    <span class="blog-category">Productivity</span>
+                    <h3 class="blog-title">Time Management Strategies for Busy Lawyers</h3>
+                    <p class="blog-excerpt">Learn proven time management techniques specifically designed for legal professionals, helping you bill more hours while maintaining work-life balance.</p>
+                    <div class="blog-meta">
+                        <div class="blog-author">
+                            <img src="{% static 'images/author3.jpg' %}" alt="Emily Rodriguez" class="author-avatar">
+                            <span>Emily Rodriguez</span>
+                        </div>
+                        <span>December 10, 2023</span>
+                    </div>
+                    <a href="#" class="blog-read-more">Read More</a>
+                </div>
+            </article>
+            
+            <article class="blog-card" data-category="client-relations">
+                <img src="{% static 'images/blog-post4.jpg' %}" alt="Building Long-Term Client Relationships" class="blog-image">
+                <div class="blog-content">
+                    <span class="blog-category">Client Relations</span>
+                    <h3 class="blog-title">Building Long-Term Client Relationships</h3>
+                    <p class="blog-excerpt">Discover effective strategies for client retention, communication best practices, and how to transform satisfied clients into loyal advocates for your practice.</p>
+                    <div class="blog-meta">
+                        <div class="blog-author">
+                            <img src="{% static 'images/author4.jpg' %}" alt="David Thompson" class="author-avatar">
+                            <span>David Thompson</span>
+                        </div>
+                        <span>December 8, 2023</span>
+                    </div>
+                    <a href="#" class="blog-read-more">Read More</a>
+                </div>
+            </article>
+            
+            <article class="blog-card" data-category="compliance">
+                <img src="{% static 'images/blog-post5.jpg' %}" alt="Data Security and Privacy for Law Firms" class="blog-image">
+                <div class="blog-content">
+                    <span class="blog-category">Compliance</span>
+                    <h3 class="blog-title">Data Security and Privacy for Law Firms</h3>
+                    <p class="blog-excerpt">Essential guidelines for protecting client data, understanding legal privacy regulations, and implementing robust security measures in your practice.</p>
+                    <div class="blog-meta">
+                        <div class="blog-author">
+                            <img src="{% static 'images/author5.jpg' %}" alt="Lisa Wang" class="author-avatar">
+                            <span>Lisa Wang</span>
+                        </div>
+                        <span>December 5, 2023</span>
+                    </div>
+                    <a href="#" class="blog-read-more">Read More</a>
+                </div>
+            </article>
+            
+            <article class="blog-card" data-category="practice-management">
+                <img src="{% static 'images/blog-post6.jpg' %}" alt="Scaling Your Solo Practice" class="blog-image">
+                <div class="blog-content">
+                    <span class="blog-category">Practice Management</span>
+                    <h3 class="blog-title">Scaling Your Solo Practice: When and How to Grow</h3>
+                    <p class="blog-excerpt">A comprehensive guide for solo practitioners considering growth, including hiring strategies, technology investments, and maintaining quality as you expand.</p>
+                    <div class="blog-meta">
+                        <div class="blog-author">
+                            <img src="{% static 'images/author6.jpg' %}" alt="James Wilson" class="author-avatar">
+                            <span>James Wilson</span>
+                        </div>
+                        <span>December 3, 2023</span>
+                    </div>
+                    <a href="#" class="blog-read-more">Read More</a>
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="categories-section">
+    <div class="categories-container">
+        <div class="text-center">
+            <h2>Explore by Category</h2>
+            <p>Find content tailored to your specific interests and needs</p>
+        </div>
+        
+        <div class="categories-grid">
+            <div class="category-card">
+                <div class="category-icon">
+                    <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                </div>
+                <h3>Practice Management</h3>
+                <p>Strategies for running an efficient and profitable law firm</p>
+                <span class="category-count">24 articles</span>
+            </div>
+            
+            <div class="category-card">
+                <div class="category-icon">
+                    <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
+                    </svg>
+                </div>
+                <h3>Legal Technology</h3>
+                <p>Latest tools, trends, and innovations in legal tech</p>
+                <span class="category-count">18 articles</span>
+            </div>
+            
+            <div class="category-card">
+                <div class="category-icon">
+                    <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                </div>
+                <h3>Productivity</h3>
+                <p>Time management and efficiency tips for legal professionals</p>
+                <span class="category-count">15 articles</span>
+            </div>
+            
+            <div class="category-card">
+                <div class="category-icon">
+                    <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                    </svg>
+                </div>
+                <h3>Client Relations</h3>
+                <p>Building and maintaining strong client relationships</p>
+                <span class="category-count">12 articles</span>
+            </div>
+            
+            <div class="category-card">
+                <div class="category-icon">
+                    <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                    </svg>
+                </div>
+                <h3>Compliance</h3>
+                <p>Legal regulations, ethics, and compliance requirements</p>
+                <span class="category-count">9 articles</span>
+            </div>
+            
+            <div class="category-card">
+                <div class="category-icon">
+                    <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                    </svg>
+                </div>
+                <h3>Document Management</h3>
+                <p>Best practices for organizing and securing legal documents</p>
+                <span class="category-count">7 articles</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="newsletter-section">
+    <div class="container">
+        <h2>Stay Updated</h2>
+        <p>Get the latest legal tech insights and practice management tips delivered to your inbox</p>
+        
+        <form class="newsletter-form">
+            <input type="email" class="newsletter-input" placeholder="Enter your email address" required>
+            <button type="submit" class="newsletter-btn">Subscribe</button>
+        </form>
+    </div>
+</section>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Blog filter functionality
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const blogCards = document.querySelectorAll('.blog-card');
+    
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remove active class from all buttons
+            filterBtns.forEach(b => b.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            const category = this.getAttribute('data-category');
+            
+            // Filter blog cards
+            blogCards.forEach(card => {
+                if (category === 'all' || card.getAttribute('data-category') === category) {
+                    card.style.display = 'block';
+                    // Add animation
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 100);
+                } else {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    setTimeout(() => {
+                        card.style.display = 'none';
+                    }, 300);
+                }
+            });
+        });
+    });
+    
+    // Newsletter form
+    const newsletterForm = document.querySelector('.newsletter-form');
+    if (newsletterForm) {
+        newsletterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const emailInput = this.querySelector('.newsletter-input');
+            const submitBtn = this.querySelector('.newsletter-btn');
+            
+            if (emailInput.value) {
+                // Show loading state
+                submitBtn.textContent = 'Subscribing...';
+                submitBtn.disabled = true;
+                
+                // Simulate subscription
+                setTimeout(() => {
+                    // Reset form
+                    emailInput.value = '';
+                    submitBtn.textContent = 'Subscribe';
+                    submitBtn.disabled = false;
+                    
+                    // Show success message (you could replace this with a toast notification)
+                    alert('Thank you for subscribing! Please check your email to confirm.');
+                }, 1500);
+            }
+        });
+    }
+    
+    // Add smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+    
+    // Add hover effect to blog cards
+    blogCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-10px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            if (!this.classList.contains('filtered-out')) {
+                this.style.transform = 'translateY(0)';
+            }
+        });
+    });
+});
+</script>
+{% endblock extra_js %}

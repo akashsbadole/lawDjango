@@ -1,0 +1,693 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block title %}Frequently Asked Questions - Law Firm Management Platform{% endblock title %}
+
+{% block meta_description %}
+Find answers to common questions about our law firm management platform. Learn about features, pricing, security, and how our software can help streamline your practice.
+{% endblock meta_description %}
+
+{% block extra_css %}
+<style>
+/* FAQ page specific styles */
+.faq-hero {
+    background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+    color: white;
+    padding: 80px 0;
+    text-align: center;
+}
+
+.faq-hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.faq-hero p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+    opacity: 0.95;
+}
+
+.faq-search {
+    padding: 40px 0;
+    background: var(--brand-background);
+}
+
+.search-container {
+    max-width: 600px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+    padding: 1rem 3rem 1rem 1.5rem;
+    border: 2px solid #e1e5e9;
+    border-radius: 50px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--brand-primary);
+}
+
+.search-btn {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--brand-primary);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.search-btn:hover {
+    background: var(--brand-secondary);
+}
+
+.faq-categories {
+    padding: 40px 0;
+    background: white;
+}
+
+.categories-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.category-btn {
+    padding: 0.75rem 1.5rem;
+    background: var(--brand-background);
+    border: 2px solid transparent;
+    border-radius: 25px;
+    color: var(--brand-text);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.category-btn:hover,
+.category-btn.active {
+    background: var(--brand-primary);
+    color: white;
+    border-color: var(--brand-primary);
+}
+
+.faq-section {
+    padding: 60px 0;
+    background: var(--brand-background);
+}
+
+.faq-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.faq-category {
+    margin-bottom: 3rem;
+}
+
+.category-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--brand-text);
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.faq-item {
+    background: white;
+    border-radius: 15px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    transition: box-shadow 0.3s ease;
+}
+
+.faq-item:hover {
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.faq-question {
+    padding: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: var(--brand-text);
+    transition: background-color 0.3s ease;
+}
+
+.faq-question:hover {
+    background: var(--brand-background);
+}
+
+.faq-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--brand-primary);
+    transition: transform 0.3s ease;
+}
+
+.faq-item.active .faq-icon {
+    transform: rotate(45deg);
+}
+
+.faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.faq-item.active .faq-answer {
+    max-height: 500px;
+}
+
+.faq-answer-content {
+    padding: 0 1.5rem 1.5rem;
+    color: var(--brand-secondary);
+    line-height: 1.6;
+}
+
+.faq-answer-content ul {
+    margin-top: 1rem;
+    padding-left: 1.5rem;
+}
+
+.faq-answer-content li {
+    margin-bottom: 0.5rem;
+}
+
+.help-section {
+    padding: 80px 0;
+    background: white;
+    text-align: center;
+}
+
+.help-section h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--brand-text);
+    margin-bottom: 1.5rem;
+}
+
+.help-section p {
+    font-size: 1.2rem;
+    color: var(--brand-secondary);
+    max-width: 600px;
+    margin: 0 auto 2rem;
+}
+
+.help-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.help-option {
+    padding: 2rem;
+    background: var(--brand-background);
+    border-radius: 15px;
+    transition: transform 0.3s ease;
+}
+
+.help-option:hover {
+    transform: translateY(-5px);
+}
+
+.help-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 1rem;
+    background: var(--brand-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.help-option h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--brand-text);
+    margin-bottom: 1rem;
+}
+
+.help-option p {
+    font-size: 1rem;
+    color: var(--brand-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.help-option .btn {
+    margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .faq-hero h1 {
+        font-size: 2rem;
+    }
+    
+    .category-title {
+        font-size: 1.5rem;
+    }
+    
+    .help-section h2 {
+        font-size: 2rem;
+    }
+    
+    .help-options {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="faq-hero">
+    <div class="container">
+        <h1>Frequently Asked Questions</h1>
+        <p>Find answers to common questions about our law firm management platform</p>
+    </div>
+</section>
+
+<!-- Search Section -->
+<section class="faq-search">
+    <div class="container">
+        <div class="search-container">
+            <input type="text" class="search-input" id="faqSearch" placeholder="Search for answers...">
+            <button class="search-btn" onclick="searchFAQ()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="faq-categories">
+    <div class="container">
+        <div class="categories-container">
+            <button class="category-btn active" onclick="filterFAQ('all')">All Questions</button>
+            <button class="category-btn" onclick="filterFAQ('getting-started')">Getting Started</button>
+            <button class="category-btn" onclick="filterFAQ('features')">Features</button>
+            <button class="category-btn" onclick="filterFAQ('pricing')">Pricing</button>
+            <button class="category-btn" onclick="filterFAQ('security')">Security</button>
+            <button class="category-btn" onclick="filterFAQ('technical')">Technical</button>
+            <button class="category-btn" onclick="filterFAQ('billing')">Billing</button>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="faq-section">
+    <div class="container">
+        <div class="faq-container">
+            <!-- Getting Started Category -->
+            <div class="faq-category" data-category="getting-started">
+                <h2 class="category-title">Getting Started</h2>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>How do I get started with the platform?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Getting started is easy! Simply sign up for a free trial, complete your firm profile, and follow our guided setup process. We'll walk you through importing your existing data, setting up your team, and configuring your preferences. Most firms are fully operational within 30 minutes.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>Can I import my existing case data?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Yes! We support importing data from various formats including CSV, Excel, and most major practice management systems. Our import wizard guides you through the process, and our support team is available to help with larger migrations.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>Is there training available?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>We offer comprehensive training resources including video tutorials, documentation, and live webinars. Premium plans also include personalized onboarding sessions with our implementation specialists to ensure your team gets up to speed quickly.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Features Category -->
+            <div class="faq-category" data-category="features">
+                <h2 class="category-title">Features</h2>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>What features are included in each plan?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Our plans are designed to grow with your practice:</p>
+                            <ul>
+                                <li><strong>Starter (Free):</strong> Basic case management, document storage, and client communication</li>
+                                <li><strong>Professional ($49/month):</strong> Advanced case management, billing, time tracking, and reporting</li>
+                                <li><strong>Enterprise ($99/month):</strong> All features plus advanced security, custom workflows, and priority support</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>Can I customize the platform for my practice area?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Absolutely! Our platform is highly customizable. You can create custom fields, workflows, document templates, and reports tailored to your specific practice area. Enterprise plans include unlimited customizations and workflow automation.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>Does the platform integrate with other software?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Yes, we integrate with popular legal software including QuickBooks, Xero, Dropbox, Google Drive, Microsoft Office, and many more. We also offer API access for custom integrations on our Enterprise plan.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pricing Category -->
+            <div class="faq-category" data-category="pricing">
+                <h2 class="category-title">Pricing</h2>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>Is there really a free plan?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Yes! Our Starter plan is completely free forever and includes essential features for solo practitioners and small firms. There are no hidden fees or time limits, and you can upgrade at any time as your practice grows.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>Can I change plans anytime?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Yes, you can upgrade or downgrade your plan at any time. When upgrading, you'll have immediate access to new features. When downgrading, changes take effect at the next billing cycle to ensure you don't lose access to important data.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>What payment methods do you accept?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>We accept all major credit cards (Visa, MasterCard, American Express, Discover), debit cards, and ACH bank transfers. For Enterprise plans, we also offer annual billing with additional discounts.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Security Category -->
+            <div class="faq-category" data-category="security">
+                <h2 class="category-title">Security</h2>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>How secure is my data?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Security is our top priority. We use bank-level 256-bit encryption for all data transmission and storage, conduct regular security audits, and comply with industry standards including GDPR and HIPAA where applicable. Your data is backed up daily and stored in secure, redundant data centers.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>Is the platform HIPAA compliant?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Yes, our platform is HIPAA compliant for firms handling medical records or personal health information. We provide Business Associate Agreements (BAAs) and implement the necessary administrative, physical, and technical safeguards required by HIPAA.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>Who owns my data?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>You own your data completely. We never sell, share, or use your data for any purpose other than providing the service. You can export your data at any time, and we guarantee data portability if you ever decide to leave the platform.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Technical Category -->
+            <div class="faq-category" data-category="technical">
+                <h2 class="category-title">Technical</h2>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>Do I need to install any software?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>No installation is required! Our platform is cloud-based and accessible from any web browser. We also offer mobile apps for iOS and Android, so you can work from anywhere, on any device.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>What browsers are supported?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>We support all modern browsers including Chrome, Firefox, Safari, and Edge. For the best experience, we recommend using the latest version of your preferred browser. Mobile browsers are also fully supported.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>Is there an API available?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Yes, we provide a comprehensive REST API for Enterprise customers. The API allows you to integrate with custom systems, build custom reports, and automate workflows. Full documentation and SDKs are available in our developer portal.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Billing Category -->
+            <div class="faq-category" data-category="billing">
+                <h2 class="category-title">Billing</h2>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>How does billing work?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Billing is monthly or annual based on your chosen plan. You'll be charged automatically on your billing date, and you'll receive an email receipt for all charges. You can view your billing history and download invoices at any time from your account settings.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>Can I cancel anytime?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Yes, you can cancel your subscription at any time with no penalties. If you cancel, you'll continue to have access to your plan until the end of your current billing period. We also offer a 30-day money-back guarantee for new customers.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <span>Do you offer refunds?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>We offer a 30-day money-back guarantee for all new subscriptions. If you're not satisfied within the first 30 days, contact our support team for a full refund. After 30 days, refunds are provided on a case-by-case basis.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Help Section -->
+<section class="help-section">
+    <div class="container">
+        <h2>Still Have Questions?</h2>
+        <p>Our support team is here to help you get the most out of our platform</p>
+        
+        <div class="help-options">
+            <div class="help-option">
+                <div class="help-icon">💬</div>
+                <h3>Live Chat</h3>
+                <p>Chat with our support team during business hours</p>
+                <a href="#" class="btn btn-primary">Start Chat</a>
+            </div>
+            
+            <div class="help-option">
+                <div class="help-icon">📧</div>
+                <h3>Email Support</h3>
+                <p>Send us an email and we'll respond within 24 hours</p>
+                <a href="mailto:support@lawfirmplatform.com" class="btn btn-outline-primary">Send Email</a>
+            </div>
+            
+            <div class="help-option">
+                <div class="help-icon">📚</div>
+                <h3>Help Center</h3>
+                <p>Browse our comprehensive documentation and guides</p>
+                <a href="#" class="btn btn-outline-primary">Visit Help Center</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+// FAQ functionality
+function toggleFAQ(element) {
+    const faqItem = element.parentElement;
+    const isActive = faqItem.classList.contains('active');
+    
+    // Close all FAQ items
+    document.querySelectorAll('.faq-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Open clicked item if it wasn't active
+    if (!isActive) {
+        faqItem.classList.add('active');
+    }
+}
+
+// Filter FAQ by category
+function filterFAQ(category) {
+    // Update active button
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Show/hide categories
+    if (category === 'all') {
+        document.querySelectorAll('.faq-category').forEach(cat => {
+            cat.style.display = 'block';
+        });
+    } else {
+        document.querySelectorAll('.faq-category').forEach(cat => {
+            if (cat.dataset.category === category) {
+                cat.style.display = 'block';
+            } else {
+                cat.style.display = 'none';
+            }
+        });
+    }
+}
+
+// Search FAQ
+function searchFAQ() {
+    const searchTerm = document.getElementById('faqSearch').value.toLowerCase();
+    
+    if (searchTerm === '') {
+        // Show all items if search is empty
+        document.querySelectorAll('.faq-item').forEach(item => {
+            item.style.display = 'block';
+        });
+        return;
+    }
+    
+    document.querySelectorAll('.faq-item').forEach(item => {
+        const question = item.querySelector('.faq-question span').textContent.toLowerCase();
+        const answer = item.querySelector('.faq-answer-content').textContent.toLowerCase();
+        
+        if (question.includes(searchTerm) || answer.includes(searchTerm)) {
+            item.style.display = 'block';
+            // Auto-expand matching items
+            item.classList.add('active');
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+// Search on Enter key
+document.getElementById('faqSearch').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        searchFAQ();
+    }
+});
+</script>
+{% endblock extra_js %}

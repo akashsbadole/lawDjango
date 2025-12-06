@@ -1,0 +1,299 @@
+{% extends "platform_admin/base.html" %}
+{% load static %}
+
+{% block page_title %}Tenant Details: {{ tenant.name }}{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+  <a href="{% url 'platform_admin:tenant_edit' tenant.pk %}" class="btn btn-sm btn-outline-primary">
+    <i class="bi bi-pencil"></i> Edit
+  </a>
+  <a href="{% url 'platform_admin:tenant_list' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i> Back to List
+  </a>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+<!-- Tenant Information -->
+<div class="row">
+  <div class="col-lg-8 mb-4">
+    <div class="card shadow">
+      <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary">Tenant Information</h6>
+        <span class="badge {% if tenant.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+          {% if tenant.is_active %}Active{% else %}Inactive{% endif %}
+        </span>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Name</label>
+            <div class="form-control-plaintext">{{ tenant.name }}</div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Slug</label>
+            <div class="form-control-plaintext"><code>{{ tenant.slug }}</code></div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Plan</label>
+            <div class="form-control-plaintext">
+              <span class="badge bg-info">{{ tenant.get_plan_display }}</span>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Status</label>
+            <div class="form-control-plaintext">
+              {% if tenant.is_active %}
+                <span class="badge bg-success">Active</span>
+              {% else %}
+                <span class="badge bg-secondary">Inactive</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Created</label>
+            <div class="form-control-plaintext">{{ tenant.created_at|date:"M d, Y H:i" }}</div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Last Updated</label>
+            <div class="form-control-plaintext">{{ tenant.updated_at|date:"M d, Y H:i" }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4 mb-4">
+    <div class="card shadow">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Quick Stats</h6>
+      </div>
+      <div class="card-body">
+        <div class="text-center mb-3">
+          <div class="h4 text-primary">{{ user_count }}</div>
+          <div class="small text-gray-500">Total Users</div>
+        </div>
+        <div class="text-center mb-3">
+          <div class="h4 text-info">{{ storage_used|filesizeformat }}</div>
+          <div class="small text-gray-500">Storage Used</div>
+        </div>
+        <div class="text-center">
+          <div class="h4 text-warning">{{ storage_limit|filesizeformat }}</div>
+          <div class="small text-gray-500">Storage Limit</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Usage Statistics -->
+<div class="row">
+  <div class="col-lg-6 mb-4">
+    <div class="card shadow">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Usage Statistics</h6>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span>Storage Usage</span>
+            <span class="badge bg-info">{{ storage_used|filesizeformat }} / {{ storage_limit|filesizeformat }}</span>
+          </div>
+          <div class="progress" style="height: 20px;">
+            {% with storage_percentage=storage_used|div:storage_limit|mul:100 %}
+            <div class="progress-bar {% if storage_percentage > 80 %}bg-danger{% elif storage_percentage > 60 %}bg-warning{% else %}bg-success{% endif %}" 
+                 role="progressbar" style="width: {{ storage_percentage|floatformat:0 }}%">
+              {{ storage_percentage|floatformat:1 }}%
+            </div>
+            {% endwith %}
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span>User Limit</span>
+            <span class="badge bg-info">{{ user_count }} / {{ tenant.max_users }}</span>
+          </div>
+          <div class="progress" style="height: 20px;">
+            {% with user_percentage=user_count|div:tenant.max_users|mul:100 %}
+            <div class="progress-bar {% if user_percentage > 80 %}bg-danger{% elif user_percentage > 60 %}bg-warning{% else %}bg-success{% endif %}" 
+                 role="progressbar" style="width: {{ user_percentage|floatformat:0 }}%">
+              {{ user_percentage|floatformat:1 }}%
+            </div>
+            {% endwith %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6 mb-4">
+    <div class="card shadow">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Subscription Information</h6>
+      </div>
+      <div class="card-body">
+        {% if subscription %}
+          <div class="mb-3">
+            <label class="form-label">Status</label>
+            <div class="form-control-plaintext">
+              {% if subscription.is_active %}
+                <span class="badge bg-success">Active</span>
+              {% elif subscription.is_trial %}
+                <span class="badge bg-warning">Trial</span>
+              {% else %}
+                <span class="badge bg-secondary">Inactive</span>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Plan</label>
+            <div class="form-control-plaintext">
+              {% if subscription.plan %}
+                {{ subscription.plan.name }}
+              {% else %}
+                <span class="text-muted">No plan assigned</span>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Start Date</label>
+            <div class="form-control-plaintext">{{ subscription.start_date|date:"M d, Y" }}</div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">End Date</label>
+            <div class="form-control-plaintext">
+              {% if subscription.end_date %}
+                {{ subscription.end_date|date:"M d, Y" }}
+              {% else %}
+                <span class="text-muted">No end date</span>
+              {% endif %}
+            </div>
+          </div>
+          
+          {% if subscription.days_until_expiry %}
+          <div class="mb-3">
+            <label class="form-label">Days Until Expiry</label>
+            <div class="form-control-plaintext">
+              {% if subscription.days_until_expiry > 30 %}
+                <span class="badge bg-success">{{ subscription.days_until_expiry }} days</span>
+              {% elif subscription.days_until_expiry > 7 %}
+                <span class="badge bg-warning">{{ subscription.days_until_expiry }} days</span>
+              {% else %}
+                <span class="badge bg-danger">{{ subscription.days_until_expiry }} days</span>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+        {% else %}
+          <div class="text-center text-muted py-4">
+            <i class="bi bi-credit-card fa-2x mb-2"></i>
+            <p>No subscription found</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Users -->
+<div class="row">
+  <div class="col-lg-6 mb-4">
+    <div class="card shadow">
+      <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary">Recent Users</h6>
+        <a href="{% url 'platform_admin:user_list' %}?tenant={{ tenant.id }}" class="btn btn-sm btn-outline-primary">View All</a>
+      </div>
+      <div class="card-body">
+        {% if recent_users %}
+          <div class="list-group list-group-flush">
+            {% for user in recent_users %}
+            <div class="list-group-item px-0">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="font-weight-bold">{{ user.get_full_name|default:user.email }}</div>
+                  <div class="small text-muted">{{ user.email }}</div>
+                  <div class="small text-gray-500">{{ user.get_role_display }}</div>
+                </div>
+                <div>
+                  {% if user.is_active %}
+                    <span class="badge bg-success">Active</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Inactive</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center text-gray-500 py-3">
+            No users found for this tenant.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Notes -->
+  <div class="col-lg-6 mb-4">
+    <div class="card shadow">
+      <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary">Admin Notes</h6>
+        <a href="{% url 'platform_admin:note_create' %}?tenant={{ tenant.id }}" class="btn btn-sm btn-outline-primary">Add Note</a>
+      </div>
+      <div class="card-body">
+        {% if admin_notes %}
+          <div class="list-group list-group-flush">
+            {% for note in admin_notes %}
+            <div class="list-group-item px-0">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                  <div class="font-weight-bold">{{ note.title }}</div>
+                  <div class="small text-muted">{{ note.created_at|date:"M d, Y H:i" }} by {{ note.admin_user.email }}</div>
+                  <div class="small mt-1">{{ note.content|truncatewords:20 }}</div>
+                  <div class="mt-2">
+                    <span class="badge bg-info">{{ note.get_note_type_display }}</span>
+                    {% if note.requires_follow_up %}
+                      <span class="badge bg-warning">Follow-up Required</span>
+                    {% endif %}
+                    {% if note.is_private %}
+                      <span class="badge bg-secondary">Private</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center text-gray-500 py-3">
+            No admin notes for this tenant.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.form-control-plaintext {
+  color: #495057;
+  background-color: transparent;
+  border: solid transparent;
+  border-width: 1px 0;
+}
+
+.progress {
+  background-color: #e9ecef;
+}
+
+.progress-bar {
+  transition: width 0.6s ease;
+}
+</style>
+{% endblock %}

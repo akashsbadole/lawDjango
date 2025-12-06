@@ -1,0 +1,154 @@
+{% extends "_base.html" %}
+{% load static %}
+
+{% block title %}
+  {% if form.instance.pk %}Edit Event{% else %}Add New Event{% endif %} - {{ case.case_number }} - {{ user.tenant.name }} - Lithium
+{% endblock title %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">
+    {% if form.instance.pk %}Edit Event{% else %}Add New Event{% endif %}
+    <small class="text-muted">for {{ case.case_number }} - {{ case.title }}</small>
+  </h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <a href="{% url 'cases:detail' case.pk %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Case
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">
+          {% if form.instance.pk %}Edit Event Information{% else %}Event Information{% endif %}
+        </h6>
+      </div>
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              {% for error in form.non_field_errors %}
+                {{ error }}
+              {% endfor %}
+            </div>
+          {% endif %}
+          
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="{{ form.event_type.id_for_label }}" class="form-label">{{ form.event_type.label }}</label>
+              {{ form.event_type }}
+              {% if form.event_type.errors %}
+                <div class="text-danger">
+                  {% for error in form.event_type.errors %}
+                    <small>{{ error }}</small>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+            
+            <div class="col-md-6">
+              <label for="{{ form.event_date.id_for_label }}" class="form-label">{{ form.event_date.label }}</label>
+              {{ form.event_date }}
+              {% if form.event_date.errors %}
+                <div class="text-danger">
+                  {% for error in form.event_date.errors %}
+                    <small>{{ error }}</small>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+            
+            <div class="col-12">
+              <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
+              {{ form.title }}
+              {% if form.title.errors %}
+                <div class="text-danger">
+                  {% for error in form.title.errors %}
+                    <small>{{ error }}</small>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+            
+            <div class="col-12">
+              <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+              {{ form.description }}
+              {% if form.description.errors %}
+                <div class="text-danger">
+                  {% for error in form.description.errors %}
+                    <small>{{ error }}</small>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="mt-4">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save"></i> 
+              {% if form.instance.pk %}Update Event{% else %}Create Event{% endif %}
+            </button>
+            <a href="{% url 'cases:detail' case.pk %}" class="btn btn-secondary">
+              <i class="fas fa-times"></i> Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-4">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">Case Information</h6>
+      </div>
+      <div class="card-body">
+        <p><strong>Case Number:</strong> {{ case.case_number }}</p>
+        <p><strong>Title:</strong> {{ case.title }}</p>
+        <p><strong>Client:</strong> {{ case.client.full_name }}</p>
+        <p><strong>Status:</strong> {{ case.get_status_display }}</p>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">Help</h6>
+      </div>
+      <div class="card-body">
+        <h6>Event Type</h6>
+        <p class="text-muted small">
+          Select the appropriate event type. This helps in categorizing and filtering events.
+        </p>
+        
+        <h6>Event Date and Time</h6>
+        <p class="text-muted small">
+          Set the date and time when this event occurred or is scheduled to occur.
+        </p>
+        
+        <h6>Title</h6>
+        <p class="text-muted small">
+          Provide a brief, descriptive title for the event.
+        </p>
+        
+        <h6>Description</h6>
+        <p class="text-muted small">
+          Add detailed information about the event, including outcomes, attendees, or other relevant details.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+<script>
+// Add any event form-specific JavaScript here
+</script>
+{% endblock javascript %}

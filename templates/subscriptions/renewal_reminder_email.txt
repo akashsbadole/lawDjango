@@ -1,0 +1,115 @@
+{{ tenant.name }} - Law Firm Management System
+===============================================
+
+{% if days_until_renewal <= 3 %}
+URGENT: SUBSCRIPTION RENEWAL REQUIRED
+=====================================
+
+Your subscription will expire in {{ days_until_renewal }} day(s). 
+Please renew immediately to avoid service interruption.
+{% elif days_until_renewal <= 7 %}
+SUBSCRIPTION RENEWAL REMINDER
+=============================
+
+Your subscription will expire in {{ days_until_renewal }} day(s). 
+Please renew soon to continue using our services.
+{% else %}
+SUBSCRIPTION RENEWAL NOTICE
+============================
+
+Your subscription will expire in {{ days_until_renewal }} day(s). 
+This is a friendly reminder to renew your subscription.
+{% endif %}
+
+SUBSCRIPTION RENEWAL
+====================
+
+{{ days_until_renewal }} Days
+Until your {{ subscription.plan.name }} subscription expires on {{ subscription.end_date|date:"F j, Y" }}
+
+CURRENT SUBSCRIPTION DETAILS
+=============================
+
+Current Plan: {{ subscription.plan.name }}
+Price: ${{ subscription.plan.price }}/{{ subscription.plan.get_billing_cycle_display }}
+Start Date: {{ subscription.start_date|date:"F j, Y" }}
+Renewal Date: {{ subscription.end_date|date:"F j, Y" }}
+Status: {{ subscription.get_status_display }}
+
+RENEWAL OPTIONS
+===============
+
+Current Plan - {{ subscription.plan.name }}
+${{ subscription.plan.price }}/{{ subscription.plan.get_billing_cycle_display }}
+
+{% for feature in current_plan_features %}
+✓ {{ feature.feature.name }}{% if feature.value %}: {{ feature.value }}{% endif %}
+{% endfor %}
+
+Renew Current Plan: {{ site_url }}{% url 'subscriptions:subscription_update' %}?renew=true
+
+{% if available_plans %}
+CONSIDER UPGRADING YOUR PLAN
+=============================
+{% for plan in available_plans %}
+{{ plan.name }}
+${{ plan.price }}/{{ plan.get_billing_cycle_display }}
+
+{% for feature in plan_features %}
+{% if feature.plan.id == plan.id %}
+✓ {{ feature.feature.name }}{% if feature.value %}: {{ feature.value }}{% endif %}
+{% endif %}
+{% endfor %}
+
+Upgrade to {{ plan.name }}: {{ site_url }}{% url 'subscriptions:subscription_update" %}?plan={{ plan.id }}
+
+{% endfor %}
+{% endif %}
+
+View All Plans: {{ site_url }}{% url 'subscriptions:plan_selection' %}
+Manage Subscription: {{ site_url }}{% url 'subscriptions:subscription_detail' %}
+
+WHAT HAPPENS IF YOU DON'T RENEW?
+================================
+
+SERVICE INTERRUPTION: If your subscription expires, you will lose access to premium 
+features and your account will be limited to read-only mode.
+
+DATA PRESERVATION: Your data will be safely preserved and you can reactivate your 
+subscription at any time to regain full access.
+
+NO ADDITIONAL CHARGES: You will not be charged if you choose not to renew your 
+subscription.
+
+PAYMENT METHODS
+===============
+
+Your subscription will be automatically renewed using your default payment method. 
+You can update your payment preferences at any time.
+
+{% if payment_methods %}
+CURRENT PAYMENT METHODS
+=======================
+{% for method in payment_methods %}
+{{ method.get_method_type_display }}{% if method.is_default %} (Default){% endif %}
+{% if method.method_type == 'card' %}
+Card ending in {{ method.details.card_last4 }}
+{% elif method.method_type == 'bank' %}
+Account ending in {{ method.details.account_last4 }}
+{% endif %}
+
+{% endfor %}
+{% endif %}
+
+Manage Payment Methods: {{ site_url }}{% url 'subscriptions:payment_method_list' %}
+
+NEED HELP?
+==========
+
+If you have questions about your subscription renewal or need assistance with 
+upgrading your plan, our support team is here to help.
+
+---
+This is an automated renewal reminder from {{ tenant.name }} Law Firm Management System.
+If you have already renewed your subscription, please disregard this message.
+© {% now "Y" %} {{ tenant.name }}. All rights reserved.

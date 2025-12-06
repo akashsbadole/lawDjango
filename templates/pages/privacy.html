@@ -1,0 +1,279 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block title %}Privacy Policy - Law Firm Management Platform{% endblock title %}
+
+{% block meta_description %}
+Learn how we protect your data and ensure privacy compliance. Our comprehensive privacy policy explains how we collect, use, and safeguard your information.
+{% endblock meta_description %}
+
+{% block extra_css %}
+<style>
+/* Privacy page specific styles */
+.privacy-hero {
+    background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+    color: white;
+    padding: 80px 0;
+    text-align: center;
+}
+
+.privacy-hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.privacy-hero p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+    opacity: 0.95;
+}
+
+.privacy-section {
+    padding: 80px 0;
+    background: var(--brand-background);
+}
+
+.privacy-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.privacy-content {
+    background: white;
+    padding: 3rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.privacy-content h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--brand-text);
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--brand-primary);
+}
+
+.privacy-content h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--brand-text);
+    margin: 2rem 0 1rem;
+}
+
+.privacy-content p {
+    color: var(--brand-secondary);
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+}
+
+.privacy-content ul {
+    color: var(--brand-secondary);
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+    padding-left: 2rem;
+}
+
+.privacy-content li {
+    margin-bottom: 0.5rem;
+}
+
+.privacy-content .highlight {
+    background: var(--brand-background);
+    padding: 1rem;
+    border-radius: 10px;
+    border-left: 4px solid var(--brand-primary);
+    margin: 1.5rem 0;
+}
+
+.privacy-content .highlight-title {
+    font-weight: 600;
+    color: var(--brand-text);
+    margin-bottom: 0.5rem;
+}
+
+.last-updated {
+    text-align: center;
+    color: var(--brand-secondary);
+    font-size: 0.9rem;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e1e5e9;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .privacy-hero h1 {
+        font-size: 2rem;
+    }
+    
+    .privacy-content {
+        padding: 1.5rem;
+    }
+    
+    .privacy-content h2 {
+        font-size: 1.5rem;
+    }
+    
+    .privacy-content h3 {
+        font-size: 1.3rem;
+    }
+}
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="privacy-hero">
+    <div class="container">
+        <h1>Privacy Policy</h1>
+        <p>How we collect, use, and protect your information</p>
+    </div>
+</section>
+
+<!-- Privacy Content Section -->
+<section class="privacy-section">
+    <div class="privacy-container">
+        <div class="privacy-content">
+            <h2>Privacy Policy</h2>
+            
+            <p>At Law Firm Management Platform ("we," "us," or "our"), we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website, use our services, or interact with our platform.</p>
+            
+            <p>Last updated: December 1, 2023</p>
+            
+            <h3>1. Information We Collect</h3>
+            
+            <h4>Personal Information</h4>
+            <p>We collect personal information that you voluntarily provide to us when you register for an account, request a demo, contact us, or use our services. This may include:</p>
+            
+            <ul>
+                <li>Name and contact information (email address, phone number)</li>
+                <li>Company/organization information</li>
+                <li>Professional information (bar membership, practice area)</li>
+                <li>Billing information (for paid services)</li>
+                <li>Communication preferences</li>
+            </ul>
+            
+            <h4>Automatically Collected Information</h4>
+            <p>When you use our website and platform, we automatically collect certain information, including:</p>
+            
+            <ul>
+                <li>IP address and browser type</li>
+                <li>Device information (operating system, device type)</li>
+                <li>Usage data (pages visited, features used, time spent)</li>
+                <li>Log files and error reports</li>
+                <li>Cookies and similar tracking technologies</li>
+            </ul>
+            
+            <h3>2. How We Use Your Information</h3>
+            
+            <p>We use the information we collect for various purposes, including:</p>
+            
+            <ul>
+                <li>Providing, maintaining, and improving our services</li>
+                <li>Processing transactions and sending related information</li>
+                <li>Sending technical notices, updates, and support messages</li>
+                <li>Responding to your comments and questions</li>
+                <li>Providing customer support</li>
+                <li>Preventing fraudulent activity and ensuring security</li>
+                <li>Personalizing your experience and content</li>
+                <li>Communicating with you about our services</li>
+                <li>Complying with legal obligations</li>
+            </ul>
+            
+            <div class="highlight">
+                <div class="highlight-title">Important Note:</div>
+                <p>We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except as described in this policy.</p>
+            </div>
+            
+            <h3>3. Information Sharing and Disclosure</h3>
+            
+            <p>We may share your information in the following circumstances:</p>
+            
+            <h4>Service Providers</h4>
+            <p>We may share your information with trusted third-party service providers who perform services on our behalf, such as:</p>
+            
+            <ul>
+                <li>Payment processors for billing and transaction processing</li>
+                <li>Cloud hosting providers for data storage and infrastructure</li>
+                <li>Customer support providers</li>
+                <li>Analytics and marketing service providers</li>
+            </ul>
+            
+            <h4>Legal Requirements</h4>
+            <p>We may disclose your information if required by law, such as in response to a subpoena, court order, or other legal process, or to protect our rights, property, or safety.</p>
+            
+            <h4>Business Transfers</h4>
+            <p>If we are involved in a merger, acquisition, or sale of assets, your information may be transferred as part of that transaction.</p>
+            
+            <h3>4. Data Security</h3>
+            
+            <p>We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. These measures include:</p>
+            
+            <ul>
+                <li>256-bit SSL encryption for data transmission</li>
+                <li>Secure data storage with access controls</li>
+                <li>Regular security audits and assessments</li>
+                <li>Employee training on data protection</li>
+                <li>Access controls and authentication measures</li>
+                <li>Regular data backups and disaster recovery procedures</li>
+            </ul>
+            
+            <div class="highlight">
+                <div class="highlight-title">Security Reminder:</div>
+                <p>While we strive to protect your information, no method of transmission over the internet or method of electronic storage is 100% secure. We cannot guarantee absolute security.</p>
+            </div>
+            
+            <h3>5. Your Rights and Choices</h3>
+            
+            <h4>Access and Update</h4>
+            <p>You have the right to access, update, and correct your personal information through your account settings or by contacting us directly.</p>
+            
+            <h4>Data Portability</h4>
+            <p>You may request an export of your personal information in a structured, commonly used, and machine-readable format.</p>
+            
+            <h4>Deletion</h4>
+            <p>You may request the deletion of your personal information, subject to certain legal exceptions and retention requirements.</p>
+            
+            <h4>Opt-Out</h4>
+            <p>You may opt out of receiving marketing communications from us by following the unsubscribe link or instructions provided in any email we send.</p>
+            
+            <h3>6. Cookies and Tracking Technologies</h3>
+            
+            <p>We use cookies and similar tracking technologies to enhance your experience, analyze site traffic, and for advertising purposes. You can control cookie preferences through your browser settings, but disabling certain cookies may affect your experience on our website.</p>
+            
+            <h3>7. International Data Transfers</h3>
+            
+            <p>Our services are hosted in secure data centers, and your information may be transferred to and processed in countries other than your own. We ensure that appropriate safeguards are in place for such transfers, including standard contractual clauses or other mechanisms approved by relevant data protection authorities.</p>
+            
+            <h3>8. Children's Privacy</h3>
+            
+            <p>Our services are not intended for individuals under the age of 18. We do not knowingly collect personal information from children under 18. If you are a parent or guardian and you are aware that your child has provided us with personal information, please contact us to request deletion.</p>
+            
+            <h3>9. Third-Party Links</h3>
+            
+            <p>Our website may contain links to third-party websites or services that are not operated by us. We are not responsible for the privacy practices of these third parties. We encourage you to review the privacy policies of any third-party websites you visit.</p>
+            
+            <h3>10. Changes to This Policy</h3>
+            
+            <p>We may update this Privacy Policy from time to time to reflect changes in our practices or for other operational, legal, or regulatory reasons. We will notify you of any material changes by posting the updated policy on this page and updating the "Last Updated" date.</p>
+            
+            <h3>11. Contact Us</h3>
+            
+            <p>If you have any questions about this Privacy Policy or our privacy practices, please contact us:</p>
+            
+            <ul>
+                <li>Email: privacy@lawfirmplatform.com</li>
+                <li>Mail: Privacy Officer, Law Firm Management Platform, 123 Legal Avenue, Lawrenceville, NJ 08648</li>
+                <li>Phone: +1 (555) 123-4567</li>
+            </ul>
+            
+            <div class="last-updated">
+                <p>Last updated: December 1, 2023</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}

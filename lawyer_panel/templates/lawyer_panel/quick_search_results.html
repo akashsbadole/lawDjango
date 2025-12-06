@@ -1,0 +1,215 @@
+{% extends "lawyer_panel/base.html" %}
+{% load static %}
+
+{% block title %}Search Results - Lawyer Panel{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Search Results</h1>
+        <a href="{% url 'lawyer_panel:dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+
+    <!-- Search Form -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Search</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" action="{% url 'lawyer_panel:quick_search' %}">
+                <div class="row">
+                    <div class="col-md-8">
+                        <input type="text" name="q" class="form-control" placeholder="Search for cases, clients, or documents..." value="{{ query }}">
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                        <a href="{% url 'lawyer_panel:quick_search' %}" class="btn btn-secondary">Clear</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if query %}
+        <!-- Results Summary -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <p class="text-muted">
+                    Found {{ total_results }} result{{ total_results|pluralize }} for "{{ query }}"
+                </p>
+            </div>
+        </div>
+
+        <!-- Cases Results -->
+        {% if cases %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Cases ({{ cases|length }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Case Number</th>
+                                    <th>Title</th>
+                                    <th>Client</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for case in cases %}
+                                    <tr>
+                                        <td><a href="{% url 'lawyer_panel:case_detail' case.pk %}">{{ case.case_number }}</a></td>
+                                        <td>{{ case.title|truncatewords:10 }}</td>
+                                        <td><a href="{% url 'lawyer_panel:client_detail' case.client.pk %}">{{ case.client.get_full_name }}</a></td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if case.status == 'active' %}bg-success
+                                                {% elif case.status == 'pending' %}bg-warning
+                                                {% elif case.status == 'closed' %}bg-secondary
+                                                {% else %}bg-danger{% endif %}">
+                                                {{ case.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'lawyer_panel:case_detail' case.pk %}" class="btn btn-sm btn-primary">
+                                                View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Clients Results -->
+        {% if clients %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Clients ({{ clients|length }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Client Type</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for client in clients %}
+                                    <tr>
+                                        <td><a href="{% url 'lawyer_panel:client_detail' client.pk %}">{{ client.get_full_name }}</a></td>
+                                        <td>{{ client.email }}</td>
+                                        <td>{{ client.phone|default:"Not provided" }}</td>
+                                        <td>{{ client.get_client_type_display }}</td>
+                                        <td>
+                                            <a href="{% url 'lawyer_panel:client_detail' client.pk %}" class="btn btn-sm btn-primary">
+                                                View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Documents Results -->
+        {% if documents %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Documents ({{ documents|length }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>Case</th>
+                                    <th>Uploaded</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for document in documents %}
+                                    <tr>
+                                        <td><a href="{% url 'lawyer_panel:document_detail' document.pk %}">{{ document.title }}</a></td>
+                                        <td>{{ document.get_file_type_display }}</td>
+                                        <td>
+                                            {% if document.case %}
+                                                <a href="{% url 'lawyer_panel:case_detail' document.case.pk %}">{{ document.case.case_number }}</a>
+                                            {% else %}
+                                                General
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ document.created_at|date:"M d, Y" }}</td>
+                                        <td>
+                                            <a href="{% url 'lawyer_panel:document_detail' document.pk %}" class="btn btn-sm btn-primary">
+                                                View
+                                            </a>
+                                            <a href="{{ document.file.url }}" download="{{ document.filename }}" class="btn btn-sm btn-outline-primary">
+                                                Download
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- No Results -->
+        {% if not cases and not clients and not documents %}
+            <div class="card shadow mb-4">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-search fa-3x text-gray-400 mb-3"></i>
+                    <h5 class="text-gray-500">No results found</h5>
+                    <p class="text-gray-400">Try adjusting your search terms or browse through the different sections.</p>
+                    <div class="mt-4">
+                        <a href="{% url 'lawyer_panel:case_list' %}" class="btn btn-outline-primary mx-1">Browse Cases</a>
+                        <a href="{% url 'lawyer_panel:client_list' %}" class="btn btn-outline-primary mx-1">Browse Clients</a>
+                        <a href="{% url 'lawyer_panel:document_list' %}" class="btn btn-outline-primary mx-1">Browse Documents</a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+        <!-- Search Instructions -->
+        <div class="card shadow mb-4">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-search fa-3x text-gray-400 mb-3"></i>
+                <h5 class="text-gray-500">Quick Search</h5>
+                <p class="text-gray-400">Enter a search term to find cases, clients, or documents.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Focus on search input when page loads
+        $('input[name="q"]').focus();
+    });
+</script>
+{% endblock %}

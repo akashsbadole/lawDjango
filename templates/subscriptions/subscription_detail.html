@@ -1,0 +1,198 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}Subscription Details - {{ user.tenant.name }}{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Subscription Details</h1>
+  <div>
+    <a href="{% url 'subscriptions:plan_selection' %}" class="btn btn-outline-primary">
+      <i class="fas fa-exchange-alt"></i> Change Plan
+    </a>
+    {% if subscription.status == 'active' or subscription.status == 'trial' %}
+    <a href="{% url 'subscriptions:subscription_cancel' subscription.pk %}" class="btn btn-outline-danger">
+      <i class="fas fa-times-circle"></i> Cancel
+    </a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-crown"></i> 
+          {{ subscription.plan.name }}
+          <span class="badge {% if subscription.status == 'active' %}bg-success{% elif subscription.status == 'trial' %}bg-info{% else %}bg-warning{% endif %} ms-2">
+            {{ subscription.get_status_display }}
+          </span>
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <p class="mb-1"><strong>Price:</strong> ${{ subscription.plan.price }} / {{ subscription.plan.get_billing_cycle_display }}</p>
+            <p class="mb-1"><strong>Started:</strong> {{ subscription.start_date|date:"F j, Y" }}</p>
+            {% if subscription.end_date %}
+            <p class="mb-1"><strong>Renews:</strong> {{ subscription.end_date|date:"F j, Y" }}</p>
+            {% endif %}
+          </div>
+          <div class="col-md-6">
+            <p class="mb-1"><strong>Auto-renew:</strong> 
+              {% if subscription.auto_renew %}
+              <i class="fas fa-check text-success"></i> Enabled
+              {% else %}
+              <i class="fas fa-times text-danger"></i> Disabled
+              {% endif %}
+            </p>
+            {% if subscription.cancelled_at %}
+            <p class="mb-1"><strong>Cancelled:</strong> {{ subscription.cancelled_at|date:"F j, Y" }}</p>
+            {% endif %}
+            {% if subscription.trial_end_date %}
+            <p class="mb-1"><strong>Trial Ends:</strong> {{ subscription.trial_end_date|date:"F j, Y" }}</p>
+            {% endif %}
+          </div>
+        </div>
+        
+        <p class="mb-0">{{ subscription.plan.description }}</p>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-list"></i> Plan Features
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Feature</th>
+                <th>Included</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if subscription.plan.max_users %}
+              <tr>
+                <td>Users</td>
+                <td><i class="fas fa-check text-success"></i></td>
+                <td>Up to {{ subscription.plan.max_users }} users</td>
+              </tr>
+              {% endif %}
+              
+              {% if subscription.plan.max_storage_mb %}
+              <tr>
+                <td>Storage</td>
+                <td><i class="fas fa-check text-success"></i></td>
+                <td>{{ subscription.plan.max_storage_mb }}MB</td>
+              </tr>
+              {% endif %}
+              
+              {% for feature in subscription.plan.features.all %}
+              <tr>
+                <td>{{ feature.feature.name }}</td>
+                <td>
+                  {% if feature.is_included %}
+                  <i class="fas fa-check text-success"></i>
+                  {% else %}
+                  <i class="fas fa-times text-danger"></i>
+                  {% endif %}
+                </td>
+                <td>{{ feature.value|default:"-" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-credit-card"></i> Payment Method
+        </h5>
+      </div>
+      <div class="card-body">
+        {% if subscription.payment_method %}
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <strong>{{ subscription.payment_method.get_method_type_display }}</strong><br>
+            <small class="text-muted">
+              {% if subscription.payment_method.method_type == 'card' %}
+              **** **** **** {{ subscription.payment_method.details.card_last4 }}
+              {% else %}
+              {{ subscription.payment_method.details|default:"No details" }}
+              {% endif %}
+            </small>
+          </div>
+          <div>
+            {% if subscription.payment_method.is_default %}
+            <span class="badge bg-success">Default</span>
+            {% endif %}
+          </div>
+        </div>
+        <a href="{% url 'subscriptions:payment_method_list' %}" class="btn btn-outline-secondary btn-sm w-100">
+          <i class="fas fa-wallet"></i> Manage Payment Methods
+        </a>
+        {% else %}
+        <div class="alert alert-warning">
+          <i class="fas fa-exclamation-triangle"></i> No payment method on file
+        </div>
+        <a href="{% url 'subscriptions:payment_method_create' %}" class="btn btn-primary btn-sm w-100">
+          <i class="fas fa-plus"></i> Add Payment Method
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-file-invoice-dollar"></i> Recent Invoices
+        </h5>
+      </div>
+      <div class="card-body">
+        {% if recent_invoices %}
+        <div class="list-group list-group-flush">
+          {% for invoice in recent_invoices %}
+          <a href="{% url 'subscriptions:invoice_detail' invoice.pk %}" class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between">
+              <h6 class="mb-1">{{ invoice.description }}</h6>
+              <small>${{ invoice.amount }}</small>
+            </div>
+            <p class="mb-1">
+              <small class="text-muted">Due: {{ invoice.due_date|date:"M j, Y" }}</small>
+              {% if invoice.status == 'paid' %}
+              <span class="badge bg-success ms-2">Paid</span>
+              {% elif invoice.status == 'pending' %}
+              <span class="badge bg-warning ms-2">Pending</span>
+              {% else %}
+              <span class="badge bg-danger ms-2">Overdue</span>
+              {% endif %}
+            </p>
+          </a>
+          {% endfor %}
+        </div>
+        <div class="mt-3">
+          <a href="{% url 'subscriptions:invoice_list' %}" class="btn btn-outline-secondary btn-sm w-100">
+            View All Invoices
+          </a>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No invoices found.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

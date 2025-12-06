@@ -1,0 +1,210 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}Invoice #{{ invoice.invoice_number }} - {{ user.tenant.name }}{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Invoice #{{ invoice.invoice_number }}</h1>
+  <div>
+    <a href="{% url 'subscriptions:invoice_list' %}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left"></i> Back to Invoices
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-file-invoice"></i> Invoice Details
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <p class="mb-1"><strong>Invoice Number:</strong> #{{ invoice.invoice_number }}</p>
+            <p class="mb-1"><strong>Issue Date:</strong> {{ invoice.issue_date|date:"F j, Y" }}</p>
+            <p class="mb-1"><strong>Due Date:</strong> {{ invoice.due_date|date:"F j, Y" }}</p>
+            <p class="mb-1"><strong>Status:</strong> 
+              {% if invoice.status == 'paid' %}
+              <span class="badge bg-success">Paid</span>
+              {% elif invoice.status == 'pending' %}
+              <span class="badge bg-warning">Pending</span>
+              {% elif invoice.status == 'overdue' %}
+              <span class="badge bg-danger">Overdue</span>
+              {% else %}
+              <span class="badge bg-secondary">{{ invoice.get_status_display }}</span>
+              {% endif %}
+            </p>
+          </div>
+          <div class="col-md-6">
+            <p class="mb-1"><strong>Type:</strong> {{ invoice.get_invoice_type_display }}</p>
+            {% if invoice.subscription %}
+            <p class="mb-1"><strong>Subscription:</strong> {{ invoice.subscription.plan.name }}</p>
+            {% endif %}
+            <p class="mb-1"><strong>Tenant:</strong> {{ invoice.tenant.name }}</p>
+          </div>
+        </div>
+        
+        <p class="mb-0"><strong>Description:</strong> {{ invoice.description }}</p>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-calculator"></i> Invoice Amount
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table">
+            <tbody>
+              <tr>
+                <td><strong>Subtotal:</strong></td>
+                <td>${{ invoice.subtotal }}</td>
+              </tr>
+              <tr>
+                <td><strong>Tax Rate:</strong></td>
+                <td>{{ invoice.tax_rate|floatformat:4 }}%</td>
+              </tr>
+              <tr>
+                <td><strong>Tax Amount:</strong></td>
+                <td>${{ invoice.tax_amount }}</td>
+              </tr>
+              <tr>
+                <td><strong>Total Amount:</strong></td>
+                <td><h5 class="text-primary">${{ invoice.total_amount }}</h5></td>
+              </tr>
+              {% if total_paid %}
+              <tr>
+                <td><strong>Amount Paid:</strong></td>
+                <td>${{ total_paid }}</td>
+              </tr>
+              <tr>
+                <td><strong>Remaining Balance:</strong></td>
+                <td><h5 class="{% if remaining_balance > 0 %}text-danger{% else %}text-success{% endif %}">${{ remaining_balance }}</h5></td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    {% if invoice.status != 'paid' %}
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-credit-card"></i> Payment Options
+        </h5>
+      </div>
+      <div class="card-body">
+        {% if payment_methods %}
+        <form method="post" action="{% url 'subscriptions:invoice_payment' invoice.pk %}">
+          {% csrf_token %}
+          
+          <div class="mb-3">
+            <label for="payment_method" class="form-label">Select Payment Method</label>
+            <select name="payment_method" class="form-select" required>
+              <option value="">Select payment method</option>
+              {% for method in payment_methods %}
+              <option value="{{ method.id }}">
+                {% if method.is_default %}{{ method.get_method_type_display }} (Default){% else %}{{ method.get_method_type_display }}{% endif %}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          
+          <div class="d-grid gap-2">
+            <a href="{% url 'subscriptions:invoice_list' %}" class="btn btn-outline-secondary">
+              Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-credit-card"></i> Pay Now
+            </button>
+          </div>
+        </form>
+        {% else %}
+        <div class="alert alert-warning">
+          <h5><i class="fas fa-exclamation-triangle"></i> No Payment Methods</h5>
+          <p>You need to add a payment method before you can pay this invoice.</p>
+          <a href="{% url 'subscriptions:payment_method_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Payment Method
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+    
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-download"></i> Download Options
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <a href="{% url 'subscriptions:invoice_pdf' invoice.pk %}" class="btn btn-outline-secondary">
+            <i class="fas fa-file-pdf"></i> Download PDF
+          </a>
+          <button class="btn btn-outline-secondary" onclick="window.print()">
+            <i class="fas fa-print"></i> Print Invoice
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    {% if payments %}
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-history"></i> Payment History
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Method</th>
+                <th>Amount</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for payment in payments %}
+              <tr>
+                <td>{{ payment.payment_date|date:"M j, Y" }}</td>
+                <td>{{ payment.get_payment_method_display }}</td>
+                <td>${{ payment.amount }}</td>
+                <td>
+                  {% if payment.status == 'success' %}
+                  <span class="badge bg-success">Success</span>
+                  {% elif payment.status == 'pending' %}
+                  <span class="badge bg-warning">Pending</span>
+                  {% elif payment.status == 'failed' %}
+                  <span class="badge bg-danger">Failed</span>
+                  {% else %}
+                  <span class="badge bg-secondary">{{ payment.get_status_display }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

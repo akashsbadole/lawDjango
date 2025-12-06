@@ -1,0 +1,208 @@
+{% extends "_tenant_base.html" %}
+
+{% block title %}{% if form.instance.pk %}Edit Time Entry{% else %}Log Time Entry{% endif %} - {{ tenant.name }} - Lithium{% endblock title %}
+
+{% block page_header %}
+<h1 class="h2">{% if form.instance.pk %}Edit Time Entry{% else %}Log Time Entry{% endif %}</h1>
+<div class="btn-toolbar mb-2 mb-md-0">
+  <div class="btn-group me-2">
+    <a href="{% url 'billing:time_entry_list' %}" class="btn btn-sm btn-secondary">
+      <i class="fas fa-arrow-left"></i> Back to Time Entries
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">
+          {% if form.instance.pk %}Edit Time Entry{% else %}Log Time Entry{% endif %}
+        </h6>
+      </div>
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          
+          <div class="row mb-3">
+            <div class="col-md-6">
+              {{ form.lawyer.label_tag }}
+              {{ form.lawyer }}
+              {% if form.lawyer.errors %}
+              <div class="invalid-feedback">
+                {% for error in form.lawyer.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              {{ form.case.label_tag }}
+              {{ form.case }}
+              {% if form.case.errors %}
+              <div class="invalid-feedback">
+                {% for error in form.case.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-md-4">
+              {{ form.hours.label_tag }}
+              {{ form.hours }}
+              {% if form.hours.errors %}
+              <div class="invalid-feedback">
+                {% for error in form.hours.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+            <div class="col-md-4">
+              {{ form.rate.label_tag }}
+              {{ form.rate }}
+              {% if form.rate.errors %}
+              <div class="invalid-feedback">
+                {% for error in form.rate.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Calculated Amount</label>
+              <div class="form-control" id="calculatedAmount">$0.00</div>
+            </div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-md-6">
+              {{ form.date.label_tag }}
+              {{ form.date }}
+              {% if form.date.errors %}
+              <div class="invalid-feedback">
+                {% for error in form.date.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              <div class="form-check mt-4">
+                {{ form.is_billable }}
+                {{ form.is_billable.label_tag }}
+                {% if form.is_billable.errors %}
+                <div class="invalid-feedback">
+                  {% for error in form.is_billable.errors %}
+                  <span>{{ error }}</span>
+                  {% endfor %}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            {{ form.description.label_tag }}
+            {{ form.description }}
+            {% if form.description.errors %}
+            <div class="invalid-feedback">
+              {% for error in form.description.errors %}
+              <span>{{ error }}</span>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          
+          <!-- Hidden fields -->
+          {% for field in form.hidden_fields %}
+            {{ field }}
+          {% endfor %}
+          
+          <div class="row">
+            <div class="col-12">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> 
+                {% if form.instance.pk %}Update Time Entry{% else %}Log Time Entry{% endif %}
+              </button>
+              <a href="{% url 'billing:time_entry_list' %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+              </a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Instructions Panel -->
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-info">Instructions</h6>
+      </div>
+      <div class="card-body">
+        <h6>Logging Time Entries</h6>
+        <p>Track billable hours for your cases. Time entries can be used to generate invoices for clients.</p>
+        
+        <h6>Best Practices</h6>
+        <ul>
+          <li>Be specific in your descriptions to justify the time spent</li>
+          <li>Use consistent time tracking methods</li>
+          <li>Log time daily for accuracy</li>
+          <li>Review unbilled time entries regularly</li>
+        </ul>
+        
+        <h6>Time Entry Fields</h6>
+        <ul>
+          <li><strong>Lawyer:</strong> The team member who performed the work</li>
+          <li><strong>Case:</strong> The case this time is associated with</li>
+          <li><strong>Hours:</strong> Time spent on the task (in decimal format)</li>
+          <li><strong>Rate:</strong> Hourly rate for this work</li>
+          <li><strong>Billable:</strong> Whether this time can be billed to the client</li>
+          <li><strong>Description:</strong> Detailed description of the work performed</li>
+        </ul>
+        
+        <h6>Next Steps</h6>
+        <p>After logging time entries:</p>
+        <ol>
+          <li>Review your time entries for accuracy</li>
+          <li>Generate invoices from unbilled time entries</li>
+          <li>Track payments received from clients</li>
+          <li>Monitor outstanding balances</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+<script>
+$(document).ready(function() {
+  // Calculate amount when hours or rate changes
+  function calculateAmount() {
+    var hours = parseFloat($('#id_hours').val()) || 0;
+    var rate = parseFloat($('#id_rate').val()) || 0;
+    var amount = hours * rate;
+    $('#calculatedAmount').text('$' + amount.toFixed(2));
+  }
+  
+  $('#id_hours, #id_rate').on('input', calculateAmount);
+  
+  // Auto-calculate on page load
+  calculateAmount();
+  
+  // Set default date to today
+  if (!$('#id_date').val()) {
+    var today = new Date().toISOString().split('T')[0];
+    $('#id_date').val(today);
+  }
+});
+</script>
+{% endblock javascript %}

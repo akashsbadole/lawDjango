@@ -1,0 +1,67 @@
+{% extends "platform_admin/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block page_title %}{% if form.instance.pk %}Edit Note{% else %}Create Note{% endif %}{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+  <a href="{% url 'platform_admin:note_list' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i> Back to Notes
+  </a>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card shadow">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+          {% if form.instance.pk %}Edit Admin Note{% else %}Create New Admin Note{% endif %}
+        </h6>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          {{ form|crispy }}
+          <div class="mt-4">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-circle"></i> {% if form.instance.pk %}Update Note{% else %}Create Note{% endif %}
+            </button>
+            <a href="{% url 'platform_admin:note_list' %}" class="btn btn-secondary">
+              <i class="bi bi-x-circle"></i> Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-4">
+    <div class="card shadow">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-info">Help</h6>
+      </div>
+      <div class="card-body">
+        <h6>Note Types</h6>
+        <ul class="list-unstyled">
+          <li><strong>General Note:</strong> General information or observations</li>
+          <li><strong>Warning:</strong> Important warnings or alerts</li>
+          <li><strong>Action Taken:</strong> Record of actions performed</li>
+          <li><strong>Follow Up Required:</strong> Items requiring future attention</li>
+          <li><strong>Complaint:</strong> User complaints or issues</li>
+          <li><strong>Compliment:</strong> Positive feedback or compliments</li>
+          <li><strong>System Alert:</strong> System-related notifications</li>
+        </ul>
+        
+        <h6 class="mt-4">Privacy</h6>
+        <p>Private notes are only visible to super administrators.</p>
+        
+        <h6>Follow-up</h6>
+        <p>Mark a note as requiring follow-up to track it in the dashboard.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

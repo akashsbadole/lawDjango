@@ -1,0 +1,827 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block title %}Live Demo - Law Firm Management Platform{% endblock title %}
+
+{% block meta_description %}
+Schedule a personalized live demo of our law firm management platform. See how our comprehensive case management, billing, and client communication tools can transform your practice.
+{% endblock meta_description %}
+
+{% block extra_css %}
+<style>
+/* Demo page specific styles */
+.demo-hero {
+    background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+    color: white;
+    padding: 80px 0;
+    text-align: center;
+}
+
+.demo-hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.demo-hero p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+    opacity: 0.95;
+}
+
+.demo-options {
+    padding: 80px 0;
+    background: var(--brand-background);
+}
+
+.demo-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.section-title {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.section-title h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--brand-text);
+    margin-bottom: 1rem;
+}
+
+.section-title p {
+    font-size: 1.2rem;
+    color: var(--brand-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.demo-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+}
+
+.demo-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.demo-card:hover {
+    transform: translateY(-5px);
+}
+
+.demo-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
+    background: var(--brand-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+}
+
+.demo-card h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--brand-text);
+    margin-bottom: 1rem;
+}
+
+.demo-card p {
+    color: var(--brand-secondary);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.demo-card .btn {
+    margin: 0.5rem;
+}
+
+.live-demo-section {
+    padding: 80px 0;
+    background: white;
+}
+
+.demo-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+.demo-text h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--brand-text);
+    margin-bottom: 1.5rem;
+}
+
+.demo-text p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--brand-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.demo-features {
+    background: var(--brand-background);
+    padding: 2rem;
+    border-radius: 15px;
+}
+
+.demo-features h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--brand-text);
+    margin-bottom: 1.5rem;
+}
+
+.demo-feature {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid white;
+}
+
+.demo-feature:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.demo-feature-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--brand-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+}
+
+.demo-feature-text {
+    color: var(--brand-secondary);
+    line-height: 1.5;
+}
+
+.demo-video {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.video-placeholder {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.video-placeholder img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.play-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.play-button:hover {
+    background: white;
+}
+
+.play-button svg {
+    width: 30px;
+    height: 30px;
+    fill: var(--brand-primary);
+    margin-left: 3px;
+}
+
+.interactive-demo {
+    padding: 80px 0;
+    background: var(--brand-background);
+}
+
+.demo-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 3rem;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    overflow: hidden;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.demo-tab {
+    flex: 1;
+    padding: 1rem 1.5rem;
+    background: white;
+    border: none;
+    color: var(--brand-secondary);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.demo-tab.active {
+    background: var(--brand-primary);
+    color: white;
+}
+
+.demo-tab:hover:not(.active) {
+    background: var(--brand-background);
+}
+
+.demo-screenshots {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.screenshot-container {
+    position: relative;
+    padding-bottom: 60%; /* Adjust based on screenshot aspect ratio */
+}
+
+.screenshot-container img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.testimonial-section {
+    padding: 80px 0;
+    background: white;
+}
+
+.testimonial-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.testimonial-card {
+    background: var(--brand-background);
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.testimonial-content {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--brand-secondary);
+    margin-bottom: 1.5rem;
+    font-style: italic;
+}
+
+.testimonial-author {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.author-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.author-info h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--brand-text);
+    margin-bottom: 0.25rem;
+}
+
+.author-info p {
+    font-size: 0.9rem;
+    color: var(--brand-secondary);
+}
+
+.cta-section {
+    padding: 80px 0;
+    background: var(--brand-background);
+    text-align: center;
+}
+
+.cta-section h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--brand-text);
+    margin-bottom: 1.5rem;
+}
+
+.cta-section p {
+    font-size: 1.2rem;
+    color: var(--brand-secondary);
+    max-width: 600px;
+    margin: 0 auto 2rem;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .demo-hero h1 {
+        font-size: 2rem;
+    }
+    
+    .demo-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .demo-tabs {
+        flex-direction: column;
+    }
+    
+    .section-title h2 {
+        font-size: 2rem;
+    }
+    
+    .demo-text h2 {
+        font-size: 2rem;
+    }
+    
+    .cta-section h2 {
+        font-size: 2rem;
+    }
+}
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="demo-hero">
+    <div class="container">
+        <h1>Experience Our Platform in Action</h1>
+        <p>See how our law firm management platform can transform your practice with a personalized demo</p>
+    </div>
+</section>
+
+<!-- Demo Options Section -->
+<section class="demo-options">
+    <div class="demo-container">
+        <div class="section-title">
+            <h2>Choose Your Demo Experience</h2>
+            <p>Select the option that works best for your schedule and learning style</p>
+        </div>
+        
+        <div class="demo-cards">
+            <div class="demo-card">
+                <div class="demo-icon">🎥</div>
+                <h3>Pre-recorded Demo</h3>
+                <p>Watch a comprehensive 15-minute overview of our platform's key features at your convenience. Perfect for getting a quick understanding of our capabilities.</p>
+                <button class="btn btn-primary" onclick="playVideo()">Watch Now</button>
+                <button class="btn btn-outline-primary" onclick="downloadDemo()">Download PDF</button>
+            </div>
+            
+            <div class="demo-card">
+                <div class="demo-icon">👥</div>
+                <h3>Live Personalized Demo</h3>
+                <p>Schedule a 30-minute one-on-one session with our product expert who will tailor the demo to your specific practice area and workflow needs.</p>
+                <button class="btn btn-primary" onclick="showLiveDemoForm()">Schedule Demo</button>
+                <button class="btn btn-outline-primary" onclick="showCalendar()">View Calendar</button>
+            </div>
+            
+            <div class="demo-card">
+                <div class="demo-icon">🖱️</div>
+                <h3>Interactive Sandbox</h3>
+                <p>Get hands-on experience with a fully functional demo environment. Explore features at your own pace with sample data and scenarios.</p>
+                <button class="btn btn-primary" onclick="launchSandbox()">Try Now</button>
+                <button class="btn btn-outline-primary" onclick="showSandboxGuide">View Guide</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Live Demo Section -->
+<section class="live-demo-section">
+    <div class="container">
+        <div class="demo-content">
+            <div class="demo-text">
+                <h2>Live Personalized Demo</h2>
+                <p>Our live demos are tailored to your specific needs and practice area. During the 30-minute session, our product experts will:</p>
+                <ul>
+                    <li>Understand your current workflow and pain points</li>
+                    <li>Demonstrate relevant features for your practice area</li>
+                    <li>Show how our platform addresses your specific challenges</li>
+                    <li>Answer your questions in real-time</li>
+                    <li>Provide personalized recommendations</li>
+                </ul>
+                <button class="btn btn-primary btn-lg" onclick="showLiveDemoForm()">Schedule Your Free Demo</button>
+            </div>
+            
+            <div class="demo-features">
+                <h3>What You'll See in the Demo</h3>
+                <div class="demo-feature">
+                    <div class="demo-feature-icon">📁</div>
+                    <div class="demo-feature-text">
+                        <strong>Case Management:</strong> Organize cases, track deadlines, and manage documents
+                    </div>
+                </div>
+                <div class="demo-feature">
+                    <div class="demo-feature-icon">⏰</div>
+                    <div class="demo-feature-text">
+                        <strong>Time Tracking:</strong> Capture billable time automatically and generate invoices
+                    </div>
+                </div>
+                <div class="demo-feature">
+                    <div class="demo-feature-icon">👥</div>
+                    <div class="demo-feature-text">
+                        <strong>Client Portal:</strong> Secure communication and document sharing with clients
+                    </div>
+                </div>
+                <div class="demo-feature">
+                    <div class="demo-feature-icon">📊</div>
+                    <div class="demo-feature-text">
+                        <strong>Reporting:</strong> Analytics and insights to grow your practice
+                    </div>
+                </div>
+                <div class="demo-feature">
+                    <div class="demo-feature-icon">🔐</div>
+                    <div class="demo-feature-text">
+                        <strong>Security:</strong> Bank-level encryption and compliance features
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Video Demo Section -->
+<section class="demo-video">
+    <div class="container">
+        <div class="video-placeholder">
+            <img src="{% static 'images/demo-thumbnail.jpg' %}" alt="Platform Demo Thumbnail">
+            <div class="play-button" onclick="playVideo()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Interactive Demo Section -->
+<section class="interactive-demo">
+    <div class="container">
+        <div class="section-title">
+            <h2>Interactive Feature Tour</h2>
+            <p>Explore different aspects of our platform with these focused demos</p>
+        </div>
+        
+        <div class="demo-tabs">
+            <button class="demo-tab active" onclick="switchDemoTab('dashboard')">Dashboard</button>
+            <button class="demo-tab" onclick="switchDemoTab('cases')">Case Management</button>
+            <button class="demo-tab" onclick="switchDemoTab('billing')">Billing & Invoicing</button>
+            <button class="demo-tab" onclick="switchDemoTab('documents')">Documents</button>
+            <button class="demo-tab" onclick="switchDemoTab('clients')">Client Portal</button>
+        </div>
+        
+        <div class="demo-screenshots">
+            <div class="screenshot-container">
+                <img id="demo-screenshot" src="{% static 'images/demo-dashboard.jpg' %}" alt="Dashboard Demo">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonial-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>What Others Say About Our Demo</h2>
+            <p>Hear from law firms who have experienced our platform firsthand</p>
+        </div>
+        
+        <div class="testimonial-grid">
+            <div class="testimonial-card">
+                <div class="testimonial-content">
+                    "The personalized demo showed me exactly how the platform would work for my family law practice. The product expert understood my needs and demonstrated relevant features I didn't even know existed."
+                </div>
+                <div class="testimonial-author">
+                    <img src="{% static 'images/testimonials/attorney1.jpg' %}" alt="Sarah Mitchell" class="author-avatar">
+                    <div class="author-info">
+                        <h4>Sarah Mitchell</h4>
+                        <p>Mitchell & Associates</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="testimonial-card">
+                <div class="testimonial-content">
+                    "I was skeptical about switching from our old system, but the live demo convinced me. The interactive sandbox let me test everything before committing, and the transition was seamless."
+                </div>
+                <div class="testimonial-author">
+                    <img src="{% static 'images/testimonials/attorney2.jpg' %}" alt="Robert Chen" class="author-avatar">
+                    <div class="author-info">
+                        <h4>Robert Chen</h4>
+                        <p>Chen Legal Group</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="testimonial-card">
+                <div class="testimonial-content">
+                    "The demo was comprehensive but not overwhelming. Our team was up and running in less than a day, and we saw immediate improvements in our workflow and client communication."
+                </div>
+                <div class="testimonial-author">
+                    <img src="{% static 'images/testimonials/attorney3.jpg' %}" alt="Emily Rodriguez" class="author-avatar">
+                    <div class="author-info">
+                        <h4>Emily Rodriguez</h4>
+                        <p>Rodriguez & Partners</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <h2>Ready to Transform Your Practice?</h2>
+        <p>Schedule your personalized demo today and see how our platform can streamline your workflow, improve client service, and grow your practice</p>
+        <div class="cta-buttons">
+            <button class="btn btn-primary btn-lg" onclick="showLiveDemoForm()">Schedule Your Demo</button>
+            <button class="btn btn-outline-primary btn-lg" onclick="launchSandbox()">Try Interactive Demo</button>
+        </div>
+    </div>
+</section>
+
+<!-- Demo Modal (hidden by default) -->
+<div id="demo-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div id="modal-body">
+            <!-- Dynamic content will be loaded here -->
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+// Demo tab switching
+function switchDemoTab(feature) {
+    // Update tab buttons
+    document.querySelectorAll('.demo-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Update screenshot
+    const screenshot = document.getElementById('demo-screenshot');
+    const imagePath = `{% static 'images/demo-${feature}.jpg' %}`;
+    screenshot.src = imagePath;
+}
+
+// Demo action functions
+function playVideo() {
+    // In a real implementation, this would open a video player
+    alert('Video player would open here. This would show a comprehensive 15-minute demo of our platform.');
+}
+
+function downloadDemo() {
+    // In a real implementation, this would trigger a PDF download
+    alert('Demo PDF download would start here. This would contain detailed information about our platform features.');
+}
+
+function showLiveDemoForm() {
+    // Show modal with demo scheduling form
+    const modal = document.getElementById('demo-modal');
+    const modalBody = document.getElementById('modal-body');
+    
+    modalBody.innerHTML = `
+        <h2>Schedule Your Personalized Demo</h2>
+        <form onsubmit="submitDemoForm(event)">
+            <div class="form-group">
+                <label for="demo-name">Full Name</label>
+                <input type="text" id="demo-name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="demo-email">Email Address</label>
+                <input type="email" id="demo-email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="demo-firm">Law Firm Name</label>
+                <input type="text" id="demo-firm" name="firm" required>
+            </div>
+            <div class="form-group">
+                <label for="demo-practice">Practice Area</label>
+                <select id="demo-practice" name="practice" required>
+                    <option value="">Select your practice area</option>
+                    <option value="family">Family Law</option>
+                    <option value="criminal">Criminal Law</option>
+                    <option value="corporate">Corporate Law</option>
+                    <option value="real-estate">Real Estate</option>
+                    <option value="personal-injury">Personal Injury</option>
+                    <option value="estate-planning">Estate Planning</option>
+                    <option value="immigration">Immigration</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="demo-size">Firm Size</label>
+                <select id="demo-size" name="size" required>
+                    <option value="">Select firm size</option>
+                    <option value="solo">Solo Practitioner</option>
+                    <option value="2-5">2-5 Attorneys</option>
+                    <option value="6-10">6-10 Attorneys</option>
+                    <option value="11-25">11-25 Attorneys</option>
+                    <option value="25+">25+ Attorneys</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="demo-date">Preferred Date</label>
+                <input type="date" id="demo-date" name="date" required>
+            </div>
+            <div class="form-group">
+                <label for="demo-time">Preferred Time</label>
+                <select id="demo-time" name="time" required>
+                    <option value="">Select preferred time</option>
+                    <option value="9:00 AM">9:00 AM EST</option>
+                    <option value="10:00 AM">10:00 AM EST</option>
+                    <option value="11:00 AM">11:00 AM EST</option>
+                    <option value="2:00 PM">2:00 PM EST</option>
+                    <option value="3:00 PM">3:00 PM EST</option>
+                    <option value="4:00 PM">4:00 PM EST</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="demo-interest">What interests you most?</label>
+                <textarea id="demo-interest" name="interest" rows="3" placeholder="Tell us about your specific needs or questions..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Schedule Demo</button>
+        </form>
+    `;
+    
+    modal.style.display = 'block';
+}
+
+function showCalendar() {
+    // In a real implementation, this would open a calendar view
+    alert('Calendar view would open here, showing available demo slots.');
+}
+
+function launchSandbox() {
+    // In a real implementation, this would open the sandbox environment
+    alert('Interactive sandbox would open here. This would provide a fully functional demo environment with sample data.');
+}
+
+function showSandboxGuide() {
+    // In a real implementation, this would show a guide for using the sandbox
+    alert('Sandbox guide would open here, providing instructions for exploring the interactive demo.');
+}
+
+function submitDemoForm(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    // In a real implementation, this would submit the form data to the server
+    alert('Thank you for scheduling a demo! We will send a confirmation email with the meeting details shortly.');
+    
+    closeModal();
+}
+
+function closeModal() {
+    document.getElementById('demo-modal').style.display = 'none';
+}
+
+// Modal styling (add to page)
+const modalStyles = `
+    <style>
+    .modal {
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+    
+    .modal-content {
+        background-color: white;
+        margin: 5% auto;
+        padding: 2rem;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 80vh;
+        overflow-y: auto;
+        position: relative;
+    }
+    
+    .close {
+        position: absolute;
+        right: 1rem;
+        top: 1rem;
+        font-size: 2rem;
+        font-weight: bold;
+        cursor: pointer;
+        color: var(--brand-secondary);
+    }
+    
+    .close:hover {
+        color: var(--brand-text);
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: var(--brand-text);
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e1e5e9;
+        border-radius: 10px;
+        font-size: 1rem;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--brand-primary);
+    }
+    </style>
+`;
+
+// Add modal styles to the page
+document.head.insertAdjacentHTML('beforeend', modalStyles);
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('demo-modal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+}
+</script>
+{% endblock extra_js %}

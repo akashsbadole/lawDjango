@@ -1,0 +1,374 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block title %}Terms of Service - Law Firm Management Platform{% endblock title %}
+
+{% block meta_description %}
+Read our terms of service for using the Law Firm Management Platform. Understand your rights, responsibilities, and the terms that govern your use of our services.
+{% endblock meta_description %}
+
+{% block extra_css %}
+<style>
+/* Terms page specific styles */
+.terms-hero {
+    background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+    color: white;
+    padding: 80px 0;
+    text-align: center;
+}
+
+.terms-hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.terms-hero p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+    opacity: 0.95;
+}
+
+.terms-section {
+    padding: 80px 0;
+    background: var(--brand-background);
+}
+
+.terms-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.terms-content {
+    background: white;
+    padding: 3rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.terms-content h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--brand-text);
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--brand-primary);
+}
+
+.terms-content h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--brand-text);
+    margin: 2rem 0 1rem;
+}
+
+.terms-content p {
+    color: var(--brand-secondary);
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+}
+
+.terms-content ul {
+    color: var(--brand-secondary);
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+    padding-left: 2rem;
+}
+
+.terms-content li {
+    margin-bottom: 0.5rem;
+}
+
+.terms-content .highlight {
+    background: var(--brand-background);
+    padding: 1rem;
+    border-radius: 10px;
+    border-left: 4px solid var(--brand-primary);
+    margin: 1.5rem 0;
+}
+
+.terms-content .highlight-title {
+    font-weight: 600;
+    color: var(--brand-text);
+    margin-bottom: 0.5rem;
+}
+
+.terms-content .section {
+    margin-bottom: 3rem;
+}
+
+.terms-content .section:last-child {
+    margin-bottom: 0;
+}
+
+.last-updated {
+    text-align: center;
+    color: var(--brand-secondary);
+    font-size: 0.9rem;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e1e5e9;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .terms-hero h1 {
+        font-size: 2rem;
+    }
+    
+    .terms-content {
+        padding: 1.5rem;
+    }
+    
+    .terms-content h2 {
+        font-size: 1.5rem;
+    }
+    
+    .terms-content h3 {
+        font-size: 1.3rem;
+    }
+}
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="terms-hero">
+    <div class="container">
+        <h1>Terms of Service</h1>
+        <p>The terms that govern your use of our platform and services</p>
+    </div>
+</section>
+
+<!-- Terms Content Section -->
+<section class="terms-section">
+    <div class="terms-container">
+        <div class="terms-content">
+            <h2>Terms of Service</h2>
+            
+            <p>Welcome to Law Firm Management Platform ("we," "us," or "our"). These Terms of Service ("Terms") govern your use of our website, platform, and services (collectively, the "Services"). By accessing or using our Services, you agree to be bound by these Terms.</p>
+            
+            <p>Last updated: December 1, 2023</p>
+            
+            <div class="section">
+                <h3>1. Acceptance of Terms</h3>
+                
+                <p>By accessing and using our Services, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to these Terms, do not use our Services.</p>
+                
+                <p>We may update these Terms from time to time. The updated Terms will be effective when posted. Your continued use of the Services after any changes constitutes acceptance of the new Terms.</p>
+            </div>
+            
+            <div class="section">
+                <h3>2. Eligibility</h3>
+                
+                <p>By using our Services, you represent and warrant that:</p>
+                
+                <ul>
+                    <li>You are at least 18 years old</li>
+                    <li>You have the legal authority to enter into these Terms</li>
+                    <li>You are not a person barred from receiving services under the laws of the applicable jurisdiction</li>
+                    <li>You are a law firm, legal professional, or authorized representative of a law firm</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h3>3. Account Registration</h3>
+                
+                <p>To access certain features of our Services, you may need to register for an account. You agree to:</p>
+                
+                <ul>
+                    <li>Provide accurate, complete, and current information</li>
+                    <li>Maintain the confidentiality of your account credentials</li>
+                    <li>Accept responsibility for all activities under your account</li>
+                    <li>Notify us immediately of any unauthorized use of your account</li>
+                </ul>
+                
+                <div class="highlight">
+                    <div class="highlight-title">Account Security:</div>
+                    <p>You are responsible for maintaining the confidentiality of your account information and for all activities that occur under your account. We reserve the right to suspend or terminate accounts that we believe have been compromised.</p>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>4. Subscription Plans and Billing</h3>
+                
+                <h4>Subscription Terms</h4>
+                <p>Our Services are offered on a subscription basis. You agree to pay all fees associated with your chosen subscription plan, including applicable taxes.</p>
+                
+                <h4>Payment Terms</h4>
+                <p>All fees are payable in advance. We may automatically charge your chosen payment method for subscription renewals unless you cancel prior to the renewal date.</p>
+                
+                <h4>Free Trials</h4>
+                <p>We may offer free trial periods for certain subscription plans. By starting a free trial, you agree to provide accurate billing information and may be automatically enrolled in a paid subscription at the end of the trial period if you do not cancel.</p>
+                
+                <h4>Refunds</h4>
+                <p>We offer a 30-day money-back guarantee for new subscriptions. Refund requests must be made within 30 days of the initial purchase. After 30 days, all sales are final.</p>
+            </div>
+            
+            <div class="section">
+                <h3>5. Use of Services</h3>
+                
+                <p>You may use our Services only for lawful purposes and in accordance with these Terms. You agree not to:</p>
+                
+                <ul>
+                    <li>Use the Services for any illegal or unauthorized purpose</li>
+                    <li>Copy, modify, or distribute any part of the Services without permission</li>
+                    <li>Reverse engineer, decompile, or disassemble the Services</li>
+                    <li>Use automated scripts or bots to access the Services</li>
+                    <li>Interfere with the proper working of the Services</li>
+                    <li>Attempt to gain unauthorized access to the Services or accounts</li>
+                    <li>Upload or transmit viruses or other malicious code</li>
+                    <li>Violate any applicable laws or regulations</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h3>6. Intellectual Property</h3>
+                
+                <p>The Services and all original materials contained therein are owned by us or licensed to us and are protected by copyright, trademark, and other intellectual property laws. These Terms do not grant you any intellectual property rights in our Services.</p>
+                
+                <p>We grant you a limited, non-exclusive, non-transferable, and revocable license to access and use the Services for your internal business purposes in accordance with these Terms.</p>
+            </div>
+            
+            <div class="section">
+                <h3>7. User Content</h3>
+                
+                <p>Our Services may allow you to submit, store, or share content ("User Content"). You retain ownership of your User Content, but you grant us a worldwide, non-exclusive, royalty-free license to use, reproduce, modify, and display your User Content necessary to provide and improve our Services.</p>
+                
+                <p>You are solely responsible for your User Content and represent that you have all necessary rights to grant us the license above. You agree not to submit any content that:</p>
+                
+                <ul>
+                    <li>Violates any third-party rights</li>
+                    <li>Is unlawful, harassing, defamatory, or obscene</li>
+                    <li>Contains viruses or other malicious code</li>
+                    <li>Violates any applicable laws or regulations</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h3>8. Data and Privacy</h3>
+                
+                <p>Your use of our Services is also subject to our Privacy Policy, which describes how we collect, use, and protect your information. By using our Services, you agree to the collection and use of information as described in that policy.</p>
+            </div>
+            
+            <div class="section">
+                <h3>9. Prohibited Activities</h3>
+                
+                <p>You may not engage in any of the following activities in connection with our Services:</p>
+                
+                <ul>
+                    <li>Violating any applicable laws or regulations</li>
+                    <li>Infringing on the intellectual property rights of others</li>
+                    <li>Harassing, threatening, or defaming others</li>
+                    <li>Uploading or transmitting viruses or other harmful code</li>
+                    <li>Attempting to gain unauthorized access to our systems</li>
+                    <li>Interfering with the proper working of our Services</li>
+                    <li>Using automated scripts or bots</li>
+                    <li>Soliciting others for commercial purposes without our consent</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h3>10. Service Changes and Termination</h3>
+                
+                <h4>Modifications to Services</h4>
+                <p>We may modify, suspend, or discontinue our Services at any time, including the availability of any feature, database, or content. We may also impose limits on certain features or restrict your access to parts or all of the Services without notice or liability.</p>
+                
+                <h4>Termination</h4>
+                <p>We may terminate or suspend your account and access to the Services immediately, without prior notice or liability, for any reason, including without limitation if you breach these Terms.</p>
+                
+                <h4>Survival</h4>
+                <p>The following sections will survive any termination or expiration of these Terms: Sections 5, 7, 8, 9, 10, 11, 12, 13, 14, and 15.</p>
+            </div>
+            
+            <div class="section">
+                <h3>11. Disclaimer of Warranties</h3>
+                
+                <p>OUR SERVICES ARE PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT ANY WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. WE DISCLAIM ALL WARRANTIES, INCLUDING BUT NOT LIMITED TO:</p>
+                
+                <ul>
+                    <li>WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT</li>
+                    <li>WARRANTIES REGARDING THE ACCURACY, RELIABILITY, OR COMPLETENESS OF THE SERVICES</li>
+                    <li>WARRANTIES THAT THE SERVICES WILL BE UNINTERRUPTED, TIMELY, SECURE, OR ERROR-FREE</li>
+                </ul>
+                
+                <div class="highlight">
+                    <div class="highlight-title">Important:</div>
+                    <p>SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION OF IMPLIED WARRANTIES, SO SOME OF THE ABOVE EXCLUSIONS MAY NOT APPLY TO YOU.</p>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>12. Limitation of Liability</h3>
+                
+                <p>IN NO EVENT SHALL WE OR OUR DIRECTORS, EMPLOYEES, OR AFFILIATES BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOST PROFITS, LOST REVENUE, OR LOSS OF DATA, ARISING FROM YOUR USE OF THE SERVICES, EVEN IF WE HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.</p>
+                
+                <p>OUR TOTAL LIABILITY ARISING FROM OR RELATED TO THESE TERMS OR THE SERVICES SHALL NOT EXCEED THE AMOUNT YOU PAID TO US IN THE 12 MONTHS PRIOR TO THE CLAIM.</p>
+                
+                <p>SOME JURISDICTIONS DO NOT ALLOW THE LIMITATION OR EXCLUSION OF LIABILITY FOR INCIDENTAL OR CONSEQUENTIAL DAMAGES, SO SOME OF THE ABOVE LIMITATIONS MAY NOT APPLY TO YOU.</p>
+            </div>
+            
+            <div class="section">
+                <h3>13. Indemnification</h3>
+                
+                <p>You agree to indemnify, defend, and hold harmless us and our affiliates, officers, directors, employees, and agents from and against any claims, damages, liabilities, losses, costs, and expenses (including reasonable attorneys' fees) arising from or related to:</p>
+                
+                <ul>
+                    <li>Your use of the Services</li>
+                    <li>Your violation of these Terms</li>
+                    <li>Your violation of any third-party rights</li>
+                    <li>Your violation of any applicable laws or regulations</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h3>14. Governing Law</h3>
+                
+                <p>These Terms and your use of the Services shall be governed by and construed in accordance with the laws of the State of New Jersey, United States, without regard to its conflict of law principles.</p>
+            </div>
+            
+            <div class="section">
+                <h3>15. Dispute Resolution</h3>
+                
+                <h4>Informal Resolution</h4>
+                <p>We hope to resolve any disputes with you informally. Please contact us first if you have any concerns.</p>
+                
+                <h4>Binding Arbitration</h4>
+                <p>If informal resolution is not possible, any dispute arising from or related to these Terms or the Services shall be finally settled by binding arbitration in accordance with the rules of the American Arbitration Association. The arbitration shall be conducted in New Jersey, and the language of the arbitration shall be English.</p>
+                
+                <h4>Class Action Waiver</h4>
+                <p>YOU AND WE AGREE TO RESOLVE ANY DISPUTE THROUGH INDIVIDUAL ARBITRATION, NOT IN A COURT OR IN A CLASS, COLLECTIVE, OR PRIVATE ATTORNEY GENERAL ACTION. YOU WAIVE ANY RIGHT TO PARTICIPATE IN A CLASS ACTION.</p>
+            </div>
+            
+            <div class="section">
+                <h3>16. Miscellaneous</h3>
+                
+                <ul>
+                    <li><strong>Assignment:</strong> We may assign these Terms to any successor or affiliate. You may not assign these Terms without our prior written consent.</li>
+                    <li><strong>Severability:</strong> If any provision of these Terms is found to be unenforceable, the remaining provisions will continue in full force and effect.</li>
+                    <li><strong>Waiver:</strong> Our failure to enforce any provision of these Terms will not operate as a waiver of such provision.</li>
+                    <li><strong>Notices:</strong> All notices will be in writing and sent to the email address associated with your account or to the address listed on our website.</li>
+                    <li><strong>Entire Agreement:</strong> These Terms constitute the entire agreement between you and us regarding the Services and supersede all prior agreements.</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h3>17. Contact Us</h3>
+                
+                <p>If you have any questions about these Terms, please contact us:</p>
+                
+                <ul>
+                    <li>Email: legal@lawfirmplatform.com</li>
+                    <li>Mail: Legal Department, Law Firm Management Platform, 123 Legal Avenue, Lawrenceville, NJ 08648</li>
+                    <li>Phone: +1 (555) 123-4567</li>
+                </ul>
+            </div>
+            
+            <div class="last-updated">
+                <p>Last updated: December 1, 2023</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}

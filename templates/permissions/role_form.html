@@ -1,0 +1,120 @@
+{% extends "_tenant_base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">{{ title }}</h1>
+        <a href="{% url 'permissions:role_list' %}" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i> Back to Roles
+        </a>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            
+            <div class="row">
+              <div class="col-md-6">
+                {{ form.name|as_crispy_field }}
+              </div>
+              <div class="col-md-6">
+                {{ form.description|as_crispy_field }}
+              </div>
+            </div>
+            
+            <hr>
+            
+            <h4>Permissions</h4>
+            <p class="text-muted">Select the permissions that this role should have:</p>
+            
+            {% if form.permissions %}
+              <div class="row">
+                <div class="col-12">
+                  {% for permission in form.permissions %}
+                    <div class="form-check">
+                      {{ permission.tag }}
+                      <label class="form-check-label" for="{{ permission.id_for_label }}">
+                        <strong>{{ permission.choice_label }}</strong>
+                        {% if permission.data.module %}
+                          <span class="badge bg-secondary ms-1">{{ permission.data.module }}</span>
+                        {% endif %}
+                      </label>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+            
+            <hr>
+            
+            <div class="d-flex justify-content-between">
+              <a href="{% url 'permissions:role_list' %}" class="btn btn-secondary">
+                Cancel
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Role
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Group permissions by module for better organization
+  const permissionsContainer = document.querySelector('.col-12');
+  if (permissionsContainer) {
+    const permissionChecks = permissionsContainer.querySelectorAll('.form-check');
+    const modules = {};
+    
+    // Group permissions by module
+    permissionChecks.forEach(check => {
+      const label = check.querySelector('label');
+      const badge = label.querySelector('.badge');
+      const module = badge ? badge.textContent.trim() : 'Other';
+      
+      if (!modules[module]) {
+        modules[module] = [];
+      }
+      modules[module].push(check);
+    });
+    
+    // Clear existing permissions
+    permissionsContainer.innerHTML = '';
+    
+    // Create grouped layout
+    Object.keys(modules).sort().forEach(module => {
+      const moduleDiv = document.createElement('div');
+      moduleDiv.className = 'mb-4';
+      
+      const moduleHeader = document.createElement('h5');
+      moduleHeader.className = 'mb-3';
+      moduleHeader.innerHTML = `${module} <span class="badge bg-secondary">${modules[module].length}</span>`;
+      moduleDiv.appendChild(moduleHeader);
+      
+      const permissionsRow = document.createElement('div');
+      permissionsRow.className = 'row';
+      
+      modules[module].forEach(check => {
+        const col = document.createElement('div');
+        col.className = 'col-md-6 col-lg-4 mb-2';
+        col.appendChild(check);
+        permissionsRow.appendChild(col);
+      });
+      
+      moduleDiv.appendChild(permissionsRow);
+      permissionsContainer.appendChild(moduleDiv);
+    });
+  }
+});
+</script>
+{% endblock %}

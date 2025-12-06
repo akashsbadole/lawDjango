@@ -1,0 +1,208 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}Cases - {{ user.tenant.name }} - Lithium{% endblock title %}
+
+{% block page_header %}
+<h1 class="h2">Cases</h1>
+<div class="btn-toolbar mb-2 mb-md-0">
+  <div class="btn-group me-2">
+    <a href="{% url 'cases:create' %}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Add New Case
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- Enhanced Search Form -->
+<div class="card mb-4 fade-in-up">
+  <div class="card-header">
+    <h6 class="m-0 font-weight-bold text-primary d-flex align-items-center">
+      <i class="fas fa-search me-2"></i> Search Cases
+    </h6>
+  </div>
+  <div class="card-body">
+    <form method="get" class="row g-3">
+      <div class="col-md-3">
+        <label class="form-label small text-muted">Search</label>
+        {{ search_form.query }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small text-muted">Status</label>
+        {{ search_form.status }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small text-muted">Case Type</label>
+        {{ search_form.case_type }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small text-muted">Client</label>
+        {{ search_form.client }}
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small text-muted">&nbsp;</label>
+        <div class="btn-group w-100">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search me-2"></i> Search
+          </button>
+          <a href="{% url 'cases:list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-times me-2"></i> Clear
+          </a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Enhanced Cases Table -->
+<div class="card fade-in-up" style="animation-delay: 0.1s;">
+  <div class="card-header">
+    <h6 class="m-0 font-weight-bold text-primary d-flex align-items-center justify-content-between">
+      <span>
+        <i class="fas fa-folder-open me-2"></i>
+        Case List
+        {% if search_form.query.value %}
+          - Search Results
+        {% endif %}
+      </span>
+      <span class="badge bg-primary">{{ cases|length }} cases</span>
+    </h6>
+  </div>
+  <div class="card-body">
+    {% if cases %}
+      <div class="table-responsive">
+        <table class="table table-hover" id="dataTable" width="100%" cellspacing="0">
+          <thead class="table-light">
+            <tr>
+              <th><i class="fas fa-hashtag me-1"></i> Case Number</th>
+              <th><i class="fas fa-heading me-1"></i> Title</th>
+              <th><i class="fas fa-user-tie me-1"></i> Client</th>
+              <th><i class="fas fa-flag me-1"></i> Status</th>
+              <th><i class="fas fa-tag me-1"></i> Type</th>
+              <th><i class="fas fa-users me-1"></i> Assigned Lawyers</th>
+              <th><i class="fas fa-calendar me-1"></i> Start Date</th>
+              <th><i class="fas fa-cogs me-1"></i> Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for case in cases %}
+            <tr class="fade-in-up" style="animation-delay: {{ forloop.counter0|add:2 }}0s;">
+              <td>
+                <a href="{% url 'cases:detail' case.pk %}" class="text-decoration-none fw-bold text-primary">
+                  {{ case.case_number }}
+                </a>
+              </td>
+              <td>
+                <div class="fw-medium">{{ case.title|truncatechars:50 }}</div>
+              </td>
+              <td>
+                <a href="{% url 'clients:detail' case.client.pk %}" class="text-decoration-none">
+                  <i class="fas fa-user-tie me-1"></i>
+                  {{ case.client.full_name }}
+                </a>
+              </td>
+              <td>
+                <span class="badge bg-{% if case.status == 'open' %}success{% elif case.status == 'closed' %}secondary{% elif case.status == 'pending' %}warning{% else %}info{% endif %} px-3 py-2">
+                  <i class="fas fa-{% if case.status == 'open' %}check-circle{% elif case.status == 'closed' %}times-circle{% elif case.status == 'pending' %}clock{% else %}info-circle{% endif %} me-1"></i>
+                  {{ case.get_status_display }}
+                </span>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark">{{ case.get_case_type_display }}</span>
+              </td>
+              <td>
+                {% for lawyer in case.assigned_lawyers.all %}
+                  <span class="badge bg-info me-1">{{ lawyer.get_full_name|default:lawyer.email|truncatechars:15 }}</span>
+                {% empty %}
+                  <span class="text-muted"><i class="fas fa-user-slash me-1"></i>Unassigned</span>
+                {% endfor %}
+              </td>
+              <td>
+                <i class="fas fa-calendar me-1"></i>
+                {{ case.start_date|date:"M d, Y" }}
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm" role="group">
+                  <a href="{% url 'cases:detail' case.pk %}" class="btn btn-info" title="View Case">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a href="{% url 'cases:update' case.pk %}" class="btn btn-warning" title="Edit Case">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <a href="{% url 'cases:delete' case.pk %}" class="btn btn-danger" title="Delete Case">
+                    <i class="fas fa-trash"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Pagination -->
+      {% if is_paginated %}
+      <nav aria-label="Case list pagination">
+        <ul class="pagination justify-content-center">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.query %}&query={{ request.GET.query }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.case_type %}&case_type={{ request.GET.case_type }}{% endif %}{% if request.GET.client %}&client={{ request.GET.client }}{% endif %}">Previous</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Previous</span>
+            </li>
+          {% endif %}
+          
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+              </li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if request.GET.query %}&query={{ request.GET.query }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.case_type %}&case_type={{ request.GET.case_type }}{% endif %}{% if request.GET.client %}&client={{ request.GET.client }}{% endif %}">{{ num }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+          
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.query %}&query={{ request.GET.query }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.case_type %}&case_type={{ request.GET.case_type }}{% endif %}{% if request.GET.client %}&client={{ request.GET.client }}{% endif %}">Next</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Next</span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    {% else %}
+      <div class="text-center py-5">
+        <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+        <h5 class="text-muted mb-3">No cases found</h5>
+        <p class="text-muted mb-4">
+          {% if request.GET.query or request.GET.status or request.GET.case_type or request.GET.client %}
+            No cases match your search criteria.
+            <a href="{% url 'cases:list' %}" class="btn btn-outline-primary">Clear search</a> to see all cases.
+          {% else %}
+            You haven't added any cases yet.
+            <a href="{% url 'cases:create' %}" class="btn btn-primary">
+              <i class="fas fa-plus me-2"></i> Add Your First Case
+            </a> to get started.
+          {% endif %}
+        </p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+<script>
+// Add any case list-specific JavaScript here
+</script>
+{% endblock javascript %}

@@ -1,0 +1,125 @@
+{% extends "_tenant_base.html" %}
+
+{% block title %}Permissions{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Permissions</h1>
+        <div>
+          <a href="{% url 'permissions:role_list' %}" class="btn btn-outline-primary me-2">
+            <i class="fas fa-shield-alt"></i> Manage Roles
+          </a>
+          <a href="{% url 'permissions:permission_matrix' %}" class="btn btn-outline-info">
+            <i class="fas fa-th"></i> Permission Matrix
+          </a>
+        </div>
+      </div>
+
+      {% if permissions_by_module %}
+        <div class="row">
+          {% for module, perms in permissions_by_module.items %}
+            <div class="col-lg-6 mb-4">
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="card-title mb-0">
+                    {{ module|title }} 
+                    <span class="badge bg-secondary float-end">{{ perms|length }}</span>
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                      <thead>
+                        <tr>
+                          <th>Permission</th>
+                          <th>Code</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for permission in perms %}
+                          <tr>
+                            <td>
+                              <strong>{{ permission.name }}</strong>
+                              {% if permission.description %}
+                                <br><small class="text-muted">{{ permission.description }}</small>
+                              {% endif %}
+                            </td>
+                            <td>
+                              <code class="text-muted">{{ permission.codename }}</code>
+                            </td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center py-4">
+          <i class="fas fa-key fa-3x text-muted mb-3"></i>
+          <p class="text-muted">No permissions found.</p>
+        </div>
+      {% endif %}
+      
+      <div class="mt-4">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">About Permissions</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <h6>Permission Modules</h6>
+                <p class="text-muted">Permissions are organized by functional modules:</p>
+                <ul class="list-unstyled">
+                  <li><strong>Clients:</strong> Manage client information</li>
+                  <li><strong>Cases:</strong> Manage case files and proceedings</li>
+                  <li><strong>Documents:</strong> Manage document storage</li>
+                  <li><strong>Billing:</strong> Manage invoices, payments, and time entries</li>
+                  <li><strong>Users:</strong> Manage user accounts</li>
+                  <li><strong>Roles:</strong> Manage role assignments</li>
+                </ul>
+              </div>
+              
+              <div class="col-md-6">
+                <h6>Permission Types</h6>
+                <p class="text-muted">Each module typically has these permission types:</p>
+                <ul class="list-unstyled">
+                  <li><strong>View:</strong> Can view items in the module</li>
+                  <li><strong>Add:</strong> Can create new items</li>
+                  <li><strong>Change:</strong> Can edit existing items</li>
+                  <li><strong>Delete:</strong> Can delete items</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.card {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: 1px solid rgba(0,0,0,0.125);
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid rgba(0,0,0,0.125);
+}
+
+code {
+  background-color: #f1f3f4;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 0.875em;
+}
+</style>
+{% endblock %}

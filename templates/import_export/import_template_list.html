@@ -1,0 +1,110 @@
+{% extends "_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} - Law Firm Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ title }}</h1>
+                <a href="{% url 'import_export:import_template_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Template
+                </a>
+            </div>
+            
+            {% if templates %}
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Model Type</th>
+                                        <th>Is Public</th>
+                                        <th>Created By</th>
+                                        <th>Created At</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for template in templates %}
+                                        <tr>
+                                            <td>{{ template.name }}</td>
+                                            <td>{{ template.get_model_type_display }}</td>
+                                            <td>
+                                                {% if template.is_public %}
+                                                    <span class="badge badge-success">Public</span>
+                                                {% else %}
+                                                    <span class="badge badge-secondary">Private</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ template.created_by.get_full_name|default:template.created_by.username }}</td>
+                                            <td>{{ template.created_at|date:"Y-m-d H:i" }}</td>
+                                            <td>
+                                                <a href="{% url 'import_export:import_template_detail' template.id %}" 
+                                                   class="btn btn-sm btn-info" title="View Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if template.sample_file %}
+                                                    <a href="{{ template.sample_file.url }}" target="_blank" 
+                                                       class="btn btn-sm btn-secondary" title="Download Sample">
+                                                        <i class="fas fa-download"></i>
+                                                    </a>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if is_paginated %}
+                            <nav aria-label="Templates pagination">
+                                <ul class="pagination justify-content-center">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1">First</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    <li class="page-item active">
+                                        <span class="page-link">
+                                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                                        </span>
+                                    </li>
+                                    
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">No Import Templates Found</h5>
+                        <p class="card-text">You haven't created any import templates yet.</p>
+                        <a href="{% url 'import_export:import_template_create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Create Your First Template
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

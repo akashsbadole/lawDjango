@@ -1,0 +1,486 @@
+{% extends "_tenant_base.html" %}
+
+{% block title %}Edit Settings - {{ tenant.name }} - Lithium{% endblock title %}
+
+{% block page_header %}
+<h1 class="h2">Edit Tenant Settings</h1>
+<div class="btn-toolbar mb-2 mb-md-0">
+  <div class="btn-group me-2">
+    <a href="{% url 'tenant-settings-detail' tenant.id %}" class="btn btn-sm btn-outline-secondary">Cancel</a>
+    <a href="{% url 'tenant-settings-preview' tenant.id %}" class="btn btn-sm btn-outline-info">Preview</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="card shadow mb-4">
+      <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">Edit Tenant Settings</h6>
+        <div class="dropdown no-arrow">
+          <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+          </a>
+          <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in">
+            <a class="dropdown-item" href="{% url 'tenant-settings-detail' tenant.id %}">View Settings</a>
+            <a class="dropdown-item" href="{% url 'tenant-settings-preview' tenant.id %}">Preview Settings</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="{% url 'tenant-dashboard' tenant.slug %}">Back to Dashboard</a>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data" id="settingsForm">
+          {% csrf_token %}
+          
+          <!-- Branding Settings -->
+          <div class="accordion mb-4" id="brandingAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="brandingHeading">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#brandingCollapse" aria-expanded="true" aria-controls="brandingCollapse">
+                  <h6 class="m-0 font-weight-bold text-primary">Branding Settings</h6>
+                </button>
+              </h2>
+              <div id="brandingCollapse" class="accordion-collapse collapse show" aria-labelledby="brandingHeading" data-bs-parent="#brandingAccordion">
+                <div class="accordion-body">
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="{{ form.logo.id_for_label }}" class="form-label">{{ form.logo.label }}</label>
+                      {{ form.logo }}
+                      {% if form.logo.help_text %}
+                      <div class="form-text">{{ form.logo.help_text }}</div>
+                      {% endif %}
+                      {% if settings.logo %}
+                      <div class="mt-2">
+                        <img src="{{ settings.logo.url }}" alt="Current Logo" class="img-thumbnail" style="max-height: 100px;">
+                        <br>
+                        <a href="{% url 'tenant-settings-logo-delete' tenant.id %}" class="btn btn-sm btn-outline-danger mt-2">Delete Logo</a>
+                      </div>
+                      {% endif %}
+                      {% if form.logo.errors %}
+                      <div class="text-danger">{{ form.logo.errors }}</div>
+                      {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="{{ form.company_name.id_for_label }}" class="form-label">{{ form.company_name.label }}</label>
+                      {{ form.company_name }}
+                      {% if form.company_name.help_text %}
+                      <div class="form-text">{{ form.company_name.help_text }}</div>
+                      {% endif %}
+                      {% if form.company_name.errors %}
+                      <div class="text-danger">{{ form.company_name.errors }}</div>
+                      {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="{{ form.primary_color.id_for_label }}" class="form-label">{{ form.primary_color.label }}</label>
+                      <div class="d-flex align-items-center">
+                        {{ form.primary_color }}
+                        <div id="primaryColorPreview" class="ms-2 rounded" style="width: 40px; height: 40px; background-color: {{ form.primary_color.value|default:'#4e73df' }};"></div>
+                      </div>
+                      {% if form.primary_color.help_text %}
+                      <div class="form-text">{{ form.primary_color.help_text }}</div>
+                      {% endif %}
+                      {% if form.primary_color.errors %}
+                      <div class="text-danger">{{ form.primary_color.errors }}</div>
+                      {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="{{ form.secondary_color.id_for_label }}" class="form-label">{{ form.secondary_color.label }}</label>
+                      <div class="d-flex align-items-center">
+                        {{ form.secondary_color }}
+                        <div id="secondaryColorPreview" class="ms-2 rounded" style="width: 40px; height: 40px; background-color: {{ form.secondary_color.value|default:'#858796' }};"></div>
+                      </div>
+                      {% if form.secondary_color.help_text %}
+                      <div class="form-text">{{ form.secondary_color.help_text }}</div>
+                      {% endif %}
+                      {% if form.secondary_color.errors %}
+                      <div class="text-danger">{{ form.secondary_color.errors }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Date and Time Preferences -->
+          <div class="accordion mb-4" id="datetimeAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="datetimeHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#datetimeCollapse" aria-expanded="false" aria-controls="datetimeCollapse">
+                  <h6 class="m-0 font-weight-bold text-primary">Date and Time Preferences</h6>
+                </button>
+              </h2>
+              <div id="datetimeCollapse" class="accordion-collapse collapse" aria-labelledby="datetimeHeading" data-bs-parent="#datetimeAccordion">
+                <div class="accordion-body">
+                  <div class="row">
+                    <div class="col-md-4 mb-3">
+                      <label for="{{ form.date_format.id_for_label }}" class="form-label">{{ form.date_format.label }}</label>
+                      {{ form.date_format }}
+                      {% if form.date_format.help_text %}
+                      <div class="form-text">{{ form.date_format.help_text }}</div>
+                      {% endif %}
+                      {% if form.date_format.errors %}
+                      <div class="text-danger">{{ form.date_format.errors }}</div>
+                      {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <label for="{{ form.time_format.id_for_label }}" class="form-label">{{ form.time_format.label }}</label>
+                      {{ form.time_format }}
+                      {% if form.time_format.help_text %}
+                      <div class="form-text">{{ form.time_format.help_text }}</div>
+                      {% endif %}
+                      {% if form.time_format.errors %}
+                      <div class="text-danger">{{ form.time_format.errors }}</div>
+                      {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <label for="{{ form.timezone.id_for_label }}" class="form-label">{{ form.timezone.label }}</label>
+                      {{ form.timezone }}
+                      {% if form.timezone.help_text %}
+                      <div class="form-text">{{ form.timezone.help_text }}</div>
+                      {% endif %}
+                      {% if form.timezone.errors %}
+                      <div class="text-danger">{{ form.timezone.errors }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Billing Settings -->
+          <div class="accordion mb-4" id="billingAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="billingHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#billingCollapse" aria-expanded="false" aria-controls="billingCollapse">
+                  <h6 class="m-0 font-weight-bold text-primary">Billing Settings</h6>
+                </button>
+              </h2>
+              <div id="billingCollapse" class="accordion-collapse collapse" aria-labelledby="billingHeading" data-bs-parent="#billingAccordion">
+                <div class="accordion-body">
+                  <div class="row">
+                    <div class="col-md-3 mb-3">
+                      <label for="{{ form.default_currency.id_for_label }}" class="form-label">{{ form.default_currency.label }}</label>
+                      {{ form.default_currency }}
+                      {% if form.default_currency.help_text %}
+                      <div class="form-text">{{ form.default_currency.help_text }}</div>
+                      {% endif %}
+                      {% if form.default_currency.errors %}
+                      <div class="text-danger">{{ form.default_currency.errors }}</div>
+                      {% endif %}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                      <label for="{{ form.tax_rate.id_for_label }}" class="form-label">{{ form.tax_rate.label }}</label>
+                      {{ form.tax_rate }}
+                      {% if form.tax_rate.help_text %}
+                      <div class="form-text">{{ form.tax_rate.help_text }}</div>
+                      {% endif %}
+                      {% if form.tax_rate.errors %}
+                      <div class="text-danger">{{ form.tax_rate.errors }}</div>
+                      {% endif %}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                      <label for="{{ form.invoice_prefix.id_for_label }}" class="form-label">{{ form.invoice_prefix.label }}</label>
+                      {{ form.invoice_prefix }}
+                      {% if form.invoice_prefix.help_text %}
+                      <div class="form-text">{{ form.invoice_prefix.help_text }}</div>
+                      {% endif %}
+                      {% if form.invoice_prefix.errors %}
+                      <div class="text-danger">{{ form.invoice_prefix.errors }}</div>
+                      {% endif %}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                      <label for="{{ form.payment_terms.id_for_label }}" class="form-label">{{ form.payment_terms.label }}</label>
+                      {{ form.payment_terms }}
+                      {% if form.payment_terms.help_text %}
+                      <div class="form-text">{{ form.payment_terms.help_text }}</div>
+                      {% endif %}
+                      {% if form.payment_terms.errors %}
+                      <div class="text-danger">{{ form.payment_terms.errors }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Document Settings -->
+          <div class="accordion mb-4" id="documentAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="documentHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#documentCollapse" aria-expanded="false" aria-controls="documentCollapse">
+                  <h6 class="m-0 font-weight-bold text-primary">Document Settings</h6>
+                </button>
+              </h2>
+              <div id="documentCollapse" class="accordion-collapse collapse" aria-labelledby="documentHeading" data-bs-parent="#documentAccordion">
+                <div class="accordion-body">
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="{{ form.default_categories.id_for_label }}" class="form-label">{{ form.default_categories.label }}</label>
+                      {{ form.default_categories }}
+                      {% if form.default_categories.help_text %}
+                      <div class="form-text">{{ form.default_categories.help_text }}</div>
+                      {% endif %}
+                      {% if form.default_categories.errors %}
+                      <div class="text-danger">{{ form.default_categories.errors }}</div>
+                      {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="{{ form.retention_days.id_for_label }}" class="form-label">{{ form.retention_days.label }}</label>
+                      {{ form.retention_days }}
+                      {% if form.retention_days.help_text %}
+                      <div class="form-text">{{ form.retention_days.help_text }}</div>
+                      {% endif %}
+                      {% if form.retention_days.errors %}
+                      <div class="text-danger">{{ form.retention_days.errors }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notification Preferences -->
+          <div class="accordion mb-4" id="notificationAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="notificationHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#notificationCollapse" aria-expanded="false" aria-controls="notificationCollapse">
+                  <h6 class="m-0 font-weight-bold text-primary">Notification Preferences</h6>
+                </button>
+              </h2>
+              <div id="notificationCollapse" class="accordion-collapse collapse" aria-labelledby="notificationHeading" data-bs-parent="#notificationAccordion">
+                <div class="accordion-body">
+                  <div class="row">
+                    <div class="col-md-4 mb-3">
+                      <div class="form-check">
+                        {{ form.email_notifications }}
+                        <label class="form-check-label" for="{{ form.email_notifications.id_for_label }}">
+                          {{ form.email_notifications.label }}
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <div class="form-check">
+                        {{ form.sms_notifications }}
+                        <label class="form-check-label" for="{{ form.sms_notifications.id_for_label }}">
+                          {{ form.sms_notifications.label }}
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <div class="form-check">
+                        {{ form.in_app_notifications }}
+                        <label class="form-check-label" for="{{ form.in_app_notifications.id_for_label }}">
+                          {{ form.in_app_notifications.label }}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Security Settings -->
+          <div class="accordion mb-4" id="securityAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="securityHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#securityCollapse" aria-expanded="false" aria-controls="securityCollapse">
+                  <h6 class="m-0 font-weight-bold text-primary">Security Settings</h6>
+                </button>
+              </h2>
+              <div id="securityCollapse" class="accordion-collapse collapse" aria-labelledby="securityHeading" data-bs-parent="#securityAccordion">
+                <div class="accordion-body">
+                  <div class="row">
+                    <div class="col-md-4 mb-3">
+                      <label for="{{ form.password_policy.id_for_label }}" class="form-label">{{ form.password_policy.label }}</label>
+                      {{ form.password_policy }}
+                      {% if form.password_policy.help_text %}
+                      <div class="form-text">{{ form.password_policy.help_text }}</div>
+                      {% endif %}
+                      {% if form.password_policy.errors %}
+                      <div class="text-danger">{{ form.password_policy.errors }}</div>
+                      {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <div class="form-check">
+                        {{ form.two_factor_required }}
+                        <label class="form-check-label" for="{{ form.two_factor_required.id_for_label }}">
+                          {{ form.two_factor_required.label }}
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <label for="{{ form.session_timeout.id_for_label }}" class="form-label">{{ form.session_timeout.label }}</label>
+                      {{ form.session_timeout }}
+                      {% if form.session_timeout.help_text %}
+                      <div class="form-text">{{ form.session_timeout.help_text }}</div>
+                      {% endif %}
+                      {% if form.session_timeout.errors %}
+                      <div class="text-danger">{{ form.session_timeout.errors }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feature Toggles -->
+          <div class="accordion mb-4" id="featuresAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="featuresHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#featuresCollapse" aria-expanded="false" aria-controls="featuresCollapse">
+                  <h6 class="m-0 font-weight-bold text-primary">Feature Toggles</h6>
+                </button>
+              </h2>
+              <div id="featuresCollapse" class="accordion-collapse collapse" aria-labelledby="featuresHeading" data-bs-parent="#featuresAccordion">
+                <div class="accordion-body">
+                  <div class="row">
+                    <div class="col-md-4 mb-3">
+                      <div class="form-check">
+                        {{ form.enable_client_portal }}
+                        <label class="form-check-label" for="{{ form.enable_client_portal.id_for_label }}">
+                          {{ form.enable_client_portal.label }}
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <div class="form-check">
+                        {{ form.enable_document_sharing }}
+                        <label class="form-check-label" for="{{ form.enable_document_sharing.id_for_label }}">
+                          {{ form.enable_document_sharing.label }}
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <div class="form-check">
+                        {{ form.enable_time_tracking }}
+                        <label class="form-check-label" for="{{ form.enable_time_tracking.id_for_label }}">
+                          {{ form.enable_time_tracking.label }}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Email Template Customization -->
+          <div class="accordion mb-4" id="emailAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="emailHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#emailCollapse" aria-expanded="false" aria-controls="emailCollapse">
+                  <h6 class="m-0 font-weight-bold text-primary">Email Template Customization</h6>
+                </button>
+              </h2>
+              <div id="emailCollapse" class="accordion-collapse collapse" aria-labelledby="emailHeading" data-bs-parent="#emailAccordion">
+                <div class="accordion-body">
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="{{ form.email_header.id_for_label }}" class="form-label">{{ form.email_header.label }}</label>
+                      {{ form.email_header }}
+                      {% if form.email_header.help_text %}
+                      <div class="form-text">{{ form.email_header.help_text }}</div>
+                      {% endif %}
+                      {% if form.email_header.errors %}
+                      <div class="text-danger">{{ form.email_header.errors }}</div>
+                      {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="{{ form.email_footer.id_for_label }}" class="form-label">{{ form.email_footer.label }}</label>
+                      {{ form.email_footer }}
+                      {% if form.email_footer.help_text %}
+                      <div class="form-text">{{ form.email_footer.help_text }}</div>
+                      {% endif %}
+                      {% if form.email_footer.errors %}
+                      <div class="text-danger">{{ form.email_footer.errors }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Custom Fields Configuration -->
+          <div class="accordion mb-4" id="customFieldsAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="customFieldsHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#customFieldsCollapse" aria-expanded="false" aria-controls="customFieldsCollapse">
+                  <h6 class="m-0 font-weight-bold text-primary">Custom Fields Configuration</h6>
+                </button>
+              </h2>
+              <div id="customFieldsCollapse" class="accordion-collapse collapse" aria-labelledby="customFieldsHeading" data-bs-parent="#customFieldsAccordion">
+                <div class="accordion-body">
+                  <div class="row">
+                    <div class="col-md-12 mb-3">
+                      <label for="{{ form.custom_fields.id_for_label }}" class="form-label">{{ form.custom_fields.label }}</label>
+                      {{ form.custom_fields }}
+                      {% if form.custom_fields.help_text %}
+                      <div class="form-text">{{ form.custom_fields.help_text }}</div>
+                      {% endif %}
+                      {% if form.custom_fields.errors %}
+                      <div class="text-danger">{{ form.custom_fields.errors }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save me-2"></i>Save Settings
+            </button>
+            <a href="{% url 'tenant-settings-detail' tenant.id %}" class="btn btn-secondary">
+              <i class="fas fa-times me-2"></i>Cancel
+            </a>
+            <a href="{% url 'tenant-settings-preview' tenant.id %}" class="btn btn-info">
+              <i class="fas fa-eye me-2"></i>Preview
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Color preview functionality
+    const primaryColorInput = document.getElementById('{{ form.primary_color.id_for_label }}');
+    const primaryColorPreview = document.getElementById('primaryColorPreview');
+    const secondaryColorInput = document.getElementById('{{ form.secondary_color.id_for_label }}');
+    const secondaryColorPreview = document.getElementById('secondaryColorPreview');
+    
+    if (primaryColorInput && primaryColorPreview) {
+        primaryColorInput.addEventListener('input', function() {
+            primaryColorPreview.style.backgroundColor = this.value;
+        });
+    }
+    
+    if (secondaryColorInput && secondaryColorPreview) {
+        secondaryColorInput.addEventListener('input', function() {
+            secondaryColorPreview.style.backgroundColor = this.value;
+        });
+    }
+    
+    // Form validation
+    const form = document.getElementById('settingsForm');
+    form.addEventListener('submit', function(event) {
+        // Basic validation can be added here if needed
+        return true;
+    });
+});
+</script>
+{% endblock javascript %}

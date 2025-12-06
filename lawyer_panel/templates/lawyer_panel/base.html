@@ -1,0 +1,188 @@
+{% extends "_base.html" %}
+{% load static %}
+
+{% block title %}Lawyer Panel{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'lawyer_panel/css/lawyer_panel.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div id="wrapper">
+    <!-- Sidebar -->
+    <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+        <!-- Sidebar - Brand -->
+        <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{% url 'lawyer_panel:dashboard' %}">
+            <div class="sidebar-brand-icon rotate-n-15">
+                <i class="fas fa-gavel"></i>
+            </div>
+            <div class="sidebar-brand-text mx-3">Lawyer Panel</div>
+        </a>
+
+        <!-- Divider -->
+        <hr class="sidebar-divider my-0">
+
+        <!-- Nav Item - Dashboard -->
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'lawyer_panel:dashboard' %}">
+                <i class="fas fa-fw fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+
+        <!-- Divider -->
+        <hr class="sidebar-divider">
+
+        <!-- Heading -->
+        <div class="sidebar-heading">
+            Case Management
+        </div>
+
+        <!-- Nav Item - Cases -->
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'lawyer_panel:case_list' %}">
+                <i class="fas fa-fw fa-briefcase"></i>
+                <span>Cases</span>
+            </a>
+        </li>
+
+        <!-- Nav Item - Clients -->
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'lawyer_panel:client_list' %}">
+                <i class="fas fa-fw fa-users"></i>
+                <span>Clients</span>
+            </a>
+        </li>
+
+        <!-- Divider -->
+        <hr class="sidebar-divider">
+
+        <!-- Heading -->
+        <div class="sidebar-heading">
+            Resources
+        </div>
+
+        <!-- Nav Item - Documents -->
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'lawyer_panel:document_list' %}">
+                <i class="fas fa-fw fa-file-alt"></i>
+                <span>Documents</span>
+            </a>
+        </li>
+
+        <!-- Nav Item - AI Research Assistant -->
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'legal_research:dashboard' %}">
+                <i class="fas fa-fw fa-robot"></i>
+                <span>AI Research Assistant</span>
+            </a>
+        </li>
+
+        <!-- Divider -->
+        <hr class="sidebar-divider">
+
+        <!-- Heading -->
+        <div class="sidebar-heading">
+            Billing & Time
+        </div>
+
+        <!-- Nav Item - Time Entries -->
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'lawyer_panel:time_entry_list' %}">
+                <i class="fas fa-fw fa-clock"></i>
+                <span>Time Entries</span>
+            </a>
+        </li>
+
+        <!-- Nav Item - Expenses -->
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'lawyer_panel:expense_list' %}">
+                <i class="fas fa-fw fa-receipt"></i>
+                <span>Expenses</span>
+            </a>
+        </li>
+
+        <!-- Divider -->
+        <hr class="sidebar-divider d-none d-md-block">
+
+        <!-- Sidebar Toggler (Sidebar) -->
+        <div class="text-center d-none d-md-inline">
+            <button class="rounded-circle border-0" id="sidebarToggle"></button>
+        </div>
+    </ul>
+
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+        <!-- Main Content -->
+        <div id="content">
+            <!-- Topbar -->
+            <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                <!-- Sidebar Toggle (Topbar) -->
+                <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                    <i class="fa fa-bars"></i>
+                </button>
+
+                <!-- Topbar Search -->
+                <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" action="{% url 'lawyer_panel:quick_search' %}" method="get">
+                    <div class="input-group">
+                        <input type="text" class="form-control bg-light border-0 small" placeholder="Search for anything..." name="query" aria-label="Search" aria-describedby="basic-addon2">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search fa-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Topbar Navbar -->
+                <ul class="navbar-nav ml-auto">
+                    <!-- Nav Item - User Information -->
+                    <li class="nav-item dropdown no-arrow">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ user.get_full_name|default:user.email }}</span>
+                            <img class="img-profile rounded-circle" src="{% static 'images/undraw_profile.svg' %}" alt="User Profile">
+                        </a>
+                        <!-- Dropdown - User Information -->
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+                            <a class="dropdown-item" href="{% url 'account_email' %}">
+                                <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                                Profile
+                            </a>
+                            <a class="dropdown-item" href="{% url 'account_change_password' %}">
+                                <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                                Settings
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{% url 'account_logout' %}">
+                                <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                Logout
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+            <!-- End of Topbar -->
+
+            <!-- Page content -->
+            {% block page_content %}
+            {% endblock %}
+        </div>
+        <!-- End of Main Content -->
+
+        <!-- Footer -->
+        <footer class="sticky-footer bg-white">
+            <div class="container my-auto">
+                <div class="copyright text-center my-auto">
+                    Copyright &copy; Lawyer Panel 2024
+                </div>
+            </div>
+        </footer>
+        <!-- End of Footer -->
+    </div>
+    <!-- End of Content Wrapper -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'lawyer_panel/js/lawyer_panel.js' %}"></script>
+{% endblock %}

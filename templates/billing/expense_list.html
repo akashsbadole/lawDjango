@@ -1,0 +1,119 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}Expenses - {{ user.tenant.name }}{% endblock %}
+
+{% block page_header %}
+  <h1 class="h2">Expenses</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <a href="{% url 'billing:expense_create' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="fas fa-plus"></i> Add Expense
+      </a>
+    </div>
+  </div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    {% if expenses %}
+      <div class="table-responsive">
+        <table class="table table-striped table-hover">
+          <thead class="table-dark">
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Case</th>
+              <th>Reimbursable</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for expense in expenses %}
+            <tr>
+              <td>{{ expense.date|date:"M d, Y" }}</td>
+              <td>{{ expense.description }}</td>
+              <td>{{ expense.get_category_display }}</td>
+              <td>${{ expense.amount }}</td>
+              <td>
+                {% if expense.case %}
+                  <a href="{% url 'cases:detail' expense.case.pk %}">{{ expense.case.case_number }}</a>
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td>
+                {% if expense.is_reimbursable %}
+                  <span class="badge bg-success">Yes</span>
+                {% else %}
+                  <span class="badge bg-secondary">No</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="btn-group" role="group">
+                  <a href="{% url 'billing:expense_update' expense.pk %}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <a href="{% url 'billing:expense_delete' expense.pk %}" class="btn btn-sm btn-outline-danger">
+                    <i class="fas fa-trash"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if is_paginated %}
+        <nav aria-label="Expense pagination">
+          <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page=1">&laquo; First</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+              </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+              {% if page_obj.number == num %}
+                <li class="page-item active">
+                  <span class="page-link">{{ num }}</span>
+                </li>
+              {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+      {% endif %}
+    {% else %}
+      <div class="text-center py-5">
+        <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+        <h3 class="text-muted">No expenses found</h3>
+        <p class="text-muted">Get started by adding your first expense.</p>
+        <a href="{% url 'billing:expense_create' %}" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Add Expense
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

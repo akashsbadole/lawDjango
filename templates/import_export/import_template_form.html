@@ -1,0 +1,278 @@
+{% extends "_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} - Law Firm Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ title }}</h1>
+                <a href="{% url 'import_export:import_template_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="import-template-form">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.name.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Enter a descriptive name for this template.</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.model_type.id_for_label }}">{{ form.model_type.label }}</label>
+                                    {{ form.model_type }}
+                                    {% if form.model_type.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.model_type.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Select the type of data this template is for.</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                                    {{ form.description }}
+                                    {% if form.description.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.description.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Provide a description of what this template is used for.</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.sample_file.id_for_label }}">{{ form.sample_file.label }}</label>
+                                    {{ form.sample_file }}
+                                    {% if form.sample_file.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.sample_file.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Upload a sample file that demonstrates the expected format.</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <div class="form-check mt-4">
+                                        {{ form.is_public }}
+                                        <label class="form-check-label" for="{{ form.is_public.id_for_label }}">
+                                            {{ form.is_public.label }}
+                                        </label>
+                                    </div>
+                                    {% if form.is_public.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.is_public.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Make this template available to all tenants.</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Field Mapping Section -->
+                        <div id="field-mapping-section">
+                            <hr>
+                            <h5>Field Mappings</h5>
+                            <p class="text-muted">Define how columns in import files should be mapped to system fields.</p>
+                            
+                            <div class="mb-3">
+                                <button type="button" id="add-field-mapping" class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-plus"></i> Add Field Mapping
+                                </button>
+                            </div>
+                            
+                            <div id="field-mapping-container">
+                                <!-- Field mappings will be populated here -->
+                                <div class="alert alert-info">
+                                    Click "Add Field Mapping" to define field mappings for this template.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Instructions Section -->
+                        <div id="instructions-section">
+                            <hr>
+                            <h5>Instructions</h5>
+                            <p class="text-muted">Provide detailed instructions for users who will use this template.</p>
+                            
+                            <div class="form-group">
+                                <label for="{{ form.instructions.id_for_label }}">{{ form.instructions.label }}</label>
+                                {{ form.instructions }}
+                                {% if form.instructions.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.instructions.errors }}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">You can use HTML formatting for instructions.</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Template
+                            </button>
+                            <a href="{% url 'import_export:import_template_list' %}" class="btn btn-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        let fieldMappingCount = 0;
+        let modelFields = [];
+        
+        // Function to load model fields
+        function loadModelFields() {
+            const modelType = $('#id_model_type').val();
+            
+            if (!modelType) {
+                return;
+            }
+            
+            $.get('{% url "import_export:get_model_fields" %}', { model_type: modelType }, function(data) {
+                modelFields = data.fields;
+            });
+        }
+        
+        // Function to add a field mapping row
+        function addFieldMapping(fileField = '', modelField = '') {
+            const container = $('#field-mapping-container');
+            
+            // Remove the initial message if it exists
+            if (fieldMappingCount === 0) {
+                container.empty();
+            }
+            
+            const fieldMappingHtml = `
+                <div class="form-group row field-mapping-row" data-index="${fieldMappingCount}">
+                    <div class="col-md-4">
+                        <input type="text" name="file_field_${fieldMappingCount}" 
+                               class="form-control" placeholder="File Column Name" 
+                               value="${fileField}">
+                    </div>
+                    <div class="col-md-4">
+                        <select name="model_field_${fieldMappingCount}" class="form-control">
+                            <option value="">-- Select Field --</option>
+                            ${modelFields.map(field => 
+                                `<option value="${field}" ${field === modelField ? 'selected' : ''}>
+                                    ${field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                </option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <input type="checkbox" name="required_${fieldMappingCount}" 
+                                   class="form-check-input" id="required_${fieldMappingCount}">
+                            <label class="form-check-label" for="required_${fieldMappingCount}">
+                                Required
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-sm btn-danger remove-field-mapping">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            container.append(fieldMappingHtml);
+            fieldMappingCount++;
+        }
+        
+        // Event listeners
+        $('#id_model_type').on('change', loadModelFields);
+        
+        // Add field mapping button
+        $('#add-field-mapping').on('click', function() {
+            if (modelFields.length === 0) {
+                loadModelFields();
+                setTimeout(() => addFieldMapping(), 500);
+            } else {
+                addFieldMapping();
+            }
+        });
+        
+        // Remove field mapping
+        $(document).on('click', '.remove-field-mapping', function() {
+            $(this).closest('.field-mapping-row').remove();
+            
+            // Show the initial message if all field mappings are removed
+            if ($('#field-mapping-container .field-mapping-row').length === 0) {
+                $('#field-mapping-container').html('<div class="alert alert-info">Click "Add Field Mapping" to define field mappings for this template.</div>');
+            }
+        });
+        
+        // Form submission
+        $('#import-template-form').on('submit', function(e) {
+            // Collect field mappings
+            const fieldMappings = {};
+            const requiredFields = [];
+            
+            $('.field-mapping-row').each(function() {
+                const index = $(this).data('index');
+                const fileField = $(`input[name="file_field_${index}"]`).val();
+                const modelField = $(`select[name="model_field_${index}"]`).val();
+                const isRequired = $(`input[name="required_${index}"]`).is(':checked');
+                
+                if (fileField && modelField) {
+                    fieldMappings[fileField] = modelField;
+                    if (isRequired) {
+                        requiredFields.push(modelField);
+                    }
+                }
+            });
+            
+            // Add field mappings and required fields as JSON to hidden fields
+            if (!$('#field_mappings').length) {
+                $(this).append('<input type="hidden" name="field_mappings" id="field_mappings">');
+            }
+            if (!$('#required_fields').length) {
+                $(this).append('<input type="hidden" name="required_fields" id="required_fields">');
+            }
+            
+            $('#field_mappings').val(JSON.stringify(fieldMappings));
+            $('#required_fields').val(JSON.stringify(requiredFields));
+        });
+        
+        // Initialize with model fields if a model type is selected
+        if ($('#id_model_type').val()) {
+            loadModelFields();
+        }
+    });
+</script>
+{% endblock %}

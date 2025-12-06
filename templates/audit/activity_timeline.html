@@ -1,0 +1,214 @@
+{% extends "_tenant_base.html" %}
+{% load audit_tags %}
+
+{% block title %}Activity Timeline{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Activity Timeline</h1>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="?export=csv">Export as CSV</a></li>
+                        <li><a class="dropdown-item" href="?export=json">Export as JSON</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            {{ form.date_from.label_tag }}
+                            {{ form.date_from }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form.date_to.label_tag }}
+                            {{ form.date_to }}
+                        </div>
+                        <div class="col-md-2">
+                            {{ form.user.label_tag }}
+                            {{ form.user }}
+                        </div>
+                        <div class="col-md-2">
+                            {{ form.activity_type.label_tag }}
+                            {{ form.activity_type }}
+                        </div>
+                        <div class="col-md-2">
+                            {{ form.related_object_type.label_tag }}
+                            {{ form.related_object_type }}
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter"></i> Apply Filters
+                            </button>
+                            <a href="?" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Clear
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Activity Timeline -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Activity Timeline</h5>
+                </div>
+                <div class="card-body">
+                    {% if object_list %}
+                        <!-- Timeline View -->
+                        <div class="timeline">
+                            {% for activity in object_list %}
+                                <div class="timeline-item mb-4">
+                                    <div class="timeline-marker">
+                                        {% activity_icon activity.activity_type %}
+                                    </div>
+                                    <div class="timeline-content">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <h6 class="card-title mb-0">
+                                                        {{ activity.get_activity_type_display }}
+                                                    </h6>
+                                                    <small class="text-muted">
+                                                        {{ activity.timestamp|date:"Y-m-d H:i:s" }}
+                                                    </small>
+                                                </div>
+                                                
+                                                <p class="card-text">{{ activity.description }}</p>
+                                                
+                                                <div class="row mt-3">
+                                                    <div class="col-md-6">
+                                                        <small class="text-muted">
+                                                            <strong>User:</strong> {{ activity.user.get_full_name|default:activity.user.email }}
+                                                        </small>
+                                                    </div>
+                                                    {% if activity.related_object %}
+                                                        <div class="col-md-6">
+                                                            <small class="text-muted">
+                                                                <strong>Related Object:</strong> 
+                                                                {{ activity.related_object_content_type.name }} #{{ activity.related_object_id }}
+                                                            </small>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                                
+                                                {% if activity.metadata %}
+                                                    <div class="mt-2">
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#metadata{{ activity.id }}">
+                                                            <i class="fas fa-info-circle"></i> View Details
+                                                        </button>
+                                                        <div class="collapse mt-2" id="metadata{{ activity.id }}">
+                                                            <div class="card card-body bg-light">
+                                                                <pre class="mb-0 small">{{ activity.metadata|pprint }}</pre>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if is_paginated %}
+                            <nav aria-label="Activity timeline pagination">
+                                <ul class="pagination justify-content-center">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1">&laquo; First</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                                        </li>
+                                    {% endif %}
+
+                                    {% for num in page_obj.paginator.page_range %}
+                                        {% if page_obj.number == num %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ num }}</span>
+                                            </li>
+                                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-stream fa-3x text-muted mb-3"></i>
+                            <h5>No activity found</h5>
+                            <p class="text-muted">Try adjusting your filters or check back later.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 40px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #e9ecef;
+}
+
+.timeline-item {
+    position: relative;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -25px;
+    top: 10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #fff;
+    border: 2px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    z-index: 1;
+}
+
+.timeline-content {
+    margin-left: 10px;
+}
+</style>
+{% endblock %}

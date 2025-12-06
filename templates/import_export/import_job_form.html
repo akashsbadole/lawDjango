@@ -1,0 +1,250 @@
+{% extends "_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} - Law Firm Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ title }}</h1>
+                <a href="{% url 'import_export:import_job_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="import-job-form">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.model_type.id_for_label }}">{{ form.model_type.label }}</label>
+                                    {{ form.model_type }}
+                                    {% if form.model_type.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.model_type.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Select the type of data you want to import.</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.file_format.id_for_label }}">{{ form.file_format.label }}</label>
+                                    {{ form.file_format }}
+                                    {% if form.file_format.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.file_format.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Select the format of your import file.</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.file.id_for_label }}">{{ form.file.label }}</label>
+                                    {{ form.file }}
+                                    {% if form.file.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.file.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Select the file to import (CSV or Excel).</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <div class="form-check mt-4">
+                                        {{ form.skip_header }}
+                                        <label class="form-check-label" for="{{ form.skip_header.id_for_label }}">
+                                            {{ form.skip_header.label }}
+                                        </label>
+                                    </div>
+                                    {% if form.skip_header.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.skip_header.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Check this if your file has a header row.</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.template.id_for_label }}">{{ form.template.label }}</label>
+                                    {{ form.template }}
+                                    {% if form.template.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.template.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Select an import template to pre-fill field mappings.</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.update_existing.id_for_label }}">{{ form.update_existing.label }}</label>
+                                    {{ form.update_existing }}
+                                    {% if form.update_existing.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.update_existing.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Check this to update existing records instead of creating new ones.</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Field Mapping Section -->
+                        <div id="field-mapping-section" style="display: none;">
+                            <hr>
+                            <h5>Field Mapping</h5>
+                            <p class="text-muted">Map the columns from your file to the fields in the system.</p>
+                            
+                            <div id="file-headers-preview" class="alert alert-info">
+                                <h6>File Headers:</h6>
+                                <div id="headers-list"></div>
+                            </div>
+                            
+                            <div id="field-mapping-container">
+                                <!-- Field mappings will be populated here -->
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload"></i> Create Import Job
+                            </button>
+                            <a href="{% url 'import_export:import_job_list' %}" class="btn btn-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        let fileHeaders = [];
+        let modelFields = [];
+        
+        // Function to preview file and extract headers
+        function previewFile() {
+            const fileInput = $('#id_file')[0];
+            const fileFormat = $('#id_file_format').val();
+            const skipHeader = $('#id_skip_header').is(':checked');
+            
+            if (!fileInput.files.length) {
+                $('#field-mapping-section').hide();
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('file_format', fileFormat);
+            formData.append('skip_header', skipHeader);
+            formData.append('model_type', $('#id_model_type').val());
+            
+            $.ajax({
+                url: '{% url "import_export:preview_import_file" %}',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader('X-CSRFToken', $('[name=csrfmiddlewaretoken]').val());
+                },
+                success: function(response) {
+                    fileHeaders = response.headers;
+                    modelFields = response.model_fields;
+                    
+                    // Display headers
+                    $('#headers-list').html(fileHeaders.map(header => 
+                        `<span class="badge badge-secondary mr-2 mb-2">${header}</span>`
+                    ).join(''));
+                    
+                    // Generate field mapping form
+                    generateFieldMapping();
+                    
+                    // Show field mapping section
+                    $('#field-mapping-section').show();
+                },
+                error: function(xhr) {
+                    const error = xhr.responseJSON ? xhr.responseJSON.error : 'An error occurred';
+                    alert('Error: ' + error);
+                    $('#field-mapping-section').hide();
+                }
+            });
+        }
+        
+        // Function to generate field mapping form
+        function generateFieldMapping() {
+            const container = $('#field-mapping-container');
+            container.empty();
+            
+            fileHeaders.forEach((header, index) => {
+                const fieldMappingHtml = `
+                    <div class="form-group row">
+                        <label class="col-md-4 col-form-label">${header}</label>
+                        <div class="col-md-8">
+                            <select name="field_mapping_${index}" class="form-control">
+                                <option value="">-- Select Field --</option>
+                                <option value="">Ignore this field</option>
+                                ${modelFields.map(field => 
+                                    `<option value="${field}">${field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                    </div>
+                `;
+                container.append(fieldMappingHtml);
+            });
+        }
+        
+        // Event listeners
+        $('#id_file, #id_file_format, #id_skip_header').on('change', previewFile);
+        
+        // When model type changes, update file preview if file is selected
+        $('#id_model_type').on('change', function() {
+            if ($('#id_file')[0].files.length) {
+                previewFile();
+            }
+        });
+        
+        // Form submission
+        $('#import-job-form').on('submit', function(e) {
+            // Collect field mappings
+            const fieldMappings = {};
+            fileHeaders.forEach((header, index) => {
+                const selectedField = $(`select[name="field_mapping_${index}"]`).val();
+                if (selectedField) {
+                    fieldMappings[header] = selectedField;
+                }
+            });
+            
+            // Add field mappings as JSON to a hidden field
+            if (!$('#field_mappings').length) {
+                $(this).append('<input type="hidden" name="field_mappings" id="field_mappings">');
+            }
+            $('#field_mappings').val(JSON.stringify(fieldMappings));
+        });
+    });
+</script>
+{% endblock %}

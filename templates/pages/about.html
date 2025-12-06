@@ -1,7 +1,656 @@
 {% extends '_base.html' %}
+{% load static %}
 
-{% block title %}About page{% endblock %}
+{% block title %}About Us - Law Firm Management Platform{% endblock title %}
+
+{% block meta_description %}
+Learn about our mission to empower solo practitioners and small law firms with comprehensive practice management tools. Meet our team and discover our story.
+{% endblock meta_description %}
+
+{% block extra_css %}
+<style>
+/* About page specific styles */
+.about-hero {
+    background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+    color: white;
+    padding: 80px 0;
+    text-align: center;
+}
+
+.about-hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.about-hero p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+    opacity: 0.95;
+}
+
+.mission-section {
+    padding: 80px 0;
+    background: var(--brand-background);
+}
+
+.mission-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+.mission-text h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--brand-text);
+    margin-bottom: 1.5rem;
+}
+
+.mission-text p {
+    color: var(--brand-secondary);
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+}
+
+.mission-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--brand-primary);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--brand-text);
+    font-weight: 500;
+}
+
+.mission-image {
+    text-align: center;
+}
+
+.mission-image img {
+    max-width: 100%;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.values-section {
+    padding: 80px 0;
+    background: white;
+}
+
+.values-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 3rem;
+    margin-top: 3rem;
+}
+
+.value-card {
+    text-align: center;
+    padding: 2rem;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+}
+
+.value-card:hover {
+    transform: translateY(-5px);
+}
+
+.value-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    color: white;
+}
+
+.value-card h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--brand-text);
+    margin-bottom: 1rem;
+}
+
+.value-card p {
+    color: var(--brand-secondary);
+    line-height: 1.6;
+}
+
+.team-section {
+    padding: 80px 0;
+    background: var(--brand-background);
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 3rem;
+    margin-top: 3rem;
+}
+
+.team-member {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.team-member:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.member-image {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+}
+
+.member-info {
+    padding: 2rem;
+}
+
+.member-name {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--brand-text);
+    margin-bottom: 0.5rem;
+}
+
+.member-title {
+    color: var(--brand-primary);
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.member-bio {
+    color: var(--brand-secondary);
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.social-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--brand-background);
+    color: var(--brand-text);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.social-links a:hover {
+    background: var(--brand-primary);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.story-section {
+    padding: 80px 0;
+    background: white;
+}
+
+.story-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+.story-image {
+    text-align: center;
+}
+
+.story-image img {
+    max-width: 100%;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.story-text h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--brand-text);
+    margin-bottom: 1.5rem;
+}
+
+.story-text p {
+    color: var(--brand-secondary);
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+}
+
+.story-timeline {
+    margin-top: 3rem;
+    position: relative;
+    padding-left: 2rem;
+}
+
+.story-timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--brand-primary);
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 2rem;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -2.5rem;
+    top: 0.5rem;
+    width: 12px;
+    height: 12px;
+    background: var(--brand-primary);
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 0 0 3px var(--brand-background);
+}
+
+.timeline-year {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--brand-primary);
+    margin-bottom: 0.5rem;
+}
+
+.timeline-event {
+    color: var(--brand-text);
+    line-height: 1.6;
+}
+
+.contact-section {
+    padding: 80px 0;
+    background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+    color: white;
+    text-align: center;
+}
+
+.contact-section h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.contact-section p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: 0.95;
+}
+
+.contact-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.contact-buttons .btn {
+    padding: 15px 35px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    border: none;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.contact-buttons .btn-primary {
+    background: white;
+    color: var(--brand-primary);
+}
+
+.contact-buttons .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+.contact-buttons .btn-outline {
+    background: transparent;
+    color: white;
+    border: 2px solid white;
+}
+
+.contact-buttons .btn-outline:hover {
+    background: white;
+    color: var(--brand-primary);
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .about-hero h1 {
+        font-size: 2rem;
+    }
+    
+    .mission-content,
+    .story-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .mission-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .team-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .story-timeline {
+        padding-left: 1rem;
+    }
+    
+    .timeline-item::before {
+        left: -1.5rem;
+    }
+    
+    .contact-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .contact-buttons .btn {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+</style>
+{% endblock extra_css %}
 
 {% block content %}
-<h1>About page</h1>
+<!-- Hero Section -->
+<section class="about-hero">
+    <div class="container">
+        <h1>About Our Mission</h1>
+        <p>Empowering solo practitioners and small law firms with the tools they need to succeed in the modern legal landscape</p>
+    </div>
+</section>
+
+<!-- Mission Section -->
+<section class="mission-section">
+    <div class="container">
+        <div class="mission-content">
+            <div class="mission-text">
+                <h2>Our Mission</h2>
+                <p>We believe that every lawyer deserves access to powerful, affordable practice management tools. Our mission is to streamline legal operations, reduce administrative burdens, and allow legal professionals to focus on what they do best - serving their clients.</p>
+                <p>Founded by legal professionals who experienced the challenges of running a modern law practice, we built a platform that addresses the specific needs of solo practitioners and small law firms.</p>
+                
+                <div class="mission-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">500+</div>
+                        <div class="stat-label">Law Firms Served</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">10,000+</div>
+                        <div class="stat-label">Happy Lawyers</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">50+</div>
+                        <div class="stat-label">Countries</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">99.9%</div>
+                        <div class="stat-label">Uptime</div>
+                    </div>
+                </div>
+            </div>
+            <div class="mission-image">
+                <img src="{% static 'images/office-team.jpg' %}" alt="Our Team">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Values Section -->
+<section class="values-section">
+    <div class="container">
+        <div class="text-center">
+            <h2>Our Core Values</h2>
+            <p>The principles that guide everything we do</p>
+        </div>
+        
+        <div class="values-grid">
+            <div class="value-card">
+                <div class="value-icon">
+                    <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                </div>
+                <h3>Excellence</h3>
+                <p>We are committed to delivering exceptional products and services that exceed our customers' expectations and set new standards in the legal technology industry.</p>
+            </div>
+            
+            <div class="value-card">
+                <div class="value-icon">
+                    <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                    </svg>
+                </div>
+                <h3>Security</h3>
+                <p>We understand the importance of protecting sensitive client information and maintain the highest standards of data security and privacy compliance.</p>
+            </div>
+            
+            <div class="value-card">
+                <div class="value-icon">
+                    <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                </div>
+                <h3>Integrity</h3>
+                <p>We operate with transparency, honesty, and ethical conduct in all our business practices and relationships with customers, partners, and employees.</p>
+            </div>
+            
+            <div class="value-card">
+                <div class="value-icon">
+                    <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                    </svg>
+                </div>
+                <h3>Customer-Centric</h3>
+                <p>Our customers are at the heart of everything we do. We listen to their needs and continuously improve our platform to better serve their evolving requirements.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Team Section -->
+<section class="team-section">
+    <div class="container">
+        <div class="text-center">
+            <h2>Meet Our Team</h2>
+            <p>The passionate individuals behind our platform</p>
+        </div>
+        
+        <div class="team-grid">
+            <div class="team-member">
+                <img src="{% static 'images/team-member1.jpg' %}" alt="Sarah Johnson" class="member-image">
+                <div class="member-info">
+                    <h3 class="member-name">Sarah Johnson</h3>
+                    <p class="member-title">CEO & Co-Founder</p>
+                    <p class="member-bio">Former practicing attorney with 15+ years of experience in corporate law. Passionate about making legal technology accessible to all lawyers.</p>
+                    <div class="social-links">
+                        <a href="#" aria-label="LinkedIn"><svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg></a>
+                        <a href="#" aria-label="Twitter"><svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                        </svg></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="team-member">
+                <img src="{% static 'images/team-member2.jpg' %}" alt="Michael Chen" class="member-image">
+                <div class="member-info">
+                    <h3 class="member-name">Michael Chen</h3>
+                    <p class="member-title">CTO & Co-Founder</p>
+                    <p class="member-bio">Tech entrepreneur with background in building scalable SaaS platforms. Former engineer at leading legal tech companies.</p>
+                    <div class="social-links">
+                        <a href="#" aria-label="LinkedIn"><svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg></a>
+                        <a href="#" aria-label="GitHub"><svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+                        </svg></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="team-member">
+                <img src="{% static 'images/team-member3.jpg' %}" alt="Emily Rodriguez" class="member-image">
+                <div class="member-info">
+                    <h3 class="member-name">Emily Rodriguez</h3>
+                    <p class="member-title">Head of Product</p>
+                    <p class="member-bio">Product designer with passion for creating intuitive user experiences. Former product manager at leading legal software companies.</p>
+                    <div class="social-links">
+                        <a href="#" aria-label="LinkedIn"><svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg></a>
+                        <a href="#" aria-label="Dribbble"><svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.482 2 2 6.482 2 12s4.482 10 10 10c1.855 0 3.573-.513 5.037-1.4.023-.017.046-.033.068-.051.04-.031.078-.064.116-.097.033-.028.065-.057.096-.087.036-.034.07-.07.103-.106.028-.03.055-.062.082-.094.033-.039.065-.079.095-.12.025-.033.049-.067.072-.101.029-.043.056-.087.082-.132.022-.037.043-.075.063-.113.025-.047.048-.094.069-.142.019-.041.036-.083.052-.125.02-.051.038-.103.055-.155.015-.044.029-.089.042-.134.016-.055.03-.11.043-.166.012-.047.022-.094.032-.142.01-.056.019-.112.026-.168.008-.049.014-.098.02-.147.006-.059.01-.118.013-.178.003-.05.005-.1.005-.15 0-.05-.002-.1-.005-.15-.003-.06-.007-.119-.013-.178-.006-.049-.012-.098-.02-.147-.007-.056-.016-.112-.026-.168-.01-.048-.02-.095-.032-.142-.013-.056-.027-.111-.043-.166-.013-.045-.027-.09-.042-.134-.017-.052-.035-.104-.055-.155-.016-.042-.034-.084-.052-.125-.021-.048-.044-.095-.069-.142-.02-.038-.041-.076-.063-.113-.026-.045-.053-.089-.082-.132-.023-.034-.047-.068-.072-.101-.03-.041-.062-.081-.095-.12-.027-.032-.054-.064-.082-.094-.033-.036-.067-.072-.103-.106-.031-.03-.063-.059-.096-.087-.038-.033-.076-.066-.116-.097-.022-.018-.045-.034-.068-.051A9.955 9.955 0 0012 2zm0 2c.427 0 .844.037 1.247.106.045.017.09.034.135.052.047.018.094.037.14.057.044.019.087.039.13.06.044.021.088.043.131.066.043.022.085.045.127.069.041.023.082.047.122.072.04.025.08.051.119.078.039.026.077.053.115.081.037.027.074.055.11.084.036.029.071.059.106.09.034.03.068.062.101.094.032.033.063.066.094.1.03.034.06.069.089.105.028.036.056.073.083.111.027.038.053.077.079.116.025.04.05.08.073.121.024.041.046.083.068.125.022.042.043.085.063.129.02.044.039.088.057.133.018.045.035.09.051.136.016.046.031.092.045.139.014.047.027.094.039.142.012.048.023.096.033.144.01.048.019.096.027.145.008.048.015.097.021.145.006.049.01.098.014.148.003.049.005.098.005.148 0 .05-.002.099-.005.148-.004.05-.008.099-.014.148-.006.048-.013.097-.021.145-.008.049-.017.097-.027.145-.01.048-.021.096-.033.144-.012.048-.025.095-.039.142-.014.047-.029.093-.045.139-.016.046-.033.091-.051.136-.018.045-.037.089-.057.133-.02.044-.041.087-.063.129-.022.042-.044.084-.068.125-.023.041-.048.081-.073.121-.026.039-.052.078-.079.116-.027.038-.055.075-.083.111-.029.036-.059.071-.089.105-.031.034-.062.067-.094.1-.033.032-.067.064-.101.094-.035.031-.07.061-.106.09-.036.028-.073.057-.11.084-.038.027-.076.054-.115.081-.039.027-.079.053-.119.078-.04.025-.081.049-.122.072-.042.024-.084.047-.127.069-.043.023-.087.045-.131.066-.043.021-.086.041-.13.06-.046.02-.093.039-.14.057-.045.018-.09.035-.135.052-.403.069-.82.106-1.247.106-.427 0-.844-.037-1.247-.106-.045-.017-.09-.034-.135-.052-.047-.018-.094-.037-.14-.057-.044-.019-.087-.039-.13-.06-.044-.021-.088-.043-.131-.066-.043-.022-.085-.045-.127-.069-.041-.023-.082-.047-.122-.072-.04-.025-.08-.051-.119-.078-.039-.026-.077-.053-.115-.081-.037-.027-.074-.055-.11-.084-.036-.029-.071-.059-.106-.09-.034-.03-.068-.062-.101-.094-.032-.033-.063-.066-.094-.1-.03-.034-.06-.069-.089-.105-.028-.036-.056-.073-.083-.111-.027-.038-.053-.077-.079-.116-.025-.04-.05-.08-.073-.121-.024-.041-.046-.083-.068-.125-.022-.042-.043-.085-.063-.129-.02-.044-.039-.088-.057-.133-.018-.045-.035-.09-.051-.136-.016-.046-.031-.092-.045-.139-.014-.047-.027-.094-.039-.142-.012-.048-.023-.096-.033-.144-.01-.048-.019-.096-.027-.145-.008-.048-.015-.097-.021-.145-.006-.049-.01-.098-.014-.148-.003-.049-.005-.098-.005-.148 0-.05.002-.099.005-.148.004-.05.008-.099.014-.148.006-.048.013-.097.021-.145.008-.049.017-.097.027-.145.01-.048.021-.096.033-.144.012-.048.025-.095.039-.142.014-.047.029-.093.045-.139.016-.046.033-.091.051-.136.018-.045.037-.089.057-.133.02-.044.041-.087.063-.129.022-.042.044-.084.068-.125.023-.041.048-.081.073-.121.026-.039.052-.078.079-.116.027-.038.055-.075.083-.111.029-.036.059-.071.089-.105.031-.034.062-.067.094-.1.033-.032.067-.064.101-.094.035-.031.07-.061.106-.09.036-.028.073-.057.11-.084.038-.027.076-.054.115-.081.039-.027.079-.053.119-.078.04-.025.081-.049.122-.072.042-.024.084-.047.127-.069.043-.023.087-.045.131-.066.043-.021.086-.041.13-.06.046-.02.093-.039.14-.057.045-.018.09-.035.135-.052.403-.069.82-.106 1.247-.106zm0 1.5c-.345 0-.68.04-1 .114.015.076.03.153.047.229.018.082.037.163.058.244.021.081.044.161.068.24.024.078.05.155.078.231.028.075.058.15.09.224.032.073.066.146.102.217.036.071.074.141.114.21.04.068.082.135.126.201.044.066.09.13.138.193.048.063.098.124.15.184.052.06.106.118.162.175.056.056.114.11.174.162.06.052.122.102.184.15.063.048.127.094.193.138.066.044.133.086.201.126.07.04.139.078.21.114.071.036.144.07.217.102.074.032.149.062.224.09.076.028.153.054.231.078.079.024.159.047.24.068.081.021.162.04.244.058.076.017.153.032.229.047.074-.32.114-.655.114-1 0-.345-.04-.68-.114-1zm0 1c.345 0 .68.04 1 .114-.015.076-.03.153-.047.229-.018.082-.037.163-.058.244-.021.081-.044.161-.068.24-.024.078-.05.155-.078.231-.028.075-.058.15-.09.224-.032.073-.066.146-.102.217-.036.071-.074.141-.114.21-.04.068-.082.135-.126.201-.044.066-.09.13-.138.193-.048.063-.098.124-.15.184-.052.06-.106.118-.162.175-.056.056-.114.11-.174.162-.06.052-.122.102-.184.15-.063.048-.127.094-.193.138-.066.044-.133.086-.201.126-.07.04-.139.078-.21.114-.071.036-.144.07-.217.102-.074.032-.149.062-.224.09-.076.028-.153.054-.231.078-.079.024-.159.047-.24.068-.081.021-.162.04-.244.058-.076.017-.153.032-.229.047-.074-.32-.114-.655-.114-1 0-.345.04-.68.114-1zm-4.848 1.414c-.035.12-.068.24-.098.361-.03.121-.058.243-.084.365-.027.122-.05.245-.072.368-.021.123-.04.246-.056.37-.016.123-.029.247-.04.371-.01.124-.018.248-.023.372-.005.124-.008.248-.008.372 0 .124.003.248.008.372.005.124.013.248.023.372.011.124.024.248.04.371.016.124.035.247.056.37.022.123.045.246.072.368.026.122.054.244.084.365.03.122.063.242.098.361.035-.12.068-.24.098-.361.03-.121.058-.243.084-.365.027-.122.05-.245.072-.368.021-.123.04-.246.056-.37.016-.123.029-.247.04-.371.01-.124.018-.248.023-.372.005-.124.008-.248.008-.372 0-.124-.003-.248-.008-.372-.005-.124-.013-.248-.023-.372-.011-.124-.024-.248-.04-.371-.016-.124-.035-.247-.056-.37-.022-.123-.045-.246-.072-.368-.026-.122-.054-.244-.084-.365-.03-.122-.063-.242-.098-.361zm9.696 0c-.035.12-.068.24-.098.361-.03.121-.058.243-.084.365-.027.122-.05.245-.072.368-.021.123-.04.246-.056.37-.016.123-.029.247-.04.371-.01.124-.018.248-.023.372-.005.124-.008.248-.008.372 0 .124.003.248.008.372.005.124.013.248.023.372.011.124.024.248.04.371.016.124.035.247.056.37.022.123.045.246.072.368.026.122.054.244.084.365.03.122.063.242.098.361.035-.12.068-.24.098-.361.03-.121.058-.243.084-.365.027-.122.05-.245.072-.368.021-.123.04-.246.056-.37.016-.123.029-.247.04-.371.01-.124.018-.248.023-.372.005-.124.008-.248.008-.372 0-.124-.003-.248-.008-.372-.005-.124-.013-.248-.023-.372-.011-.124-.024-.248-.04-.371-.016-.124-.035-.247-.056-.37-.022-.123-.045-.246-.072-.368-.026-.122-.054-.244-.084-.365-.03-.122-.063-.242-.098-.361zM12 8c-.345 0-.68.04-1 .114.015.076.03.153.047.229.018.082.037.163.058.244.021.081.044.161.068.24.024.078.05.155.078.231.028.075.058.15.09.224.032.073.066.146.102.217.036.071.074.141.114.21.04.068.082.135.126.201.044.066.09.13.138.193.048.063.098.124.15.184.052.06.106.118.162.175.056.056.114.11.174.162.06.052.122.102.184.15.063.048.127.094.193.138.066.044.133.086.201.126.07.04.139.078.21.114.071.036.144.07.217.102.074.032.149.062.224.09.076.028.153.054.231.078.079.024.159.047.24.068.081.021.162.04.244.058.076.017.153.032.229.047.074-.32.114-.655.114-1 0-.345-.04-.68-.114-1-.076.015-.153.03-.229.047-.082.018-.163.037-.244.058-.122.027-.245.05-.368.072-.123.022-.246.04-.37.056-.124.016-.248.029-.372.04-.124.01-.248.018-.372.023-.124.005-.248.008-.372.008-.124 0-.248-.003-.372-.008-.124-.005-.248-.013-.372-.023-.124-.011-.248-.024-.372-.04-.124-.016-.247-.035-.37-.056-.123-.022-.246-.045-.368-.072-.081-.021-.162-.04-.244-.058-.076-.017-.153-.032-.229-.047-.074.32-.114.655-.114 1zm0 1c.345 0 .68.04 1 .114-.015.076-.03.153-.047.229-.018.082-.037.163-.058.244-.021.081-.044.161-.068.24-.024.078-.05.155-.078.231-.028.075-.058.15-.09.224-.032.073-.066.146-.102.217-.036.071-.074.141-.114.21-.04.068-.082.135-.126.201-.044.066-.09.13-.138.193-.048.063-.098.124-.15.184-.052.06-.106.118-.162.175-.056.056-.114.11-.174.162-.06.052-.122.102-.184.15-.063.048-.127.094-.193.138-.066.044-.133.086-.201.126-.07.04-.139.078-.21.114-.071.036-.144.07-.217.102-.074.032-.149.062-.224.09-.076.028-.153.054-.231.078-.079.024-.159.047-.24.068-.081.021-.162.04-.244.058-.076.017-.153.032-.229.047-.074-.32-.114-.655-.114-1 0-.345.04-.68.114-1 .076.015.153.03.229.047.082.018.163.037.244.058.122.027.245.05.368.072.123.022.246.04.37.056.124.016.248.029.372.04.124.01.248.018.372.023.124.005.248.008.372.008.124 0 .248-.003.372-.008.124-.005.248-.013.372-.023.124-.011.248-.024.372-.04.124-.016.247-.035.37-.056.123-.022.246-.045.368-.072.081-.021.162-.04.244-.058.076-.017.153-.032.229-.047.074.32.114.655.114 1z"/>
+                        </svg></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Story Section -->
+<section class="story-section">
+    <div class="container">
+        <div class="story-content">
+            <div class="story-text">
+                <h2>Our Story</h2>
+                <p>Founded in 2018 by a team of legal professionals and technology experts, our journey began with a simple observation: too many talented lawyers were being held back by outdated, inefficient, and expensive practice management tools.</p>
+                <p>We set out to create a platform that would be powerful enough to handle the complex needs of modern law firms, yet simple and affordable enough for solo practitioners and small teams.</p>
+                
+                <div class="story-timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-year">2018</div>
+                        <div class="timeline-event">Company founded by legal tech professionals with a vision to democratize legal practice management</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">2019</div>
+                        <div class="timeline-event">Launched our first beta version with core case management features</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">2020</div>
+                        <div class="timeline-event">Released full platform with billing, document management, and client portal features</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">2021</div>
+                        <div class="timeline-event">Reached 10,000+ active users and expanded to serve law firms across 25+ countries</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">2022</div>
+                        <div class="timeline-event">Launched enterprise features and mobile apps, becoming a comprehensive legal practice solution</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">2023</div>
+                        <div class="timeline-event">Continued innovation with AI-powered features and advanced integrations</div>
+                    </div>
+                </div>
+            </div>
+            <div class="story-image">
+                <img src="{% static 'images/office-space.jpg' %}" alt="Our Office">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section class="contact-section">
+    <div class="container">
+        <h2>Ready to Transform Your Practice?</h2>
+        <p>Join thousands of legal professionals who have already streamlined their practice with our platform</p>
+        
+        <div class="contact-buttons">
+            <a href="#" class="btn btn-primary">Get Started Today</a>
+            <a href="#" class="btn btn-outline">Schedule a Demo</a>
+        </div>
+    </div>
+</section>
 {% endblock content %}
+
+{% block extra_js %}
+<script>
+// Add smooth scrolling for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+
+// Add loading animation to buttons
+document.querySelectorAll('.btn').forEach(button => {
+    button.addEventListener('click', function(e) {
+        if (!this.classList.contains('loading')) {
+            e.preventDefault();
+            this.classList.add('loading');
+            this.disabled = true;
+            
+            // Simulate loading for demo purposes
+            setTimeout(() => {
+                this.classList.remove('loading');
+                this.disabled = false;
+                // Navigate to the actual URL
+                window.location.href = this.href;
+            }, 1000);
+        }
+    });
+});
+</script>
+{% endblock extra_js %}

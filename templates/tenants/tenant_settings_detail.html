@@ -1,0 +1,260 @@
+{% extends "_tenant_base.html" %}
+
+{% block title %}Settings - {{ tenant.name }} - Lithium{% endblock title %}
+
+{% block page_header %}
+<h1 class="h2">Tenant Settings</h1>
+<div class="btn-toolbar mb-2 mb-md-0">
+  <div class="btn-group me-2">
+    {% if can_edit %}
+    <a href="{% url 'tenant-settings-update' tenant.id %}" class="btn btn-sm btn-outline-secondary">Edit Settings</a>
+    <a href="{% url 'tenant-settings-preview' tenant.id %}" class="btn btn-sm btn-outline-info">Preview</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="card shadow mb-4">
+      <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">Tenant Settings</h6>
+        <div class="dropdown no-arrow">
+          <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+          </a>
+          <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in">
+            {% if can_edit %}
+            <a class="dropdown-item" href="{% url 'tenant-settings-update' tenant.id %}">Edit Settings</a>
+            <a class="dropdown-item" href="{% url 'tenant-settings-preview' tenant.id %}">Preview Settings</a>
+            {% endif %}
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="{% url 'tenant-dashboard' tenant.slug %}">Back to Dashboard</a>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <form>
+          <!-- Branding Settings -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <h5 class="font-weight-bold text-primary">Branding Settings</h5>
+              <hr>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="logo" class="form-label">Company Logo</label>
+              <div class="d-flex align-items-center">
+                {% if settings.logo %}
+                <img src="{{ settings.logo.url }}" alt="Company Logo" class="img-thumbnail me-3" style="max-height: 60px;">
+                {% else %}
+                <div class="bg-light d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px; border-radius: 4px;">
+                  <i class="fas fa-image text-muted"></i>
+                </div>
+                {% endif %}
+                <span class="text-muted">{{ settings.get_logo_url }}</span>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="company_name" class="form-label">Company Name</label>
+              <input type="text" class="form-control" id="company_name" value="{{ settings.company_name|default:tenant.name }}" readonly>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="primary_color" class="form-label">Primary Color</label>
+              <div class="d-flex align-items-center">
+                <input type="color" class="form-control form-control-color me-2" id="primary_color" value="{{ settings.primary_color }}" readonly>
+                <span>{{ settings.primary_color }}</span>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="secondary_color" class="form-label">Secondary Color</label>
+              <div class="d-flex align-items-center">
+                <input type="color" class="form-control form-control-color me-2" id="secondary_color" value="{{ settings.secondary_color }}" readonly>
+                <span>{{ settings.secondary_color }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Date and Time Preferences -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <h5 class="font-weight-bold text-primary">Date and Time Preferences</h5>
+              <hr>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label for="date_format" class="form-label">Date Format</label>
+              <input type="text" class="form-control" id="date_format" value="{{ settings.get_date_format_display }}" readonly>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label for="time_format" class="form-label">Time Format</label>
+              <input type="text" class="form-control" id="time_format" value="{{ settings.get_time_format_display }}" readonly>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label for="timezone" class="form-label">Timezone</label>
+              <input type="text" class="form-control" id="timezone" value="{{ settings.timezone }}" readonly>
+            </div>
+          </div>
+
+          <!-- Billing Settings -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <h5 class="font-weight-bold text-primary">Billing Settings</h5>
+              <hr>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label for="default_currency" class="form-label">Default Currency</label>
+              <input type="text" class="form-control" id="default_currency" value="{{ settings.get_default_currency_display }}" readonly>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label for="tax_rate" class="form-label">Tax Rate (%)</label>
+              <input type="text" class="form-control" id="tax_rate" value="{{ settings.tax_rate }}" readonly>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label for="invoice_prefix" class="form-label">Invoice Prefix</label>
+              <input type="text" class="form-control" id="invoice_prefix" value="{{ settings.invoice_prefix }}" readonly>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label for="payment_terms" class="form-label">Payment Terms</label>
+              <input type="text" class="form-control" id="payment_terms" value="{{ settings.get_payment_terms_display }}" readonly>
+            </div>
+          </div>
+
+          <!-- Document Settings -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <h5 class="font-weight-bold text-primary">Document Settings</h5>
+              <hr>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="default_categories" class="form-label">Document Categories</label>
+              <input type="text" class="form-control" id="default_categories" value="{{ settings.default_categories }}" readonly>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="retention_days" class="form-label">Retention Days</label>
+              <input type="text" class="form-control" id="retention_days" value="{{ settings.retention_days }}" readonly>
+            </div>
+          </div>
+
+          <!-- Notification Preferences -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <h5 class="font-weight-bold text-primary">Notification Preferences</h5>
+              <hr>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="email_notifications" {% if settings.email_notifications %}checked{% endif %} disabled>
+                <label class="form-check-label" for="email_notifications">
+                  Email Notifications
+                </label>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="sms_notifications" {% if settings.sms_notifications %}checked{% endif %} disabled>
+                <label class="form-check-label" for="sms_notifications">
+                  SMS Notifications
+                </label>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="in_app_notifications" {% if settings.in_app_notifications %}checked{% endif %} disabled>
+                <label class="form-check-label" for="in_app_notifications">
+                  In-App Notifications
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Security Settings -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <h5 class="font-weight-bold text-primary">Security Settings</h5>
+              <hr>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label for="password_policy" class="form-label">Password Policy</label>
+              <input type="text" class="form-control" id="password_policy" value="{{ settings.get_password_policy_display }}" readonly>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="two_factor_required" {% if settings.two_factor_required %}checked{% endif %} disabled>
+                <label class="form-check-label" for="two_factor_required">
+                  Require Two-Factor Authentication
+                </label>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label for="session_timeout" class="form-label">Session Timeout</label>
+              <input type="text" class="form-control" id="session_timeout" value="{{ settings.get_session_timeout_display }}" readonly>
+            </div>
+          </div>
+
+          <!-- Feature Toggles -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <h5 class="font-weight-bold text-primary">Feature Toggles</h5>
+              <hr>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="enable_client_portal" {% if settings.enable_client_portal %}checked{% endif %} disabled>
+                <label class="form-check-label" for="enable_client_portal">
+                  Enable Client Portal
+                </label>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="enable_document_sharing" {% if settings.enable_document_sharing %}checked{% endif %} disabled>
+                <label class="form-check-label" for="enable_document_sharing">
+                  Enable Document Sharing
+                </label>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="enable_time_tracking" {% if settings.enable_time_tracking %}checked{% endif %} disabled>
+                <label class="form-check-label" for="enable_time_tracking">
+                  Enable Time Tracking
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Email Template Customization -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <h5 class="font-weight-bold text-primary">Email Template Customization</h5>
+              <hr>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="email_header" class="form-label">Email Header</label>
+              <textarea class="form-control" id="email_header" rows="3" readonly>{{ settings.email_header|default:"" }}</textarea>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="email_footer" class="form-label">Email Footer</label>
+              <textarea class="form-control" id="email_footer" rows="3" readonly>{{ settings.email_footer|default:"" }}</textarea>
+            </div>
+          </div>
+
+          <div class="text-center mt-4">
+            {% if can_edit %}
+            <a href="{% url 'tenant-settings-update' tenant.id %}" class="btn btn-primary">
+              <i class="fas fa-edit me-2"></i>Edit Settings
+            </a>
+            <a href="{% url 'tenant-settings-preview' tenant.id %}" class="btn btn-info">
+              <i class="fas fa-eye me-2"></i>Preview
+            </a>
+            {% endif %}
+            <a href="{% url 'tenant-dashboard' tenant.slug %}" class="btn btn-secondary">
+              <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

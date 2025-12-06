@@ -1,0 +1,574 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block title %}Features - Law Firm Management Platform{% endblock title %}
+
+{% block meta_description %}
+Explore comprehensive features designed for modern law firms. Case management, billing, client portal, document management, and more - all in one platform.
+{% endblock meta_description %}
+
+{% block extra_css %}
+<style>
+/* Features page specific styles */
+.features-hero {
+    background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+    color: white;
+    padding: 80px 0;
+    text-align: center;
+}
+
+.features-hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.features-hero p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+    opacity: 0.95;
+}
+
+.feature-category {
+    padding: 60px 0;
+}
+
+.category-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.category-header h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--brand-text);
+    margin-bottom: 1rem;
+}
+
+.category-header p {
+    font-size: 1.1rem;
+    color: var(--brand-secondary);
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.feature-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--brand-primary), var(--brand-accent));
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.feature-card h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--brand-text);
+}
+
+.feature-card p {
+    color: var(--brand-secondary);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.feature-highlights {
+    list-style: none;
+    padding: 0;
+}
+
+.feature-highlights li {
+    padding: 0.5rem 0;
+    color: var(--brand-text);
+    display: flex;
+    align-items: flex-start;
+}
+
+.feature-highlights li::before {
+    content: '✓';
+    color: var(--brand-accent);
+    font-weight: bold;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+}
+
+.feature-showcase {
+    background: var(--brand-background);
+    padding: 80px 0;
+}
+
+.showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.showcase-item {
+    text-align: center;
+    padding: 2rem;
+}
+
+.showcase-number {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--brand-primary);
+    margin-bottom: 0.5rem;
+}
+
+.showcase-label {
+    font-size: 1.1rem;
+    color: var(--brand-text);
+    font-weight: 500;
+}
+
+.integration-section {
+    padding: 80px 0;
+    background: white;
+}
+
+.integration-logos {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 3rem;
+    margin-top: 3rem;
+}
+
+.integration-logo {
+    height: 50px;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+    filter: grayscale(100%);
+}
+
+.integration-logo:hover {
+    opacity: 1;
+    filter: grayscale(0%);
+}
+
+.security-section {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    padding: 80px 0;
+    text-align: center;
+}
+
+.security-section h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.security-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+    text-align: left;
+}
+
+.security-feature {
+    background: rgba(255,255,255,0.1);
+    padding: 1.5rem;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+}
+
+.security-feature h4 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+.security-feature p {
+    color: rgba(255,255,255,0.8);
+    line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .features-hero h1 {
+        font-size: 2rem;
+    }
+    
+    .category-header h2 {
+        font-size: 2rem;
+    }
+    
+    .feature-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .security-features {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="features-hero">
+    <div class="container">
+        <h1>Powerful Features for Modern Law Firms</h1>
+        <p>Everything you need to streamline your practice, manage cases efficiently, and provide exceptional client service</p>
+    </div>
+</section>
+
+<!-- Case Management Features -->
+<section class="feature-category">
+    <div class="container">
+        <div class="category-header">
+            <h2>Case Management</h2>
+            <p>Comprehensive tools to manage every aspect of your legal cases from intake to resolution</p>
+        </div>
+        
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                    </svg>
+                </div>
+                <h3>Case Intake & Tracking</h3>
+                <p>Streamline your case intake process with customizable forms and automated workflows. Track every case from initial consultation through resolution.</p>
+                <ul class="feature-highlights">
+                    <li>Customizable intake forms</li>
+                    <li>Automated case assignment</li>
+                    <li>Real-time case status tracking</li>
+                    <li>Deadline management system</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                </div>
+                <h3>Matter Management</h3>
+                <p>Organize all matters, cases, and clients in a centralized system with advanced search and filtering capabilities.</p>
+                <ul class="feature-highlights">
+                    <li>Centralized matter database</li>
+                    <li>Advanced search and filtering</li>
+                    <li>Matter categorization</li>
+                    <li>Custom fields and tags</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                    </svg>
+                </div>
+                <h3>Deadline Management</h3>
+                <p>Never miss an important deadline again with our comprehensive deadline tracking and reminder system.</p>
+                <ul class="feature-highlights">
+                    <li>Automated deadline tracking</li>
+                    <li>Customizable reminder system</li>
+                    <li>Calendar integration</li>
+                    <li>Conflict detection</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Billing & Financial Features -->
+<section class="feature-category">
+    <div class="container">
+        <div class="category-header">
+            <h2>Billing & Financial Management</h2>
+            <p>Streamline your billing process and gain complete control over your firm's financial operations</p>
+        </div>
+        
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+                    </svg>
+                </div>
+                <h3>Time Tracking</h3>
+                <p>Accurately track billable and non-billable time with intuitive time entry tools and timer functionality.</p>
+                <ul class="feature-highlights">
+                    <li>One-click timer</li>
+                    <li>Multiple time entry methods</li>
+                    <li>Billable vs non-billable tracking</li>
+                    <li>Time approval workflows</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                    </svg>
+                </div>
+                <h3>Invoice Management</h3>
+                <p>Create professional invoices with customizable templates and automated delivery to clients.</p>
+                <ul class="feature-highlights">
+                    <li>Customizable invoice templates</li>
+                    <li>Automated invoice generation</li>
+                    <li>Recurring billing support</li>
+                    <li>Invoice status tracking</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+                    </svg>
+                </div>
+                <h3>Expense Management</h3>
+                <p>Track firm and case-related expenses with receipt management and reimbursement processing.</p>
+                <ul class="feature-highlights">
+                    <li>Expense categorization</li>
+                    <li>Receipt scanning and storage</li>
+                    <li>Expense approval workflows</li>
+                    <li>Client billing integration</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Client Portal Features -->
+<section class="feature-category">
+    <div class="container">
+        <div class="category-header">
+            <h2>Client Portal</h2>
+            <p>Enhance client satisfaction with secure, transparent communication and easy access to case information</p>
+        </div>
+        
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                    </svg>
+                </div>
+                <h3>Secure Client Communication</h3>
+                <p>Provide clients with a secure platform to communicate with your team, share documents, and stay informed.</p>
+                <ul class="feature-highlights">
+                    <li>Encrypted messaging system</li>
+                    <li>File sharing with version control</li>
+                    <li>Real-time notifications</li>
+                    <li>Message threading and history</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                </div>
+                <h3>Case Status Updates</h3>
+                <p>Keep clients informed with real-time case status updates, milestone notifications, and progress tracking.</p>
+                <ul class="feature-highlights">
+                    <li>Automated status updates</li>
+                    <li>Milestone notifications</li>
+                    <li>Document access tracking</li>
+                    <li>Customizable client views</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                    </svg>
+                </div>
+                <h3>Document Sharing</h3>
+                <p>Allow clients to securely upload, download, and collaborate on documents with advanced permission controls.</p>
+                <ul class="feature-highlights">
+                    <li>Secure document uploads</li>
+                    <li>Version control system</li>
+                    <li>Permission-based access</li>
+                    <li>E-signature integration</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Document Management Features -->
+<section class="feature-category">
+    <div class="container">
+        <div class="category-header">
+            <h2>Document Management</h2>
+            <p>Secure storage, organization, and retrieval of all your legal documents with advanced version control</p>
+        </div>
+        
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                    </svg>
+                </div>
+                <h3>Centralized Document Storage</h3>
+                <p>Store all your legal documents in a secure, centralized repository with advanced search capabilities.</p>
+                <ul class="feature-highlights">
+                    <li>Unlimited cloud storage</li>
+                    <li>Advanced search and filters</li>
+                    <li>Document categorization</li>
+                    <li>Custom metadata fields</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+                    </svg>
+                </div>
+                <h3>Version Control</h3>
+                <p>Track document changes with comprehensive version control, audit trails, and rollback capabilities.</p>
+                <ul class="feature-highlights">
+                    <li>Automatic version tracking</li>
+                    <li>Change history and audit logs</li>
+                    <li>Rollback to previous versions</li>
+                    <li>Version comparison tools</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z"/>
+                    </svg>
+                </div>
+                <h3>Document Templates</h3>
+                <p>Create and manage reusable document templates for common legal documents and forms.</p>
+                <ul class="feature-highlights">
+                    <li>Custom template library</li>
+                    <li>Smart form fields</li>
+                    <li>Auto-population from cases</li>
+                    <li>Template sharing and collaboration</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Showcase Section -->
+<section class="feature-showcase">
+    <div class="container">
+        <div class="category-header">
+            <h2>Why Legal Professionals Choose Our Platform</h2>
+            <p>Join thousands of satisfied users who have transformed their practice</p>
+        </div>
+        
+        <div class="showcase-grid">
+            <div class="showcase-item">
+                <div class="showcase-number">10,000+</div>
+                <div class="showcase-label">Active Users</div>
+            </div>
+            <div class="showcase-item">
+                <div class="showcase-number">500+</div>
+                <div class="showcase-label">Law Firms</div>
+            </div>
+            <div class="showcase-item">
+                <div class="showcase-number">50,000+</div>
+                <div class="showcase-label">Cases Managed</div>
+            </div>
+            <div class="showcase-item">
+                <div class="showcase-number">99.9%</div>
+                <div class="showcase-label">Uptime</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Integration Section -->
+<section class="integration-section">
+    <div class="container">
+        <div class="category-header">
+            <h2>Seamless Integrations</h2>
+            <p>Connect with your favorite tools and services for a complete workflow solution</p>
+        </div>
+        
+        <div class="integration-logos">
+            <img src="{% static 'images/integration-logo1.png' %}" alt="Integration Partner" class="integration-logo">
+            <img src="{% static 'images/integration-logo2.png' %}" alt="Integration Partner" class="integration-logo">
+            <img src="{% static 'images/integration-logo3.png' %}" alt="Integration Partner" class="integration-logo">
+            <img src="{% static 'images/integration-logo4.png' %}" alt="Integration Partner" class="integration-logo">
+            <img src="{% static 'images/integration-logo5.png' %}" alt="Integration Partner" class="integration-logo">
+            <img src="{% static 'images/integration-logo6.png' %}" alt="Integration Partner" class="integration-logo">
+        </div>
+    </div>
+</section>
+
+<!-- Security Section -->
+<section class="security-section">
+    <div class="container">
+        <h2 style="color:white">Enterprise-Grade Security</h2>
+        <p>Your data is protected with industry-leading security measures and compliance standards</p>
+        
+        <div class="security-features">
+            <div class="security-feature">
+                <h4>SSL Encryption</h4>
+                <p>All data transmitted between your browser and our servers is encrypted using 256-bit SSL encryption</p>
+            </div>
+            <div class="security-feature">
+                <h4>Regular Backups</h4>
+                <p>Automated daily backups ensure your data is safe and can be restored when needed</p>
+            </div>
+            <div class="security-feature">
+                <h4>Access Controls</h4>
+                <p>Granular permission controls ensure only authorized personnel can access sensitive information</p>
+            </div>
+            <div class="security-feature">
+                <h4>Compliance</h4>
+                <p>Fully compliant with GDPR, HIPAA, and other relevant legal industry regulations</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}

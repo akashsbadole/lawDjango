@@ -1,0 +1,152 @@
+{% extends "_base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} - Law Firm Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ title }}</h1>
+                <div>
+                    <a href="{% url 'import_export:import_template_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </a>
+                    {% if template.sample_file %}
+                        <a href="{{ template.sample_file.url }}" target="_blank" class="btn btn-info">
+                            <i class="fas fa-download"></i> Download Sample
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Template Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="30%">Name:</th>
+                                    <td>{{ template.name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Model Type:</th>
+                                    <td>{{ template.get_model_type_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Description:</th>
+                                    <td>{{ template.description|default:"No description" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Is Public:</th>
+                                    <td>
+                                        {% if template.is_public %}
+                                            <span class="badge badge-success">Public</span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">Private</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Created By:</th>
+                                    <td>{{ template.created_by.get_full_name|default:template.created_by.username }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Created At:</th>
+                                    <td>{{ template.created_at|date:"Y-m-d H:i:s" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Sample File</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if template.sample_file %}
+                                <div class="text-center">
+                                    <i class="fas fa-file-csv fa-3x text-muted mb-3"></i>
+                                    <h5>{{ template.sample_file_name }}</h5>
+                                    <p class="text-muted">
+                                        Size: {{ template.sample_file_size|filesizeformat }}
+                                    </p>
+                                    <a href="{{ template.sample_file.url }}" target="_blank" class="btn btn-primary">
+                                        <i class="fas fa-download"></i> Download Sample File
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="text-center">
+                                    <i class="fas fa-file-csv fa-3x text-muted mb-3"></i>
+                                    <h5>No Sample File</h5>
+                                    <p class="text-muted">
+                                        This template doesn't have a sample file attached.
+                                    </p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if template.field_mappings %}
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Field Mappings</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">
+                            These mappings show how the columns in your import file should be mapped to fields in the system.
+                        </p>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>File Column</th>
+                                        <th>System Field</th>
+                                        <th>Required</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for file_field, model_field in template.field_mappings.items %}
+                                        <tr>
+                                            <td>{{ file_field }}</td>
+                                            <td>{{ model_field }}</td>
+                                            <td>
+                                                {% if model_field in template.required_fields %}
+                                                    <span class="badge badge-danger">Required</span>
+                                                {% else %}
+                                                    <span class="badge badge-secondary">Optional</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            
+            {% if template.instructions %}
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Instructions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="content">
+                            {{ template.instructions|safe }}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

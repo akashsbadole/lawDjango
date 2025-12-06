@@ -1,0 +1,423 @@
+{% extends "_base.html" %}
+{% load static %}
+
+{% block title %}Register Your Law Firm{% endblock title %}
+
+{% block extra_css %}
+<style>
+/* Registration Page Styles */
+.auth-page {
+    min-height: calc(100vh - 70px);
+    background: linear-gradient(135deg, #f0f5ff 0%, #e0e7ff 100%);
+    padding: var(--spacing-lg) 0;
+    display: flex;
+    align-items: center;
+}
+
+.auth-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.auth-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+}
+
+.auth-header {
+    background: var(--color-primary-dark);
+    color: white;
+    padding: var(--spacing-lg);
+    text-align: center;
+}
+
+.auth-header h1 {
+    color: white;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.auth-header p {
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 0;
+}
+
+.auth-body {
+    padding: var(--spacing-lg);
+}
+
+.form-section {
+    margin-bottom: var(--spacing-md);
+}
+
+.form-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-primary-dark);
+    margin-bottom: var(--spacing-sm);
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-accent);
+}
+
+.form-group {
+    margin-bottom: var(--spacing-sm);
+}
+
+.form-label {
+    display: block;
+    font-weight: 500;
+    color: var(--color-text);
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    transition: var(--transition-fast);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+}
+
+.form-help {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin-top: 0.25rem;
+}
+
+.form-error {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.plan-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+}
+
+.plan-card {
+    background: var(--color-bg-alt);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm);
+    text-align: center;
+    transition: var(--transition-normal);
+    cursor: pointer;
+}
+
+.plan-card.selected {
+    border-color: var(--color-accent);
+    background: rgba(212, 175, 55, 0.1);
+}
+
+.plan-card h4 {
+    font-size: 1.1rem;
+    color: var(--color-primary-dark);
+    margin-bottom: 0.5rem;
+}
+
+.plan-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+}
+
+.plan-features {
+    list-style: none;
+    padding: 0;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+}
+
+.plan-features li {
+    margin-bottom: 0.25rem;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-top: 0.25rem;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: var(--transition-normal);
+}
+
+.submit-btn:hover {
+    background: var(--color-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.auth-footer {
+    text-align: center;
+    padding: var(--spacing-md);
+    background: var(--color-bg-alt);
+    border-top: 1px solid var(--color-border);
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.row {
+    display: grid;
+    gap: var(--spacing-sm);
+}
+
+.row-2 {
+    grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 768px) {
+    .row-2 {
+        grid-template-columns: 1fr;
+    }
+    
+    .plan-cards {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="container auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>Register Your Law Firm</h1>
+                <p>Create your account and start managing your law practice</p>
+            </div>
+            
+            <div class="auth-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Law Firm Information -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">Law Firm Information</h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="id_name">Law Firm Name *</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="form-error">{{ form.name.errors.0 }}</div>
+                            {% endif %}
+                            <div class="form-help">The official name of your law firm</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="id_slug">URL Slug *</label>
+                            {{ form.slug }}
+                            {% if form.slug.errors %}
+                                <div class="form-error">{{ form.slug.errors.0 }}</div>
+                            {% endif %}
+                            <div class="form-help">URL-friendly name (letters, numbers, and hyphens only)</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="id_plan">Select Plan *</label>
+                            {{ form.plan }}
+                            {% if form.plan.errors %}
+                                <div class="form-error">{{ form.plan.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="plan-cards">
+                            <div class="plan-card" data-plan="free">
+                                <h4>Free</h4>
+                                <div class="plan-price">$0/mo</div>
+                                <ul class="plan-features">
+                                    <li>✓ Up to 3 users</li>
+                                    <li>✓ 100MB storage</li>
+                                    <li>✓ Basic features</li>
+                                </ul>
+                            </div>
+                            <div class="plan-card" data-plan="basic">
+                                <h4>Basic</h4>
+                                <div class="plan-price">$29/mo</div>
+                                <ul class="plan-features">
+                                    <li>✓ Up to 10 users</li>
+                                    <li>✓ 1GB storage</li>
+                                    <li>✓ Advanced features</li>
+                                </ul>
+                            </div>
+                            <div class="plan-card" data-plan="pro">
+                                <h4>Professional</h4>
+                                <div class="plan-price">$99/mo</div>
+                                <ul class="plan-features">
+                                    <li>✓ Up to 50 users</li>
+                                    <li>✓ 10GB storage</li>
+                                    <li>✓ Premium features</li>
+                                </ul>
+                            </div>
+                            <div class="plan-card" data-plan="enterprise">
+                                <h4>Enterprise</h4>
+                                <div class="plan-price">Custom</div>
+                                <ul class="plan-features">
+                                    <li>✓ Unlimited users</li>
+                                    <li>✓ Unlimited storage</li>
+                                    <li>✓ Custom features</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Admin User Information -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">Admin User Information</h3>
+                        
+                        <div class="row row-2">
+                            <div class="form-group">
+                                <label class="form-label" for="id_admin_first_name">First Name *</label>
+                                {{ form.admin_first_name }}
+                                {% if form.admin_first_name.errors %}
+                                    <div class="form-error">{{ form.admin_first_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="id_admin_last_name">Last Name *</label>
+                                {{ form.admin_last_name }}
+                                {% if form.admin_last_name.errors %}
+                                    <div class="form-error">{{ form.admin_last_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="id_admin_email">Email Address *</label>
+                            {{ form.admin_email }}
+                            {% if form.admin_email.errors %}
+                                <div class="form-error">{{ form.admin_email.errors.0 }}</div>
+                            {% endif %}
+                            <div class="form-help">This will be your login email</div>
+                        </div>
+                        
+                        <div class="row row-2">
+                            <div class="form-group">
+                                <label class="form-label" for="id_admin_password">Password *</label>
+                                {{ form.admin_password }}
+                                {% if form.admin_password.errors %}
+                                    <div class="form-error">{{ form.admin_password.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-help">Minimum 8 characters</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="id_admin_password_confirm">Confirm Password *</label>
+                                {{ form.admin_password_confirm }}
+                                {% if form.admin_password_confirm.errors %}
+                                    <div class="form-error">{{ form.admin_password_confirm.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Terms and Submit -->
+                    <div class="form-section">
+                        <div class="checkbox-group">
+                            {{ form.agree_terms }}
+                            <label class="form-label" for="id_agree_terms" style="margin-bottom: 0;">
+                                I agree to the <a href="{% url 'terms' %}" target="_blank">Terms of Service</a> and <a href="{% url 'privacy' %}" target="_blank">Privacy Policy</a>
+                            </label>
+                        </div>
+                        {% if form.agree_terms.errors %}
+                            <div class="form-error">{{ form.agree_terms.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">Register Your Law Firm</button>
+                </form>
+            </div>
+            
+            <div class="auth-footer">
+                <p>Already have an account? <a href="{% url 'account_login' %}">Sign in</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const planSelect = document.getElementById('id_plan');
+    const planCards = document.querySelectorAll('.plan-card');
+    
+    // Handle plan selection from dropdown
+    planSelect.addEventListener('change', function() {
+        const selectedPlan = this.value;
+        planCards.forEach(card => {
+            if (card.dataset.plan === selectedPlan) {
+                card.classList.add('selected');
+            } else {
+                card.classList.remove('selected');
+            }
+        });
+    });
+    
+    // Handle plan selection from cards
+    planCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const plan = this.dataset.plan;
+            planSelect.value = plan;
+            planSelect.dispatchEvent(new Event('change'));
+        });
+    });
+    
+    // Initialize selected plan
+    if (planSelect.value) {
+        planSelect.dispatchEvent(new Event('change'));
+    }
+});
+</script>
+{% endblock %}

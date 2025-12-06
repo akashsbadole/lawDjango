@@ -1,0 +1,208 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}Billing Dashboard - {{ user.tenant.name }}{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Billing Dashboard</h1>
+  <div>
+    <a href="{% url 'subscriptions:payment_method_create' %}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Add Payment Method
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-4 mb-4">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="card-title text-muted">Current Plan</h5>
+        {% if subscription %}
+        <h2 class="text-primary">{{ subscription.plan.name }}</h2>
+        <p class="card-text">${{ subscription.plan.price }} / {{ subscription.plan.get_billing_cycle_display }}</p>
+        <a href="{% url 'subscriptions:subscription_detail' subscription.pk %}" class="btn btn-outline-primary">
+          View Details
+        </a>
+        {% else %}
+        <h4 class="text-warning">No Active Plan</h4>
+        <p class="card-text">Choose a subscription plan to continue using the service</p>
+        <a href="{% url 'subscriptions:plan_selection' %}" class="btn btn-primary">
+          Choose Plan
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4 mb-4">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="card-title text-muted">Unpaid Invoices</h5>
+        <h2 class="{% if unpaid_count > 0 %}text-danger{% else %}text-success{% endif %}">{{ unpaid_count }}</h2>
+        <p class="card-text">
+          {% if unpaid_amount > 0 %}
+          Total: ${{ unpaid_amount|floatformat:2 }}
+          {% else %}
+          All paid up!
+          {% endif %}
+        </p>
+        {% if unpaid_count > 0 %}
+        <a href="{% url 'subscriptions:invoice_list' %}" class="btn btn-outline-danger">
+          Pay Invoices
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4 mb-4">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="card-title text-muted">Next Billing Date</h5>
+        {% if subscription and subscription.end_date %}
+        <h2 class="text-info">{{ subscription.end_date|date:"M j" }}</h2>
+        <p class="card-text">{{ subscription.end_date|date:"Y" }}</p>
+        {% if days_until_renewal <= 7 %}
+        <a href="{% url 'subscriptions:subscription_detail' subscription.pk %}" class="btn btn-warning">
+          Renews Soon!
+        </a>
+        {% endif %}
+        {% else %}
+        <h4 class="text-muted">-</h4>
+        <p class="card-text">No active subscription</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-credit-card"></i> Payment Methods
+        </h5>
+      </div>
+      <div class="card-body">
+        {% if payment_methods %}
+        <div class="list-group list-group-flush">
+          {% for method in payment_methods %}
+          <div class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <strong>{{ method.get_method_type_display }}</strong><br>
+              <small class="text-muted">
+                {% if method.method_type == 'card' %}
+                **** **** **** {{ method.details.card_last4 }}
+                {% else %}
+                {{ method.details|default:"No details" }}
+                {% endif %}
+              </small>
+            </div>
+            <div>
+              {% if method.is_default %}
+              <span class="badge bg-success">Default</span>
+              {% else %}
+              <form method="post" action="{% url 'subscriptions:payment_method_set_default' method.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-secondary">Set Default</button>
+              </form>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="mt-3">
+          <a href="{% url 'subscriptions:payment_method_list' %}" class="btn btn-outline-secondary btn-sm">
+            Manage All
+          </a>
+        </div>
+        {% else %}
+        <div class="alert alert-warning">
+          <i class="fas fa-exclamation-triangle"></i> No payment methods on file
+        </div>
+        <a href="{% url 'subscriptions:payment_method_create' %}" class="btn btn-primary btn-sm">
+          Add Payment Method
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-file-invoice"></i> Recent Invoices
+        </h5>
+      </div>
+      <div class="card-body">
+        {% if recent_invoices %}
+        <div class="list-group list-group-flush">
+          {% for invoice in recent_invoices %}
+          <a href="{% url 'subscriptions:invoice_detail' invoice.pk %}" class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between">
+              <h6 class="mb-1">{{ invoice.description }}</h6>
+              <small>${{ invoice.amount }}</small>
+            </div>
+            <p class="mb-1">
+              <small class="text-muted">Due: {{ invoice.due_date|date:"M j, Y" }}</small>
+              {% if invoice.status == 'paid' %}
+              <span class="badge bg-success ms-2">Paid</span>
+              {% elif invoice.status == 'pending' %}
+              <span class="badge bg-warning ms-2">Pending</span>
+              {% else %}
+              <span class="badge bg-danger ms-2">Overdue</span>
+              {% endif %}
+            </p>
+          </a>
+          {% endfor %}
+        </div>
+        <div class="mt-3">
+          <a href="{% url 'subscriptions:invoice_list' %}" class="btn btn-outline-secondary btn-sm">
+            View All Invoices
+          </a>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No invoices found.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-chart-line"></i> Billing Overview
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-3 text-center mb-4">
+            <h4 class="text-primary">${{ monthly_total|floatformat:2 }}</h4>
+            <p class="text-muted">Monthly Total</p>
+          </div>
+          <div class="col-md-3 text-center mb-4">
+            <h4 class="text-success">${{ year_to_date|floatformat:2 }}</h4>
+            <p class="text-muted">Year to Date</p>
+          </div>
+          <div class="col-md-3 text-center mb-4">
+            <h4 class="text-info">{{ paid_invoices }}</h4>
+            <p class="text-muted">Paid Invoices</p>
+          </div>
+          <div class="col-md-3 text-center mb-4">
+            <h4 class="{% if overdue_invoices > 0 %}text-danger{% else %}text-success{% endif %}">{{ overdue_invoices }}</h4>
+            <p class="text-muted">Overdue Invoices</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

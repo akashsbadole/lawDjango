@@ -1,0 +1,101 @@
+{{ tenant.name }} - Law Firm Management System
+===============================================
+
+{% if invoice.status == 'paid' %}
+PAYMENT CONFIRMATION
+====================
+
+Thank you for your payment! Your invoice has been paid in full.
+{% elif invoice.status == 'pending' %}
+INVOICE READY
+==============
+
+Your invoice is ready for payment. Please review and pay by the due date.
+{% elif invoice.status == 'overdue' %}
+PAYMENT OVERDUE
+===============
+
+Your invoice payment is overdue. Please make payment as soon as possible 
+to avoid service interruption.
+{% endif %}
+
+INVOICE #{{ invoice.invoice_number }}
+============================
+
+Invoice Number: #{{ invoice.invoice_number }}
+Issue Date: {{ invoice.issue_date|date:"F j, Y" }}
+Due Date: {{ invoice.due_date|date:"F j, Y" }}
+Status: {{ invoice.get_status_display|upper }}
+Subscription: {{ invoice.subscription.plan.name }}
+Billing Period: {{ invoice.billing_start_date|date:"F j, Y" }} - {{ invoice.billing_end_date|date:"F j, Y" }}
+
+INVOICE ITEMS
+==============
+
+{{ invoice.subscription.plan.name }} - {{ invoice.subscription.plan.get_billing_cycle_display }} Subscription
+Quantity: 1
+Unit Price: ${{ invoice.subscription.plan.price }}
+Total: ${{ invoice.subscription.plan.price }}
+
+{% if invoice.items.all %}
+{% for item in invoice.items.all %}
+{{ item.description }}
+Quantity: {{ item.quantity }}
+Unit Price: ${{ item.unit_price }}
+Total: ${{ item.total }}
+{% endfor %}
+{% endif %}
+
+INVOICE TOTAL
+=============
+
+Subtotal: ${{ invoice.subtotal }}
+Tax ({{ invoice.tax_rate|floatformat:2 }}%): ${{ invoice.tax_amount }}
+-------------------------------------------------
+Total Amount: ${{ invoice.total_amount }}
+
+{% if invoice.status == 'pending' or invoice.status == 'overdue %}
+PAYMENT OPTIONS
+===============
+
+Pay Online: {{ site_url }}{% url 'subscriptions:invoice_payment' invoice.pk %}
+View Invoice: {{ site_url }}{% url 'subscriptions:invoice_detail' invoice.pk %}
+{% endif %}
+
+{% if invoice.status == 'paid' %}
+INVOICE ACTIONS
+===============
+
+View Invoice: {{ site_url }}{% url 'subscriptions:invoice_detail' invoice.pk %}
+View All Invoices: {{ site_url }}{% url 'subscriptions:invoice_list' %}
+{% endif %}
+
+{% if invoice.status == 'overdue' %}
+PAYMENT OVERDUE NOTICE
+======================
+
+Your payment is {{ days_overdue }} days overdue. To avoid service interruption, 
+please make payment immediately.
+
+If you have already made payment, please allow 1-2 business days for processing.
+{% endif %}
+
+PAYMENT METHODS
+===============
+
+You can pay this invoice using any of these methods:
+- Credit/Debit Card
+- Bank Transfer
+- Online Payment
+
+NEED HELP?
+==========
+
+If you have questions about this invoice or need assistance with payment, 
+please contact our support team.
+
+---
+This is an automated invoice notification from {{ tenant.name }} Law Firm Management System.
+If you believe this invoice is incorrect or have questions about your subscription, 
+please contact our billing department.
+© {% now "Y" %} {{ tenant.name }}. All rights reserved.

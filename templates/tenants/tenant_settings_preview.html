@@ -1,0 +1,451 @@
+{% extends "_base.html" %}
+{% load static %}
+
+{% block title %}Branding Preview - {{ tenant.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .preview-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .preview-header {
+        background-color: var(--brand-primary, #007bff);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .preview-title {
+        font-size: 24px;
+        font-weight: bold;
+    }
+    
+    .preview-logo {
+        max-height: 60px;
+        max-width: 200px;
+        object-fit: contain;
+    }
+    
+    .preview-section {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+    
+    .preview-section-title {
+        background-color: var(--brand-secondary, #6c757d);
+        color: white;
+        padding: 15px 20px;
+        font-size: 18px;
+        font-weight: bold;
+    }
+    
+    .preview-section-content {
+        padding: 20px;
+    }
+    
+    .color-palette {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .color-swatch {
+        width: 120px;
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .color-display {
+        height: 80px;
+        width: 100%;
+    }
+    
+    .color-label {
+        padding: 8px;
+        text-align: center;
+        font-size: 12px;
+        background: #f8f9fa;
+    }
+    
+    .preview-button {
+        background-color: var(--brand-primary, #007bff);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-right: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .preview-button:hover {
+        background-color: var(--brand-primary-dark, #0056b3);
+    }
+    
+    .preview-button-secondary {
+        background-color: var(--brand-secondary, #6c757d);
+    }
+    
+    .preview-button-secondary:hover {
+        background-color: var(--brand-secondary-dark, #545b62);
+    }
+    
+    .preview-login-form {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+    
+    .preview-form-group {
+        margin-bottom: 15px;
+    }
+    
+    .preview-form-label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    
+    .preview-form-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .preview-dashboard {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+    
+    .preview-dashboard-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid var(--brand-primary, #007bff);
+    }
+    
+    .preview-dashboard-card h3 {
+        margin-top: 0;
+        color: var(--brand-primary, #007bff);
+    }
+    
+    .preview-email {
+        max-width: 600px;
+        margin: 0 auto;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .preview-email-header {
+        background-color: var(--brand-primary, #007bff);
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .preview-email-body {
+        padding: 20px;
+    }
+    
+    .preview-email-footer {
+        background-color: #f8f9fa;
+        padding: 15px 20px;
+        font-size: 12px;
+        color: #6c757d;
+    }
+    
+    .preview-invoice {
+        max-width: 800px;
+        margin: 0 auto;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .preview-invoice-header {
+        display: flex;
+        justify-content: space-between;
+        padding: 20px;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .preview-invoice-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .preview-invoice-table th {
+        background-color: var(--brand-secondary, #6c757d);
+        color: white;
+        padding: 10px;
+        text-align: left;
+    }
+    
+    .preview-invoice-table td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .preview-actions {
+        margin-top: 30px;
+        text-align: center;
+    }
+    
+    .preview-info {
+        background-color: #e7f3ff;
+        border-left: 4px solid var(--brand-primary, #007bff);
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 0 4px 4px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="preview-container">
+    <div class="preview-info">
+        <strong>Preview Mode:</strong> This is how your branding will appear to users. Some features may be simplified for demonstration purposes.
+    </div>
+    
+    <!-- Header Preview -->
+    <div class="preview-section">
+        <div class="preview-header">
+            <div>
+                <div class="preview-title">{{ settings.company_name|default:tenant.name|default:"Law Firm" }}</div>
+                <div>Professional Legal Services</div>
+            </div>
+            {% if settings.logo %}
+                <img src="{{ settings.logo.url }}" alt="{{ settings.company_name|default:tenant.name|default:'Law Firm' }}" class="preview-logo">
+            {% else %}
+                <div class="preview-logo">No Logo</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Color Palette Preview -->
+    <div class="preview-section">
+        <div class="preview-section-title">Color Palette</div>
+        <div class="preview-section-content">
+            <div class="color-palette">
+                <div class="color-swatch">
+                    <div class="color-display" style="background-color: {{ settings.brand_colors.primary|default:'#007bff' }};"></div>
+                    <div class="color-label">Primary<br>{{ settings.brand_colors.primary|default:'#007bff' }}</div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-display" style="background-color: {{ settings.brand_colors.secondary|default:'#6c757d' }};"></div>
+                    <div class="color-label">Secondary<br>{{ settings.brand_colors.secondary|default:'#6c757d' }}</div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-display" style="background-color: {{ settings.brand_colors.accent|default:'#17a2b8' }};"></div>
+                    <div class="color-label">Accent<br>{{ settings.brand_colors.accent|default:'#17a2b8' }}</div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-display" style="background-color: {{ settings.brand_colors.success|default:'#28a745' }};"></div>
+                    <div class="color-label">Success<br>{{ settings.brand_colors.success|default:'#28a745' }}</div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-display" style="background-color: {{ settings.brand_colors.warning|default:'#ffc107' }};"></div>
+                    <div class="color-label">Warning<br>{{ settings.brand_colors.warning|default:'#ffc107' }}</div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-display" style="background-color: {{ settings.brand_colors.danger|default:'#dc3545' }};"></div>
+                    <div class="color-label">Danger<br>{{ settings.brand_colors.danger|default:'#dc3545' }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Buttons Preview -->
+    <div class="preview-section">
+        <div class="preview-section-title">Buttons</div>
+        <div class="preview-section-content">
+            <button class="preview-button">Primary Button</button>
+            <button class="preview-button preview-button-secondary">Secondary Button</button>
+            <button class="preview-button" style="background-color: var(--brand-success, #28a745);">Success Button</button>
+            <button class="preview-button" style="background-color: var(--brand-warning, #ffc107); color: #212529;">Warning Button</button>
+            <button class="preview-button" style="background-color: var(--brand-danger, #dc3545);">Danger Button</button>
+        </div>
+    </div>
+    
+    <!-- Login Page Preview -->
+    <div class="preview-section">
+        <div class="preview-section-title">Login Page</div>
+        <div class="preview-section-content">
+            {% if settings.login_background_url %}
+            <div style="background-image: url('{{ settings.login_background_url }}'); background-size: cover; background-position: center; padding: 20px; border-radius: 8px;">
+            {% endif %}
+                <div class="preview-login-form" {% if settings.login_background_url %}style="background-color: rgba(255, 255, 255, 0.9);"{% endif %}>
+                    {% if settings.logo %}
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <img src="{{ settings.logo.url }}" alt="{{ settings.company_name|default:tenant.name|default:'Law Firm' }}" style="max-height: 60px;">
+                    </div>
+                    {% endif %}
+                    <h2 style="text-align: center; color: var(--brand-primary, #007bff); margin-bottom: 20px;">
+                        {{ settings.login_message|default:"Welcome to " }}{{ settings.company_name|default:tenant.name|default:"Law Firm" }}
+                    </h2>
+                    <div class="preview-form-group">
+                        <label class="preview-form-label">Email</label>
+                        <input type="email" class="preview-form-input" placeholder="Enter your email">
+                    </div>
+                    <div class="preview-form-group">
+                        <label class="preview-form-label">Password</label>
+                        <input type="password" class="preview-form-input" placeholder="Enter your password">
+                    </div>
+                    <button class="preview-button" style="width: 100%;">Sign In</button>
+                </div>
+            {% if settings.login_background_url %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Dashboard Preview -->
+    <div class="preview-section">
+        <div class="preview-section-title">Dashboard</div>
+        <div class="preview-section-content">
+            <h2 style="color: var(--brand-primary, #007bff); margin-bottom: 20px;">
+                {{ settings.dashboard_welcome_message|default:"Welcome to" }} {{ settings.company_name|default:tenant.name|default:"Law Firm" }} Dashboard
+            </h2>
+            <div class="preview-dashboard">
+                <div class="preview-dashboard-card">
+                    <h3>Clients</h3>
+                    <p>You have <strong>12</strong> active clients.</p>
+                    <button class="preview-button">View All Clients</button>
+                </div>
+                <div class="preview-dashboard-card">
+                    <h3>Cases</h3>
+                    <p>You have <strong>8</strong> active cases.</p>
+                    <button class="preview-button">View All Cases</button>
+                </div>
+                <div class="preview-dashboard-card">
+                    <h3>Documents</h3>
+                    <p>You have <strong>24</strong> documents.</p>
+                    <button class="preview-button">View All Documents</button>
+                </div>
+                <div class="preview-dashboard-card">
+                    <h3>Billing</h3>
+                    <p><strong>$3,456</strong> in outstanding invoices.</p>
+                    <button class="preview-button">View Billing</button>
+                </div>
+            </div>
+            {% if settings.help_link_url %}
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="{{ settings.help_link_url }}" class="preview-button preview-button-secondary">{{ settings.help_link_text|default:"Get Help" }}</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Email Preview -->
+    <div class="preview-section">
+        <div class="preview-section-title">Email Template</div>
+        <div class="preview-section-content">
+            <div class="preview-email">
+                <div class="preview-email-header">
+                    {% if settings.logo %}
+                        <img src="{{ settings.logo.url }}" alt="{{ settings.company_name|default:tenant.name|default:'Law Firm' }}" style="max-height: 40px;">
+                    {% else %}
+                        <h3>{{ settings.company_name|default:tenant.name|default:'Law Firm' }}</h3>
+                    {% endif %}
+                </div>
+                <div class="preview-email-body">
+                    <h2 style="color: var(--brand-primary, #007bff);">Notification</h2>
+                    <p>This is a sample email notification with your branding applied.</p>
+                    <p>The email template uses your brand colors and logo to maintain consistency with your firm's identity.</p>
+                    <button class="preview-button" style="background-color: var(--brand-primary, #007bff);">View Details</button>
+                </div>
+                <div class="preview-email-footer">
+                    <p>{{ settings.email_footer|default:"© 2023 " }}{{ settings.company_name|default:tenant.name|default:'Law Firm' }}. All rights reserved.</p>
+                    <p>{{ settings.company_address|default:"123 Main St, City, State 12345" }} | {{ settings.company_phone|default:"(555) 123-4567" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Invoice Preview -->
+    <div class="preview-section">
+        <div class="preview-section-title">Invoice Template</div>
+        <div class="preview-section-content">
+            <div class="preview-invoice">
+                <div class="preview-invoice-header">
+                    <div>
+                        {% if settings.logo %}
+                            <img src="{{ settings.logo.url }}" alt="{{ settings.company_name|default:tenant.name|default:'Law Firm' }}" style="max-height: 60px; margin-bottom: 10px;">
+                        {% endif %}
+                        <h3>{{ settings.company_name|default:tenant.name|default:'Law Firm' }}</h3>
+                        <p>{{ settings.company_address|default:"123 Main St, City, State 12345" }}</p>
+                        <p>{{ settings.company_phone|default:"(555) 123-4567" }}</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <h2>INVOICE</h2>
+                        <p>Invoice #12345</p>
+                        <p>Date: December 5, 2023</p>
+                    </div>
+                </div>
+                <div style="padding: 20px;">
+                    <table class="preview-invoice-table">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Hours</th>
+                                <th>Rate</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Legal Consultation</td>
+                                <td>2</td>
+                                <td>$250</td>
+                                <td>$500</td>
+                            </tr>
+                            <tr>
+                                <td>Document Review</td>
+                                <td>3</td>
+                                <td>$200</td>
+                                <td>$600</td>
+                            </tr>
+                            <tr>
+                                <td>Court Appearance</td>
+                                <td>1</td>
+                                <td>$500</td>
+                                <td>$500</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" style="text-align: right; font-weight: bold;">Total:</td>
+                                <td style="font-weight: bold;">$1,600</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Preview Actions -->
+    <div class="preview-actions">
+        <a href="{% url 'tenant-settings-update' tenant_id=tenant.id %}" class="preview-button">Edit Settings</a>
+        <a href="{% url 'tenant-settings-detail' tenant_id=tenant.id %}" class="preview-button preview-button-secondary">Back to Settings</a>
+    </div>
+</div>
+{% endblock %}

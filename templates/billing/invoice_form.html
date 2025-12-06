@@ -1,0 +1,203 @@
+{% extends "_tenant_base.html" %}
+
+{% block title %}{% if form.instance.pk %}Edit Invoice{% else %}Create Invoice{% endif %} - {{ tenant.name }} - Lithium{% endblock title %}
+
+{% block page_header %}
+<h1 class="h2">{% if form.instance.pk %}Edit Invoice{% else %}Create Invoice{% endif %}</h1>
+<div class="btn-toolbar mb-2 mb-md-0">
+  <div class="btn-group me-2">
+    <a href="{% url 'billing:invoice_list' %}" class="btn btn-sm btn-secondary">
+      <i class="fas fa-arrow-left"></i> Back to Invoices
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">
+          {% if form.instance.pk %}Edit Invoice{% else %}Create Invoice{% endif %}
+        </h6>
+      </div>
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          
+          <div class="row mb-3">
+            <div class="col-md-6">
+              {{ form.client.label_tag }}
+              {{ form.client }}
+              {% if form.client.errors %}
+              <div class="invalid-feedback">
+                {% for error in form.client.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              {{ form.case.label_tag }}
+              {{ form.case }}
+              {% if form.case.errors %}
+              <div class="invalid-feedback">
+                {% for error in form.case.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-md-6">
+              {{ form.issue_date.label_tag }}
+              {{ form.issue_date }}
+              {% if form.issue_date.errors %}
+              <div class="invalid-feedback">
+                {% for error in form.issue_date.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              {{ form.due_date.label_tag }}
+              {{ form.due_date }}
+              {% if form.due_date.errors %}
+              <div class="invalid-feedback">
+                {% for error in form.due_date.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-md-6">
+              {{ form.status.label_tag }}
+              {{ form.status }}
+              {% if form.status.errors %}
+              <div class="invalid-feedback">
+                {% for error in form.status.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              {{ form.tax_rate.label_tag }}
+              {{ form.tax_rate }}
+              {% if form.tax_rate.errors %}
+              <div class="invalid-feedback">
+                {% for error in form.tax_rate.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+              </div>
+              {% endif %}
+              <small class="form-text text-muted">Enter tax rate as decimal (e.g., 0.08 for 8%)</small>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            {{ form.notes.label_tag }}
+            {{ form.notes }}
+            {% if form.notes.errors %}
+            <div class="invalid-feedback">
+              {% for error in form.notes.errors %}
+              <span>{{ error }}</span>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          
+          <!-- Hidden fields -->
+          {% for field in form.hidden_fields %}
+            {{ field }}
+          {% endfor %}
+          
+          <div class="row">
+            <div class="col-12">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> 
+                {% if form.instance.pk %}Update Invoice{% else %}Create Invoice{% endif %}
+              </button>
+              <a href="{% url 'billing:invoice_list' %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+              </a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Instructions Panel -->
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-info">Instructions</h6>
+      </div>
+      <div class="card-body">
+        <h6>Creating an Invoice</h6>
+        <p>Fill in the form to create a new invoice for your client. You can add items to the invoice after it's created.</p>
+        
+        <h6>Invoice Status</h6>
+        <ul>
+          <li><strong>Draft:</strong> Invoice is being prepared and not yet sent to client</li>
+          <li><strong>Sent:</strong> Invoice has been sent to client and is awaiting payment</li>
+          <li><strong>Paid:</strong> Invoice has been fully paid</li>
+          <li><strong>Overdue:</strong> Invoice is past due date and still unpaid</li>
+          <li><strong>Cancelled:</strong> Invoice has been cancelled</li>
+        </ul>
+        
+        <h6>Tax Calculation</h6>
+        <p>The tax rate should be entered as a decimal. For example:</p>
+        <ul>
+          <li>8% tax = 0.08</li>
+          <li>7.5% tax = 0.075</li>
+          <li>0% tax = 0.00</li>
+        </ul>
+        
+        <h6>Next Steps</h6>
+        <p>After creating the invoice:</p>
+        <ol>
+          <li>Add invoice items with descriptions, quantities, and rates</li>
+          <li>Review the calculated totals</li>
+          <li>Send the invoice to your client</li>
+          <li>Record payments as they are received</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+<script>
+$(document).ready(function() {
+  // Auto-calculate due date (30 days from issue date)
+  $('#id_issue_date').on('change', function() {
+    if (!$('#id_due_date').val()) {
+      var issueDate = new Date($(this).val());
+      var dueDate = new Date(issueDate);
+      dueDate.setDate(dueDate.getDate() + 30);
+      
+      var formattedDate = dueDate.toISOString().split('T')[0];
+      $('#id_due_date').val(formattedDate);
+    }
+  });
+  
+  // Auto-format tax rate input
+  $('#id_tax_rate').on('blur', function() {
+    var value = parseFloat($(this).val());
+    if (!isNaN(value)) {
+      $(this).val(value.toFixed(4));
+    }
+  });
+});
+</script>
+{% endblock javascript %}

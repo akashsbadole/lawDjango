@@ -1,0 +1,222 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}Pay Invoice #{{ invoice.invoice_number }} - {{ user.tenant.name }}{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Pay Invoice #{{ invoice.invoice_number }}</h1>
+  <div>
+    <a href="{% url 'subscriptions:invoice_detail' invoice.pk %}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left"></i> Back to Invoice
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-credit-card"></i> 
+          Pay Invoice #{{ invoice.invoice_number }}
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-info mb-4">
+          <h5><i class="fas fa-info-circle"></i> Invoice Summary</h5>
+          <div class="row">
+            <div class="col-md-6">
+              <p class="mb-1"><strong>Invoice Number:</strong> #{{ invoice.invoice_number }}</p>
+              <p class="mb-1"><strong>Description:</strong> {{ invoice.description }}</p>
+              <p class="mb-1"><strong>Issue Date:</strong> {{ invoice.issue_date|date:"F j, Y" }}</p>
+            </div>
+            <div class="col-md-6">
+              <p class="mb-1"><strong>Due Date:</strong> {{ invoice.due_date|date:"F j, Y" }}</p>
+              <p class="mb-1"><strong>Status:</strong> 
+                {% if invoice.status == 'paid' %}
+                <span class="badge bg-success">Paid</span>
+                {% elif invoice.status == 'pending' %}
+                <span class="badge bg-warning">Pending</span>
+                {% elif invoice.status == 'overdue' %}
+                <span class="badge bg-danger">Overdue</span>
+                {% else %}
+                <span class="badge bg-secondary">{{ invoice.get_status_display }}</span>
+                {% endif %}
+              </p>
+            </div>
+          </div>
+          
+          <div class="table-responsive">
+            <table class="table">
+              <tbody>
+                <tr>
+                  <td><strong>Subtotal:</strong></td>
+                  <td>${{ invoice.subtotal }}</td>
+                </tr>
+                <tr>
+                  <td><strong>Tax Rate:</strong></td>
+                  <td>{{ invoice.tax_rate|floatformat:4 }}%</td>
+                </tr>
+                <tr>
+                  <td><strong>Tax Amount:</strong></td>
+                  <td>${{ invoice.tax_amount }}</td>
+                </tr>
+                <tr>
+                  <td><strong>Total Amount:</strong></td>
+                  <td><h4 class="text-primary">${{ invoice.total_amount }}</h4></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          {% for error in form.non_field_errors %}
+          <p class="mb-0">{{ error }}</p>
+          {% endfor %}
+        </div>
+        {% endif %}
+        
+        <form method="post" id="payment-form">
+          {% csrf_token %}
+          
+          <div class="mb-3">
+            <h5>Select Payment Method</h5>
+            <div class="row">
+              {% for method in payment_methods %}
+              <div class="col-md-6 mb-3">
+                <div class="card {% if form.cleaned_data.payment_method == method.id|stringformat:"s" %}border-primary{% endif %}">
+                  <div class="card-body">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="payment_method" 
+                             id="payment_method_{{ method.id }}" value="{{ method.id }}" 
+                             {% if form.cleaned_data.payment_method == method.id|stringformat:"s" %}checked{% endif %}>
+                      <label class="form-check-label" for="payment_method_{{ method.id }}">
+                        <strong>{{ method.get_method_type_display }}</strong>
+                        {% if method.is_default %}
+                        <span class="badge bg-success ms-2">Default</span>
+                        {% endif %}
+                      </label>
+                    </div>
+                    
+                    <div class="mt-2">
+                      {% if method.method_type == 'card' %}
+                      <small class="text-muted">
+                        {% if method.details.card_type %}
+                        {{ method.details.card_type }} ending in {{ method.details.card_last4 }}
+                        {% else %}
+                        Card ending in {{ method.details.card_last4 }}
+                        {% endif %}
+                      </small>
+                      {% elif method.method_type == 'bank' %}
+                      <small class="text-muted">
+                        Bank Account ending in {{ method.details.account_last4 }}
+                      </small>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+            
+            {% if form.payment_method.errors %}
+            <div class="form-text text-danger">
+              {% for error in form.payment_method.errors %}
+              {{ error }}
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="save_payment_method" id="save_payment_method" 
+                     {% if form.cleaned_data.save_payment_method %}checked{% endif %}>
+              <label class="form-check-label" for="save_payment_method">
+                Save this payment method for future use
+              </label>
+            </div>
+          </div>
+          
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a href="{% url 'subscriptions:invoice_detail' invoice.pk %}" class="btn btn-outline-secondary">
+              Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-credit-card"></i> 
+              Pay ${{ invoice.total_amount }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-shield-alt"></i> 
+          Secure Payment
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="card-text">Your payment information is encrypted and secure:</p>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <i class="fas fa-check text-success"></i> PCI DSS Compliant
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-check text-success"></i> 256-bit SSL Encryption
+          </li>
+          <li class="mb-0">
+            <i class="fas fa-check text-success"></i> Tokenized Payment Processing
+          </li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-plus"></i> 
+          Add New Payment Method
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="card-text">Don't have a payment method you want to use?</p>
+        <a href="{% url 'subscriptions:payment_method_create' %}" class="btn btn-outline-secondary">
+          <i class="fas fa-plus"></i> Add Payment Method
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Handle payment method selection
+  const paymentForm = document.getElementById('payment-form');
+  const paymentRadios = paymentForm.querySelectorAll('input[name="payment_method"]');
+  
+  paymentRadios.forEach(radio => {
+    radio.addEventListener('change', function() {
+      // Remove active state from all cards
+      document.querySelectorAll('.card').forEach(card => {
+        card.classList.remove('border-primary');
+      });
+      
+      // Add active state to selected card
+      const selectedCard = document.querySelector(`.card:has(#payment_method_${this.value}:checked)`);
+      if (selectedCard) {
+        selectedCard.classList.add('border-primary');
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,295 @@
+{% extends "platform_admin/base.html" %}
+{% load static %}
+
+{% block page_title %}System Health{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+  <button type="button" class="btn btn-sm btn-outline-primary" onclick="location.reload()">
+    <i class="bi bi-arrow-clockwise"></i> Refresh
+  </button>
+  <a href="{% url 'platform_admin:dashboard' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i> Back to Dashboard
+  </a>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+<!-- Health Check Summary -->
+<div class="row mb-4">
+  <div class="col-lg-12">
+    <div class="card shadow">
+      <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary">System Health Status</h6>
+        <div class="text-muted small">
+          Last updated: <span id="lastUpdated">{{ health_checks.0.created_at|date:"M d, Y H:i:s" }}</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          {% for check_type, check in latest_checks.items %}
+          <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-{% if check.status == 'healthy' %}success{% elif check.status == 'warning' %}warning{% elif check.status == 'error' %}danger{% else %}secondary{% endif %} h-100">
+              <div class="card-body text-center">
+                <div class="mb-2">
+                  {% if check.status == 'healthy' %}
+                    <i class="bi bi-check-circle fa-2x text-success"></i>
+                  {% elif check.status == 'warning' %}
+                    <i class="bi bi-exclamation-triangle fa-2x text-warning"></i>
+                  {% elif check.status == 'error' %}
+                    <i class="bi bi-x-circle fa-2x text-danger"></i>
+                  {% else %}
+                    <i class="bi bi-question-circle fa-2x text-secondary"></i>
+                  {% endif %}
+                </div>
+                <h6 class="card-title">{{ check.get_check_type_display }}</h6>
+                <div class="mb-2">
+                  <span class="badge bg-{% if check.status == 'healthy' %}success{% elif check.status == 'warning' %}warning{% elif check.status == 'error' %}danger{% else %}secondary{% endif %}">
+                    {{ check.status|title }}
+                  </span>
+                </div>
+                {% if check.message %}
+                <div class="small text-muted">{{ check.message|truncatewords:10 }}</div>
+                {% endif %}
+                <div class="small text-muted">
+                  {{ check.created_at|date:"M d, Y H:i" }}
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Detailed Health Checks -->
+<div class="row">
+  <div class="col-lg-12">
+    <div class="card shadow">
+      <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary">Detailed Health Checks</h6>
+        <div class="btn-group" role="group">
+          <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="bi bi-filter"></i> Filter
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="?status=all">All Status</a></li>
+            <li><a class="dropdown-item" href="?status=healthy">Healthy Only</a></li>
+            <li><a class="dropdown-item" href="?status=warning">Warnings Only</a></li>
+            <li><a class="dropdown-item" href="?status=error">Errors Only</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-body">
+        {% if health_by_type %}
+          {% for check_type, checks in health_by_type.items %}
+          <div class="mb-4">
+            <h6 class="text-primary mb-3">{{ checks.0.get_check_type_display }}</h6>
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Status</th>
+                    <th>Message</th>
+                    <th>Details</th>
+                    <th>Checked At</th>
+                    <th>Duration</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for check in checks %}
+                  <tr>
+                    <td>
+                      <span class="badge bg-{% if check.status == 'healthy' %}success{% elif check.status == 'warning' %}warning{% elif check.status == 'error' %}danger{% else %}secondary{% endif %}">
+                        {{ check.status|title }}
+                      </span>
+                    </td>
+                    <td>
+                      {% if check.message %}
+                        {{ check.message }}
+                      {% else %}
+                        <span class="text-muted">No message</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if check.details %}
+                        <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" 
+                                data-bs-target="#detailsModal{{ check.id }}">
+                          <i class="bi bi-info-circle"></i> Details
+                        </button>
+                      {% else %}
+                        <span class="text-muted">N/A</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ check.created_at|date:"M d, Y H:i:s" }}</td>
+                    <td>
+                      {% if check.response_time_ms %}
+                        {{ check.response_time_ms }}ms
+                      {% else %}
+                        <span class="text-muted">N/A</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="text-center py-5">
+            <i class="bi bi-heart-pulse fa-3x text-gray-300 mb-3"></i>
+            <h5 class="text-gray-500">No health checks available</h5>
+            <p class="text-gray-400">Health checks will appear here once system monitoring is active.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Health Check Details Modal -->
+{% for check in health_checks %}
+<div class="modal fade" id="detailsModal{{ check.id }}" tabindex="-1" aria-labelledby="detailsModalLabel{{ check.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="detailsModalLabel{{ check.id }}">
+          Health Check Details - {{ check.get_check_type_display }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Status</label>
+            <div class="form-control-plaintext">
+              <span class="badge bg-{% if check.status == 'healthy' %}success{% elif check.status == 'warning' %}warning{% elif check.status == 'error' %}danger{% else %}secondary{% endif %}">
+                {{ check.status|title }}
+              </span>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Response Time</label>
+            <div class="form-control-plaintext">
+              {% if check.response_time_ms %}
+                {{ check.response_time_ms }}ms
+              {% else %}
+                <span class="text-muted">N/A</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-md-12 mb-3">
+            <label class="form-label">Message</label>
+            <div class="form-control-plaintext">
+              {% if check.message %}
+                {{ check.message }}
+              {% else %}
+                <span class="text-muted">No message</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-md-12 mb-3">
+            <label class="form-label">Details</label>
+            <div class="form-control-plaintext" style="font-family: monospace; white-space: pre-wrap;">
+              {% if check.details %}
+                {{ check.details|pprint }}
+              {% else %}
+                <span class="text-muted">No additional details</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Checked At</label>
+            <div class="form-control-plaintext">{{ check.created_at|date:"M d, Y H:i:s" }}</div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Check ID</label>
+            <div class="form-control-plaintext">{{ check.id }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<!-- Auto-refresh functionality -->
+<script>
+let autoRefreshInterval;
+
+function startAutoRefresh() {
+  // Refresh every 30 seconds
+  autoRefreshInterval = setInterval(function() {
+    location.reload();
+  }, 30000);
+  
+  // Update last updated time
+  document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+}
+
+function stopAutoRefresh() {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+  }
+}
+
+// Start auto-refresh when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  startAutoRefresh();
+  
+  // Stop auto-refresh when user leaves the page
+  window.addEventListener('beforeunload', stopAutoRefresh);
+});
+
+// Manual refresh button
+document.querySelector('[onclick="location.reload()"]').addEventListener('click', function() {
+  stopAutoRefresh();
+  location.reload();
+});
+</script>
+
+<style>
+.border-success {
+  border-left: 0.25rem solid #28a745 !important;
+}
+
+.border-warning {
+  border-left: 0.25rem solid #ffc107 !important;
+}
+
+.border-danger {
+  border-left: 0.25rem solid #dc3545 !important;
+}
+
+.border-secondary {
+  border-left: 0.25rem solid #6c757d !important;
+}
+
+.table th {
+  background-color: #f8f9fc;
+  font-weight: 600;
+  border-top: none;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.form-control-plaintext {
+  color: #495057;
+  background-color: transparent;
+  border: solid transparent;
+  border-width: 1px 0;
+}
+
+.badge {
+  font-size: 0.75rem;
+}
+</style>
+{% endblock %}

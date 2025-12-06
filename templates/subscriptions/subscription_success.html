@@ -1,0 +1,157 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}Subscription Successful - {{ user.tenant.name }}{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Subscription Successful</h1>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header bg-success text-white text-center">
+        <h3 class="mb-0">
+          <i class="fas fa-check-circle"></i> 
+          Subscription Successful!
+        </h3>
+      </div>
+      <div class="card-body text-center">
+        <div class="mb-4">
+          <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+        </div>
+        
+        <h4 class="mb-3">Welcome to {{ plan.name }}!</h4>
+        
+        <p class="lead mb-4">
+          Thank you for subscribing to our {{ plan.name }} plan. Your subscription is now active and you can start using all the features included in your plan.
+        </p>
+        
+        {% if subscription %}
+        <div class="alert alert-info mb-4">
+          <h5><i class="fas fa-info-circle"></i> Subscription Details</h5>
+          <div class="row">
+            <div class="col-md-6">
+              <p class="mb-1"><strong>Plan:</strong> {{ subscription.plan.name }}</p>
+              <p class="mb-1"><strong>Status:</strong> 
+                <span class="badge bg-success">{{ subscription.get_status_display }}</span>
+              </p>
+              <p class="mb-1"><strong>Start Date:</strong> {{ subscription.start_date|date:"F j, Y" }}</p>
+            </div>
+            <div class="col-md-6">
+              <p class="mb-1"><strong>Next Billing Date:</strong> {{ subscription.end_date|date:"F j, Y" }}</p>
+              <p class="mb-1"><strong>Billing Cycle:</strong> {{ subscription.plan.get_billing_cycle_display }}</p>
+              <p class="mb-1"><strong>Price:</strong> ${{ subscription.plan.price }}/{{ subscription.plan.get_billing_cycle_display }}</p>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        
+        <div class="mb-4">
+          <h5>What's Next?</h5>
+          <p>Here are some things you can do to get started:</p>
+          <ul class="list-unstyled">
+            <li class="mb-2">
+              <i class="fas fa-users text-primary"></i> 
+              Add team members to your account
+            </li>
+            <li class="mb-2">
+              <i class="fas fa-folder text-primary"></i> 
+              Organize your cases and clients
+            </li>
+            <li class="mb-2">
+              <i class="fas fa-file-alt text-primary"></i> 
+              Upload documents and manage files
+            </li>
+            <li class="mb-0">
+              <i class="fas fa-chart-line text-primary"></i> 
+              Track your usage and billing
+            </li>
+          </ul>
+        </div>
+        
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+          <a href="{% url 'subscriptions:subscription_detail' %}" class="btn btn-outline-primary">
+            <i class="fas fa-cog"></i> Manage Subscription
+          </a>
+          <a href="{% url 'dashboard' %}" class="btn btn-primary">
+            <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    {% if plan_features %}
+    <div class="card mt-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-star"></i> 
+          Your Plan Features
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          {% for feature in plan_features %}
+          <div class="col-md-6 mb-3">
+            <div class="d-flex align-items-start">
+              <i class="fas fa-check text-success me-2 mt-1"></i>
+              <div>
+                <h6 class="mb-1">{{ feature.feature.name }}</h6>
+                {% if feature.value %}
+                <small class="text-muted">{{ feature.value }}</small>
+                {% endif %}
+                {% if feature.feature.description %}
+                <p class="mb-0 text-muted small">{{ feature.feature.description }}</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    
+    <div class="card mt-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-question-circle"></i> 
+          Need Help?
+        </h5>
+      </div>
+      <div class="card-body">
+        <p class="mb-3">
+          If you have any questions about your subscription or need help getting started, our support team is here to help.
+        </p>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+          <a href="{% url 'about' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-info-circle"></i> Learn More
+          </a>
+          <a href="#" class="btn btn-outline-secondary">
+            <i class="fas fa-envelope"></i> Contact Support
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Auto-redirect after 10 seconds if user doesn't take action
+  let redirectTimer = setTimeout(function() {
+    window.location.href = "{% url 'dashboard' %}";
+  }, 10000);
+  
+  // Clear timer if user clicks any button
+  document.querySelectorAll('a').forEach(function(link) {
+    link.addEventListener('click', function() {
+      clearTimeout(redirectTimer);
+    });
+  });
+});
+</script>
+{% endblock %}

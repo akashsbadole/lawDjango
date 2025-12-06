@@ -1,0 +1,362 @@
+{% extends "backup_restore/base.html" %}
+
+{% block title %}Backup Details - {{ backup.name }}{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Backup Details</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      {% if backup.status == 'completed' and backup.file_path %}
+      <a href="{% url 'backup_restore:backup_download' backup.pk %}" class="btn btn-sm btn-outline-primary">
+        <i class="fas fa-download"></i> Download
+      </a>
+      {% endif %}
+      {% if backup.status in 'pending' %}
+      <a href="{% url 'backup_restore:backup_execute' backup.pk %}" class="btn btn-sm btn-success">
+        <i class="fas fa-play"></i> Execute
+      </a>
+      {% endif %}
+      {% if backup.status in 'pending,running' %}
+      <a href="{% url 'backup_restore:backup_cancel' backup.pk %}" class="btn btn-sm btn-warning">
+        <i class="fas fa-stop"></i> Cancel
+      </a>
+      {% endif %}
+      <a href="{% url 'backup_restore:backup_update' backup.pk %}" class="btn btn-sm btn-outline-secondary">
+        <i class="fas fa-edit"></i> Edit
+      </a>
+      <a href="{% url 'backup_restore:backup_delete' backup.pk %}" class="btn btn-sm btn-outline-danger">
+        <i class="fas fa-trash"></i> Delete
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">{{ backup.name }}</h5>
+        <span class="badge 
+          {% if backup.status == 'completed' %}bg-success
+          {% elif backup.status == 'running' %}bg-primary
+          {% elif backup.status == 'failed' %}bg-danger
+          {% elif backup.status == 'cancelled' %}bg-warning
+          {% else %}bg-secondary{% endif %}">
+          {{ backup.get_status_display }}
+        </span>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Description:</strong></div>
+          <div class="col-sm-9">{{ backup.description|default:"No description" }}</div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Backup Type:</strong></div>
+          <div class="col-sm-9">{{ backup.get_backup_type_display }}</div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Created By:</strong></div>
+          <div class="col-sm-9">{{ backup.created_by.get_full_name|default:backup.created_by.email }}</div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Created At:</strong></div>
+          <div class="col-sm-9">{{ backup.created_at|date:"Y-m-d H:i:s" }}</div>
+        </div>
+        
+        {% if backup.started_at %}
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Started At:</strong></div>
+          <div class="col-sm-9">{{ backup.started_at|date:"Y-m-d H:i:s" }}</div>
+        </div>
+        {% endif %}
+        
+        {% if backup.completed_at %}
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Completed At:</strong></div>
+          <div class="col-sm-9">{{ backup.completed_at|date:"Y-m-d H:i:s" }}</div>
+        </div>
+        {% endif %}
+        
+        {% if backup.duration %}
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Duration:</strong></div>
+          <div class="col-sm-9">{{ backup.duration }}</div>
+        </div>
+        {% endif %}
+        
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Current Step:</strong></div>
+          <div class="col-sm-9">{{ backup.current_step|default:"Not started" }}</div>
+        </div>
+        
+        {% if backup.error_message %}
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>Error Message:</strong></div>
+          <div class="col-sm-9 text-danger">{{ backup.error_message }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    
+    <!-- Backup Options -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h5 class="mb-0">Backup Options</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="include_database" 
+                {% if backup.include_database %}checked{% endif %} disabled>
+              <label class="form-check-label" for="include_database">
+                Include Database
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="include_media" 
+                {% if backup.include_media %}checked{% endif %} disabled>
+              <label class="form-check-label" for="include_media">
+                Include Media Files
+              </label>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="include_documents" 
+                {% if backup.include_documents %}checked{% endif %} disabled>
+              <label class="form-check-label" for="include_documents">
+                Include Documents
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="include_settings" 
+                {% if backup.include_settings %}checked{% endif %} disabled>
+              <label class="form-check-label" for="include_settings">
+                Include Settings
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <hr>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="compressed" 
+                {% if backup.compressed %}checked{% endif %} disabled>
+              <label class="form-check-label" for="compressed">
+                Compressed
+              </label>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="encrypted" 
+                {% if backup.encrypted %}checked{% endif %} disabled>
+              <label class="form-check-label" for="encrypted">
+                Encrypted
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        {% if backup.parent_backup %}
+        <div class="mt-3">
+          <strong>Parent Backup:</strong>
+          <a href="{% url 'backup_restore:backup_detail' backup.parent_backup.pk %}">
+            {{ backup.parent_backup.name }}
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    
+    <!-- File Information -->
+    {% if backup.file_path or backup.file_name %}
+    <div class="card mt-3">
+      <div class="card-header">
+        <h5 class="mb-0">File Information</h5>
+      </div>
+      <div class="card-body">
+        {% if backup.file_name %}
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>File Name:</strong></div>
+          <div class="col-sm-9">{{ backup.file_name }}</div>
+        </div>
+        {% endif %}
+        
+        {% if backup.file_path %}
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>File Path:</strong></div>
+          <div class="col-sm-9">{{ backup.file_path }}</div>
+        </div>
+        {% endif %}
+        
+        {% if backup.file_size %}
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>File Size:</strong></div>
+          <div class="col-sm-9">{{ backup.file_size_mb }} MB</div>
+        </div>
+        {% endif %}
+        
+        {% if backup.file_hash %}
+        <div class="row mb-3">
+          <div class="col-sm-3"><strong>SHA-256 Hash:</strong></div>
+          <div class="col-sm-9">
+            <code>{{ backup.file_hash }}</code>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+    
+    <!-- Log Entries -->
+    {% if backup.log_entries %}
+    <div class="card mt-3">
+      <div class="card-header">
+        <h5 class="mb-0">Log Entries</h5>
+      </div>
+      <div class="card-body">
+        <div class="timeline">
+          {% for entry in backup.log_entries %}
+          <div class="timeline-item">
+            <div class="timeline-marker 
+              {% if entry.level == 'ERROR' %}bg-danger
+              {% elif entry.level == 'WARNING' %}bg-warning
+              {% elif entry.level == 'INFO' %}bg-info
+              {% else %}bg-secondary{% endif %}">
+            </div>
+            <div class="timeline-content">
+              <div class="d-flex justify-content-between">
+                <strong>{{ entry.level }}</strong>
+                <small>{{ entry.timestamp|date:"Y-m-d H:i:s" }}</small>
+              </div>
+              <p class="mb-0">{{ entry.message }}</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  
+  <div class="col-md-4">
+    <!-- Progress -->
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Progress</h5>
+      </div>
+      <div class="card-body">
+        <div class="progress mb-3" style="height: 20px;">
+          <div class="progress-bar 
+            {% if backup.status == 'completed' %}bg-success
+            {% elif backup.status == 'failed' %}bg-danger
+            {% elif backup.status == 'running' %}bg-primary
+            {% else %}bg-secondary{% endif %}"
+            role="progressbar"
+            style="width: {{ backup.progress_percentage }}%"
+            aria-valuenow="{{ backup.progress_percentage }}"
+            aria-valuemin="0"
+            aria-valuemax="100">
+            {{ backup.progress_percentage }}%
+          </div>
+        </div>
+        
+        {% if backup.status == 'running' %}
+        <div class="text-center">
+          <p class="mb-0">Current step: {{ backup.current_step|default:"Processing..." }}</p>
+          <button class="btn btn-sm btn-outline-primary" onclick="refreshProgress()">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    
+    <!-- Actions -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h5 class="mb-0">Actions</h5>
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          {% if backup.status == 'completed' %}
+          <a href="{% url 'backup_restore:restore_wizard' %}?backup_job={{ backup.pk }}" class="btn btn-outline-primary">
+            <i class="fas fa-redo"></i> Restore from this backup
+          </a>
+          <a href="{% url 'backup_restore:backup_verify' backup.pk %}" class="btn btn-outline-info">
+            <i class="fas fa-check-circle"></i> Verify Integrity
+          </a>
+          {% endif %}
+          
+          {% if backup.status == 'failed' %}
+          <a href="{% url 'backup_restore:backup_retry' backup.pk %}" class="btn btn-outline-warning">
+            <i class="fas fa-redo"></i> Retry Backup
+          </a>
+          {% endif %}
+          
+          <a href="{% url 'backup_restore:backup_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to List
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Related Backups -->
+    {% if backup.incremental_backups.exists %}
+    <div class="card mt-3">
+      <div class="card-header">
+        <h5 class="mb-0">Incremental Backups</h5>
+      </div>
+      <div class="card-body">
+        <div class="list-group list-group-flush">
+          {% for inc_backup in backup.incremental_backups.all %}
+          <a href="{% url 'backup_restore:backup_detail' inc_backup.pk %}" class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between">
+              <h6 class="mb-1">{{ inc_backup.name }}</h6>
+              <small>{{ inc_backup.created_at|date:"M d" }}</small>
+            </div>
+            <p class="mb-1">
+              <span class="badge 
+                {% if inc_backup.status == 'completed' %}bg-success
+                {% elif inc_backup.status == 'running' %}bg-primary
+                {% elif inc_backup.status == 'failed' %}bg-danger
+                {% else %}bg-secondary{% endif %}">
+                {{ inc_backup.get_status_display }}
+              </span>
+              <span class="badge bg-info">{{ inc_backup.file_size_mb }} MB</span>
+            </p>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+function refreshProgress() {
+  location.reload();
+}
+
+{% if backup.status == 'running' %}
+// Auto-refresh every 5 seconds when backup is running
+setTimeout(function() {
+  location.reload();
+}, 5000);
+{% endif %}
+</script>
+{% endblock %}
