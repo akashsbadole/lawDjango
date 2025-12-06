@@ -1,39 +1,80 @@
-# Lithium: A Django-Powered Boilerplate
-Lithium is a batteries-included Django starter project with everything you need to start coding, including user authentication, static files, default styling, debugging, DRY forms, custom error pages, and more.
+# LawFlow: Multi-Tenant Law Practice Management System
 
-> This project was formerly known as _DjangoX_ but was renamed to _Lithium_ in November 2024.
+LawFlow is a comprehensive, multi-tenant law practice management system built with Django. It provides everything law firms need to manage cases, clients, documents, billing, and legal research in one secure, isolated environment.
 
-https://github.com/user-attachments/assets/8698e9dd-1794-4f96-9c3f-85add17e330b
+![Home Dashboard](home.png)
 
 ## 👋 Free Newsletter
-[Sign up for updates](https://buttondown.com/lithiumsaas) to the free and upcoming premium SaaS version!
+[Sign up for updates](https://buttondown.com/lithiumsaas) to get the latest features and updates!
 
 ## 🚀 Features
+
+### Core Law Practice Management
+- **Multi-Tenant Architecture**: Complete data isolation between law firms
+- **Case Management**: Track cases with types (Civil, Criminal, Corporate, Family, etc.)
+- **Client Management**: Comprehensive client profiles with case history
+- **Document Management**: Version-controlled document storage with categorization
+- **Billing & Invoicing**: Complete billing system with time tracking and expense management
+- **AI Legal Research**: Powered by Google Gemini for legal research assistance
+- **User Role Management**: Admin, Lawyer, Paralegal, Billing Manager, Staff roles
+- **Audit Trails**: Complete audit logging for compliance and security
+
+### Technical Features
 - Django 5.1 & Python 3.13
 - Installation via [uv](https://github.com/astral-sh/uv), [Pip](https://pypi.org/project/pip/) or [Docker](https://www.docker.com/)
-- User authentication--log in, sign up, password reset--via [django-allauth](https://github.com/pennersr/django-allauth)
+- User authentication via [django-allauth](https://github.com/pennersr/django-allauth)
 - Static files configured with [Whitenoise](http://whitenoise.evans.io/en/stable/index.html)
 - Styling with [Bootstrap v5](https://getbootstrap.com/)
 - Debugging with [django-debug-toolbar](https://github.com/jazzband/django-debug-toolbar)
 - DRY forms with [django-crispy-forms](https://github.com/django-crispy-forms/django-crispy-forms)
 - Custom 404, 500, and 403 error pages
 
+## 📸 Application Screenshots
+
+### Home Dashboard
+![Home Dashboard](home.png)
+
+### Features Overview
+![Features](Features.png)
+
+### Pricing Plans
+![Pricing](Pricing.png)
+
+### Frequently Asked Questions
+![FAQ](faq.png)
+
+### User Authentication
+![Sign In](Sign-In.png)
+![Registration](Register.png)
+
+### Blog Section
+![Blog](Blog.png)
+
 ## Table of Contents
 * **[Installation](#installation)**
   * [uv](#uv)
   * [Pip](#pip)
   * [Docker](#docker)
-* [Next Steps](#next-steps)
-* [Contributing](#contributing)
-* [Support](#support)
-* [License](#license)
+* **[Multi-Tenant Architecture](#multi-tenant-architecture)**
+* **[Core Modules](#core-modules)**
+  * [Case Management](#case-management)
+  * [Client Management](#client-management)
+  * [Document Management](#document-management)
+  * [Billing & Invoicing](#billing--invoicing)
+  * [Legal Research AI](#legal-research-ai)
+  * [User Management](#user-management)
+  * [Audit & Compliance](#audit--compliance)
+* **[Next Steps](#next-steps)**
+* **[Contributing](#contributing)**
+* **[Support](#support)**
+* **[License](#license)**
 
 ## 📖 Installation
-Lithium can be installed via Pip or Docker. To start, clone the repo to your local computer and change into the proper directory.
+LawFlow can be installed via uv, Pip, or Docker. To start, clone the repo to your local computer and change into the proper directory.
 
 ```
-$ git clone https://github.com/wsvincent/lithium.git
-$ cd lithium
+$ git clone https://github.com/wsvincent/lawflow.git
+$ cd lawflow
 ```
 
 ### uv
@@ -53,7 +94,7 @@ $ uv run manage.py runserver
 ```
 
 ### Pip
-To use Pip, create a new virtual environment and then install all packages hosted in `requirements.txt`. Run `migrate` to configure the initial database. and `createsuperuser` to create a new superuser account for accessing the admin. Execute the `runserver` command to start up the local server.
+To use Pip, create a new virtual environment and then install all packages hosted in `requirements.txt`. Run `migrate` to configure the initial database and `createsuperuser` to create a new superuser account for accessing the admin. Execute the `runserver` command to start up the local server.
 
 ```
 (.venv) $ pip install -r requirements.txt
@@ -65,7 +106,7 @@ To use Pip, create a new virtual environment and then install all packages hoste
 
 ### Docker
 
-To use Docker with PostgreSQL as the database update the `DATABASES` section of `django_project/settings.py` to reflect the following:
+To use Docker with PostgreSQL as the database, update the `DATABASES` section of `django_project/settings.py` to reflect the following:
 
 ```python
 # django_project/settings.py
@@ -81,7 +122,7 @@ DATABASES = {
 }
 ```
 
-The `INTERNAL_IPS` configuration in `django_project/settings.py` must be also be updated:
+The `INTERNAL_IPS` configuration in `django_project/settings.py` must also be updated:
 
 ```python
 # config/settings.py
@@ -100,24 +141,105 @@ $ docker compose exec web python manage.py createsuperuser
 # Load the site at http://127.0.0.1:8000 or http://127.0.0.1:8000/admin for the admin
 ```
 
+## 🏢 Multi-Tenant Architecture
+
+LawFlow implements a robust multi-tenant architecture that allows multiple law firms to use the same application while maintaining complete data isolation:
+
+- **Data Isolation**: Each tenant's data is completely isolated from others
+- **Custom Branding**: Each law firm can customize their instance with their logo, colors, and branding
+- **Independent Configuration**: Each tenant has their own settings, users, and preferences
+- **Scalable Design**: Easily add new law firms without additional infrastructure
+- **Security**: Tenant-specific access controls and audit trails
+
+## 📋 Core Modules
+
+### Case Management
+- Track cases with comprehensive metadata
+- Support for multiple case types (Civil, Criminal, Corporate, Family, Real Estate, IP, Tax, etc.)
+- Case status tracking (Open, Closed, Pending, Suspended, Appealed, Settled)
+- Event tracking for hearings, filings, meetings, and deadlines
+- Lawyer assignment and case history
+
+### Client Management
+- Complete client profiles with contact information
+- Case history and relationships
+- Professional information and company details
+- Notes and communication tracking
+- Soft delete functionality for data retention
+
+### Document Management
+- Secure document storage with tenant isolation
+- Version control and document history
+- Categorization (Contracts, Evidence, Court Filings, Discovery, etc.)
+- Access level controls (Public, Internal, Confidential, Restricted)
+- Full-text search and tagging
+- Integration with cases and clients
+
+### Billing & Invoicing
+- Comprehensive time tracking with billable hours
+- Expense management and categorization
+- Automated invoice generation
+- Payment tracking and reconciliation
+- Role-based billing rates
+- Tax calculation and reporting
+
+### Legal Research AI
+- AI-powered legal research using Google Gemini
+- Query types: Case Law, Statutes, Regulations, Legal Analysis
+- Context-aware research with case and client information
+- Source citation and relevance scoring
+- Research session management
+- Token usage tracking and cost management
+
+### User Management
+- Role-based access control (Admin, Lawyer, Paralegal, Billing Manager, Staff)
+- Tenant-specific user management
+- Customizable permissions per role
+- Activity tracking and audit logs
+
+### Audit & Compliance
+- Comprehensive audit logging for all actions
+- Data retention policies
+- Compliance reporting
+- Security event tracking
+- Tenant-specific audit trails
+
 ## Next Steps
 
-- Add environment variables. There are multiple packages but I personally prefer [environs](https://pypi.org/project/environs/).
-- Add [gunicorn](https://pypi.org/project/gunicorn/) as the production web server.
-- Update the [EMAIL_BACKEND](https://docs.djangoproject.com/en/4.0/topics/email/#module-django.core.mail) and connect with a mail provider.
-- Make the [admin more secure](https://opensource.com/article/18/1/10-tips-making-django-admin-more-secure).
-- `django-allauth` supports [social authentication](https://django-allauth.readthedocs.io/en/latest/socialaccount/index.html) if you need that.
+### For Law Firms
+- Configure your firm's branding and settings
+- Set up user accounts and roles
+- Import existing client and case data
+- Configure billing rates and invoicing templates
+- Set up document categories and access controls
 
-I cover all of these steps in tutorials and premium courses over at [LearnDjango.com](https://learndjango.com).
+### Technical Enhancements
+- Add environment variables using [environs](https://pypi.org/project/environs/)
+- Add [gunicorn](https://pypi.org/project/gunicorn/) as the production web server
+- Update the [EMAIL_BACKEND](https://docs.djangoproject.com/en/4.0/topics/email/#module-django.core.mail) and connect with a mail provider
+- Make the [admin more secure](https://opensource.com/article/18/1/10-tips-making-django-admin-more-secure)
+- Configure [Redis](https://redis.io/) for improved caching and session management
+- Set up [Celery](https://docs.celeryproject.org/) for background task processing
+
+### Legal Industry Specific
+- Implement e-filing integrations with court systems
+- Add calendar integration with court scheduling
+- Configure compliance templates for different jurisdictions
+- Set up automated deadline calculations based on court rules
+- Implement client portal for secure document sharing
 
 ## 🤝 Contributing
 
-Contributions, issues and feature requests are welcome! See [CONTRIBUTING.md](https://github.com/wsvincent/lithium/blob/master/CONTRIBUTING.md).
+Contributions, issues, and feature requests are welcome! See [CONTRIBUTING.md](https://github.com/wsvincent/lawflow/blob/master/CONTRIBUTING.md).
 
 ## ⭐️ Support
 
-Give a ⭐️  if this project helped you!
+Give a ⭐️ if this project helped you!
 
 ## License
 
 [The MIT License](LICENSE)
+
+---
+
+> This project was formerly known as _DjangoX_ but was renamed to _LawFlow_ to reflect its focus on law practice management.
