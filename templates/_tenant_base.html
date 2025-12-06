@@ -1,5 +1,4 @@
 {% load static %}
-{% load math_filters %}
 {% load permissions_tags %}
 {% load audit_tags %}
 <!DOCTYPE html>
@@ -25,10 +24,13 @@
     crossorigin="anonymous" referrerpolicy="no-referrer" />
 
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  
+  <!-- HTMX and Alpine.js CSS -->
+  <link rel="stylesheet" href="{% static 'css/htmx-alpine.css' %}">
   {% endblock %}
 </head>
 
-<body>
+<body x-data="app" x-cloak {% if user.tenant %}data-tenant-id="{{ user.tenant.id }}"{% endif %}>
   <!-- Enhanced Top Navigation -->
   <nav class="navbar navbar-expand-lg navbar-dark" style="background: var(--gradient-hero); box-shadow: var(--shadow-modern);">
     <div class="container-fluid">
@@ -36,11 +38,11 @@
         <i class="fas fa-balance-scale me-2"></i>
         <span>{{ user.tenant.name }}</span>
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+      <button class="navbar-toggler" type="button" @click="mobileMenuOpen = !mobileMenuOpen"
         aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
+      <div class="collapse navbar-collapse" id="navbarNav" :class="{'show': mobileMenuOpen}">
         <ul class="navbar-nav me-auto">
           <li class="nav-item">
             <a class="nav-link d-flex align-items-center" href="{% url 'tenant_app:dashboard' %}">
@@ -48,58 +50,58 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link d-flex align-items-center" href="{% url 'clients:list' %}">
+            <a class="nav-link d-flex align-items-center" href="{% url 'lawyer_panel:client_list' %}">
               <i class="fas fa-user-tie me-2"></i> Clients
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link d-flex align-items-center" href="{% url 'cases:list' %}">
+            <a class="nav-link d-flex align-items-center" href="{% url 'lawyer_panel:case_list' %}">
               <i class="fas fa-folder-open me-2"></i> Cases
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link d-flex align-items-center" href="{% url 'documents:list' %}">
+            <a class="nav-link d-flex align-items-center" href="{% url 'lawyer_panel:document_list' %}">
               <i class="fas fa-file-alt me-2"></i> Documents
             </a>
           </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="billingDropdown" role="button" data-bs-toggle="dropdown"
+          <li class="nav-item dropdown" x-data="{ open: false }">
+            <a class="nav-link dropdown-toggle" href="#" id="billingDropdown" role="button" @click="open = !open"
               aria-expanded="false">
               <i class="fas fa-file-invoice-dollar"></i> Billing
             </a>
-            <ul class="dropdown-menu" aria-labelledby="billingDropdown">
-              <li><a class="dropdown-item" href="{% url 'billing:dashboard' %}">
+            <ul class="dropdown-menu" aria-labelledby="billingDropdown" x-show="open" @click.away="open = false" x-transition>
+              <li><a class="dropdown-item" href="{% url 'lawyer_panel:billing_dashboard' %}">
                 <i class="fas fa-tachometer-alt"></i> Billing Dashboard
               </a></li>
-              <li><a class="dropdown-item" href="{% url 'billing:invoice_list' %}">
+              <li><a class="dropdown-item" href="{% url 'lawyer_panel:invoice_list' %}">
                 <i class="fas fa-file-invoice"></i> Invoices
               </a></li>
-              <li><a class="dropdown-item" href="{% url 'billing:invoice_create' %}">
+              <li><a class="dropdown-item" href="{% url 'lawyer_panel:invoice_create' %}">
                 <i class="fas fa-plus"></i> Create Invoice
               </a></li>
-              <li><a class="dropdown-item" href="{% url 'billing:time_entry_list' %}">
+              <li><a class="dropdown-item" href="{% url 'lawyer_panel:time_entry_list' %}">
                 <i class="fas fa-clock"></i> Time Entries
               </a></li>
-              <li><a class="dropdown-item" href="{% url 'billing:time_entry_create' %}">
+              <li><a class="dropdown-item" href="{% url 'lawyer_panel:time_entry_create' %}">
                 <i class="fas fa-plus"></i> Log Time
               </a></li>
-              <li><a class="dropdown-item" href="{% url 'billing:expense_list' %}">
+              <li><a class="dropdown-item" href="{% url 'lawyer_panel:expense_list' %}">
                 <i class="fas fa-receipt"></i> Expenses
               </a></li>
-              <li><a class="dropdown-item" href="{% url 'billing:payment_list' %}">
+              <li><a class="dropdown-item" href="{% url 'lawyer_panel:payment_list' %}">
                 <i class="fas fa-money-bill-wave"></i> Payments
               </a></li>
-              <li><a class="dropdown-item" href="{% url 'billing:generate_invoice' %}">
+              <li><a class="dropdown-item" href="{% url 'lawyer_panel:generate_invoice' %}">
                 <i class="fas fa-magic"></i> Generate Invoice
               </a></li>
             </ul>
           </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="subscriptionDropdown" role="button" data-bs-toggle="dropdown"
+          <li class="nav-item dropdown" x-data="{ open: false }">
+            <a class="nav-link dropdown-toggle" href="#" id="subscriptionDropdown" role="button" @click="open = !open"
               aria-expanded="false">
               <i class="fas fa-crown"></i> Subscription
             </a>
-            <ul class="dropdown-menu" aria-labelledby="subscriptionDropdown">
+            <ul class="dropdown-menu" aria-labelledby="subscriptionDropdown" x-show="open" @click.away="open = false" x-transition>
               {% if subscription %}
               <li><a class="dropdown-item" href="{% url 'subscriptions:subscription_detail' subscription.pk %}">
                 <i class="fas fa-info-circle"></i> Current Plan: {{ subscription.plan.name }}
@@ -131,19 +133,19 @@
               </a></li>
             </ul>
           </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="auditDropdown" role="button" data-bs-toggle="dropdown"
+          <li class="nav-item dropdown" x-data="{ open: false }">
+            <a class="nav-link dropdown-toggle" href="#" id="auditDropdown" role="button" @click="open = !open"
               aria-expanded="false">
               <i class="fas fa-shield-alt"></i> Audit
             </a>
-            <ul class="dropdown-menu" aria-labelledby="auditDropdown">
-              <li><a class="dropdown-item" href="{% url 'audit:audit_log_list' %}">
+            <ul class="dropdown-menu" aria-labelledby="auditDropdown" x-show="open" @click.away="open = false" x-transition>
+              <li><a class="dropdown-item" href="{% url 'audit:audit_logs' %}">
                 <i class="fas fa-list-alt"></i> Audit Logs
               </a></li>
-              <li><a class="dropdown-item" href="{% url 'audit:login_history' %}">
+              <li><a class="dropdown-item" href="{% url 'audit:login_logs' %}">
                 <i class="fas fa-sign-in-alt"></i> Login History
               </a></li>
-              <li><a class="dropdown-item" href="{% url 'audit:activity_timeline' %}">
+              <li><a class="dropdown-item" href="{% url 'audit:activity_logs' %}">
                 <i class="fas fa-stream"></i> Activity Timeline
               </a></li>
               <li><a class="dropdown-item" href="{% url 'audit:security_events' %}">
@@ -152,27 +154,27 @@
                   <span class="badge bg-danger ms-1">{{ audit_stats.unresolved_security_events }}</span>
                 {% endif %}
               </a></li>
-              <li><a class="dropdown-item" href="{% url 'audit:audit_report' %}">
+              <li><a class="dropdown-item" href="{% url 'audit:export' %}">
                 <i class="fas fa-chart-bar"></i> Audit Reports
               </a></li>
             </ul>
           </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="backupRestoreDropdown" role="button" data-bs-toggle="dropdown"
+          <li class="nav-item dropdown" x-data="{ open: false }">
+            <a class="nav-link dropdown-toggle" href="#" id="backupRestoreDropdown" role="button" @click="open = !open"
               aria-expanded="false">
               <i class="fas fa-database"></i> Backup & Restore
             </a>
-            <ul class="dropdown-menu" aria-labelledby="backupRestoreDropdown">
+            <ul class="dropdown-menu" aria-labelledby="backupRestoreDropdown" x-show="open" @click.away="open = false" x-transition>
               <li><a class="dropdown-item" href="{% url 'backup_restore:backup_list' %}">
                 <i class="fas fa-list"></i> Backup History
               </a></li>
-              <li><a class="dropdown-item" href="{% url 'backup_restore:backup_wizard' %}">
+              <li><a class="dropdown-item" href="{% url 'backup_restore:backup_create' %}">
                 <i class="fas fa-plus"></i> Create Backup
               </a></li>
               <li><a class="dropdown-item" href="{% url 'backup_restore:restore_list' %}">
                 <i class="fas fa-undo"></i> Restore History
               </a></li>
-              <li><a class="dropdown-item" href="{% url 'backup_restore:restore_wizard' %}">
+              <li><a class="dropdown-item" href="{% url 'backup_restore:restore_create' %}">
                 <i class="fas fa-redo"></i> Restore Data
               </a></li>
               <li><a class="dropdown-item" href="{% url 'backup_restore:schedule_list' %}">
@@ -183,13 +185,13 @@
         </ul>
         
         <!-- Role Management Menu (Admin only) -->
-        {% if user|has_role:'Admin' %}
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="rolesDropdown" role="button" data-bs-toggle="dropdown"
+        {% if user and user|has_role:'Admin' %}
+        <li class="nav-item dropdown" x-data="{ open: false }">
+          <a class="nav-link dropdown-toggle" href="#" id="rolesDropdown" role="button" @click="open = !open"
             aria-expanded="false">
             <i class="fas fa-user-shield"></i> Roles & Permissions
           </a>
-          <ul class="dropdown-menu" aria-labelledby="rolesDropdown">
+          <ul class="dropdown-menu" aria-labelledby="rolesDropdown" x-show="open" @click.away="open = false" x-transition>
             <li><a class="dropdown-item" href="{% url 'permissions:role_list' %}">
               <i class="fas fa-users-cog"></i> Manage Roles
             </a></li>
@@ -206,19 +208,19 @@
         </li>
         {% endif %}
         <ul class="navbar-nav">
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
+          <li class="nav-item dropdown" x-data="{ open: false }">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" @click="open = !open"
               aria-expanded="false">
               <i class="fas fa-user"></i> {{ user.get_full_name|default:user.email }}
             </a>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown" x-show="open" @click.away="open = false" x-transition>
               <li><a class="dropdown-item" href="#">{{ user.email }}</a></li>
               <li><a class="dropdown-item" href="{% url 'tenants:tenant-update' user.tenant.pk %}">
                 <i class="fas fa-cog"></i> Tenant Settings
               </a></li>
               
               <!-- Role Management in User Menu (Admin only) -->
-              {% if user|has_role:'Admin' %}
+              {% if user and user|has_role:'Admin' %}
               <li><a class="dropdown-item" href="{% url 'permissions:role_list' %}">
                 <i class="fas fa-users-cog"></i> Manage Roles
               </a></li>
@@ -243,7 +245,7 @@
   <div class="container-fluid">
     <div class="row">
       <!-- Enhanced Sidebar -->
-      <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+      <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse text-success">
         <div class="position-sticky pt-3">
           <ul class="nav flex-column">
             <li class="nav-item">
@@ -254,7 +256,7 @@
             </li>
             {% if user|has_permission:'clients.view_client' %}
             <li class="nav-item">
-              <a class="nav-link d-flex align-items-center" href="{% url 'clients:list' %}">
+              <a class="nav-link d-flex align-items-center" href="{% url 'lawyer_panel:client_list' %}">
                 <i class="fas fa-user-tie"></i>
                 <span>Clients</span>
               </a>
@@ -262,7 +264,7 @@
             {% endif %}
             {% if user|has_permission:'clients.add_client' %}
             <li class="nav-item">
-              <a class="nav-link d-flex align-items-center" href="{% url 'clients:create' %}">
+              <a class="nav-link d-flex align-items-center" href="{% url 'lawyer_panel:client_create' %}">
                 <i class="fas fa-plus"></i>
                 <span>Add Client</span>
               </a>
@@ -270,7 +272,7 @@
             {% endif %}
             {% if user|has_permission:'cases.view_case' %}
             <li class="nav-item">
-              <a class="nav-link d-flex align-items-center" href="{% url 'cases:list' %}">
+              <a class="nav-link d-flex align-items-center" href="{% url 'lawyer_panel:case_list' %}">
                 <i class="fas fa-folder-open"></i>
                 <span>Cases</span>
               </a>
@@ -278,7 +280,7 @@
             {% endif %}
             {% if user|has_permission:'cases.add_case' %}
             <li class="nav-item">
-              <a class="nav-link d-flex align-items-center" href="{% url 'cases:create' %}">
+              <a class="nav-link d-flex align-items-center" href="{% url 'lawyer_panel:case_create' %}">
                 <i class="fas fa-plus"></i>
                 <span>Create Case</span>
               </a>
@@ -286,7 +288,7 @@
             {% endif %}
             {% if user|has_permission:'documents.view_document' %}
             <li class="nav-item">
-              <a class="nav-link d-flex align-items-center" href="{% url 'documents:list' %}">
+              <a class="nav-link d-flex align-items-center" href="{% url 'lawyer_panel:document_list' %}">
                 <i class="fas fa-file-alt"></i>
                 <span>Documents</span>
               </a>
@@ -294,7 +296,7 @@
             {% endif %}
             {% if user|has_permission:'documents.add_document' %}
             <li class="nav-item">
-              <a class="nav-link d-flex align-items-center" href="{% url 'documents:upload' %}">
+              <a class="nav-link d-flex align-items-center" href="{% url 'lawyer_panel:document_create' %}">
                 <i class="fas fa-upload"></i>
                 <span>Upload Document</span>
               </a>
@@ -309,7 +311,7 @@
           <ul class="nav flex-column mb-2">
             {% if user|has_permission:'billing.view_dashboard' %}
             <li class="nav-item">
-              <a class="nav-link d-flex align-items-center" href="{% url 'billing:dashboard' %}">
+              <a class="nav-link d-flex align-items-center" href="{% url 'lawyer_panel:billing_dashboard' %}">
                 <i class="fas fa-tachometer-alt"></i>
                 <span>Billing Dashboard</span>
               </a>
@@ -426,17 +428,17 @@
           </h6>
           <ul class="nav flex-column mb-2">
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'audit:audit_log_list' %}">
+              <a class="nav-link" href="{% url 'audit:audit_logs' %}">
                 <i class="fas fa-list-alt"></i> Audit Logs
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'audit:login_history' %}">
+              <a class="nav-link" href="{% url 'audit:login_logs' %}">
                 <i class="fas fa-sign-in-alt"></i> Login History
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'audit:activity_timeline' %}">
+              <a class="nav-link" href="{% url 'audit:activity_logs' %}">
                 <i class="fas fa-stream"></i> Activity Timeline
               </a>
             </li>
@@ -449,7 +451,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'audit:audit_report' %}">
+              <a class="nav-link" href="{% url 'audit:export' %}">
                 <i class="fas fa-chart-bar"></i> Audit Reports
               </a>
             </li>
@@ -466,7 +468,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'backup_restore:backup_wizard' %}">
+              <a class="nav-link" href="{% url 'backup_restore:backup_create' %}">
                 <i class="fas fa-plus"></i> Create Backup
               </a>
             </li>
@@ -476,7 +478,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'backup_restore:restore_wizard' %}">
+              <a class="nav-link" href="{% url 'backup_restore:restore_create' %}">
                 <i class="fas fa-redo"></i> Restore Data
               </a>
             </li>
@@ -574,6 +576,32 @@
           {% block page_header %}{% endblock %}
         </div>
 
+        <!-- Alpine.js Notifications -->
+        <div class="notifications" x-show="notifications.length > 0">
+          <template x-for="notification in notifications" :key="notification.id">
+            <div class="notification" :class="notification.type" x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 transform translate-x-full"
+                 x-transition:enter-end="opacity-100 transform translate-x-0"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 transform translate-x-0"
+                 x-transition:leave-end="opacity-0 transform translate-x-full">
+              <i class="notification-icon fas"
+                 :class="{
+                   'fa-check-circle': notification.type === 'success',
+                   'fa-exclamation-triangle': notification.type === 'error',
+                   'fa-exclamation-circle': notification.type === 'warning',
+                   'fa-info-circle': notification.type === 'info'
+                 }"></i>
+              <div class="notification-content">
+                <div class="notification-message" x-text="notification.message"></div>
+              </div>
+              <button class="notification-close" @click="removeNotification(notification.id)">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </template>
+        </div>
+        
         {% if messages %}
         <div class="message-container mb-4">
           {% for message in messages %}
@@ -605,8 +633,24 @@
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
     crossorigin="anonymous"></script>
 
+  <!-- HTMX -->
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+  
+  <!-- Alpine.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  
   <!-- Project JS -->
   <script src="{% static 'js/base.js' %}"></script>
+  
+  <!-- Custom HTMX and Alpine.js Integration -->
+  <script src="{% static 'js/htmx-alpine.js' %}"></script>
+  
+  <!-- CSRF Token for HTMX -->
+  {% csrf_token %}
+  <script>
+    // Make CSRF token available globally for HTMX
+    window.csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  </script>
 
   {% endblock javascript %}
 </body>

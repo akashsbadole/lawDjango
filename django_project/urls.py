@@ -19,6 +19,7 @@ urlpatterns = [
     path("subscriptions/", include("subscriptions.urls")),
     path("platform-admin/", include("platform_admin.urls")),
     path("backup-restore/", include("backup_restore.urls")),
+    path("audit/", include("audit.urls")),
     path("lawyer/", lawyer_redirect, name='lawyer_redirect'),
     path("lawyer-panel/", include("lawyer_panel.urls")),
     path("legal-research/", include("legal_research.urls")),

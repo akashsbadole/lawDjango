@@ -12,7 +12,8 @@
     <!-- Sidebar -->
     <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
         <!-- Sidebar - Brand -->
-        <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{% url 'lawyer_panel:dashboard' %}">
+        <a class="sidebar-brand d-flex align-items-center justify-content-center"
+            href="{% url 'lawyer_panel:dashboard' %}">
             <div class="sidebar-brand-icon rotate-n-15">
                 <i class="fas fa-gavel"></i>
             </div>
@@ -102,6 +103,54 @@
             </a>
         </li>
 
+        <!-- Nav Item - Invoices -->
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'lawyer_panel:invoice_list' %}">
+                <i class="fas fa-fw fa-file-invoice"></i>
+                <span>Invoices</span>
+            </a>
+        </li>
+
+        <!-- Nav Item - Payments -->
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'lawyer_panel:payment_list' %}">
+                <i class="fas fa-fw fa-money-check-alt"></i>
+                <span>Payments</span>
+            </a>
+        </li>
+
+        <!-- Nav Item - Billing Dashboard -->
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'lawyer_panel:billing_dashboard' %}">
+                <i class="fas fa-fw fa-chart-line"></i>
+                <span>Billing Dashboard</span>
+            </a>
+        </li>
+
+        <!-- Divider -->
+        <hr class="sidebar-divider">
+
+        <!-- Heading -->
+        <div class="sidebar-heading">
+            Lawyers & Settings
+        </div>
+
+        <!-- Nav Item - Lawyer Profiles -->
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'lawyer_panel:lawyer_profile_list' %}">
+                <i class="fas fa-fw fa-user-tie"></i>
+                <span>Lawyer Profiles</span>
+            </a>
+        </li>
+
+        <!-- Nav Item - Practice Areas -->
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'lawyer_panel:practice_area_list' %}">
+                <i class="fas fa-fw fa-briefcase"></i>
+                <span>Practice Areas</span>
+            </a>
+        </li>
+
         <!-- Divider -->
         <hr class="sidebar-divider d-none d-md-block">
 
@@ -123,9 +172,12 @@
                 </button>
 
                 <!-- Topbar Search -->
-                <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" action="{% url 'lawyer_panel:quick_search' %}" method="get">
+                <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search"
+                    action="{% url 'lawyer_panel:quick_search' %}" method="get">
                     <div class="input-group">
-                        <input type="text" class="form-control bg-light border-0 small" placeholder="Search for anything..." name="query" aria-label="Search" aria-describedby="basic-addon2">
+                        <input type="text" class="form-control bg-light border-0 small"
+                            placeholder="Search for anything..." name="query" aria-label="Search"
+                            aria-describedby="basic-addon2">
                         <div class="input-group-append">
                             <button class="btn btn-primary" type="submit">
                                 <i class="fas fa-search fa-sm"></i>
@@ -138,12 +190,16 @@
                 <ul class="navbar-nav ml-auto">
                     <!-- Nav Item - User Information -->
                     <li class="nav-item dropdown no-arrow">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ user.get_full_name|default:user.email }}</span>
-                            <img class="img-profile rounded-circle" src="{% static 'images/undraw_profile.svg' %}" alt="User Profile">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{
+                                user.get_full_name|default:user.email }}</span>
+                            <img class="img-profile rounded-circle" src="{% static 'images/undraw_profile.svg' %}"
+                                alt="User Profile">
                         </a>
                         <!-- Dropdown - User Information -->
-                        <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                            aria-labelledby="userDropdown">
                             <a class="dropdown-item" href="{% url 'account_email' %}">
                                 <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                 Profile

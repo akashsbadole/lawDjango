@@ -1,0 +1,336 @@
+{% extends "_base.html" %}
+{% load static crispy_forms_tags %}
+
+{% block title %}Register Your Law Firm{% endblock %}
+
+{% block extra_css %}
+<style>
+    .registration-container {
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .plan-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .plan-card:hover {
+        border-color: #4e73df;
+        transform: translateY(-5px);
+    }
+
+    .plan-card.selected {
+        border-color: #4e73df;
+        background-color: #f8f9fc;
+    }
+
+    .plan-price {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #4e73df;
+    }
+
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+
+    .step {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 10px;
+        font-weight: bold;
+    }
+
+    .step.active {
+        background: #4e73df;
+        color: white;
+    }
+
+    .step.completed {
+        background: #1cc88a;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="registration-container">
+        <div class="text-center mb-4">
+            <h1 class="h2 text-gray-900 mb-2">Register Your Law Firm</h1>
+            <p class="text-muted">Start managing your practice in minutes</p>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="step-indicator" x-data="{ step: 1 }">
+            <div class="step" :class="step >= 1 ? 'active' : ''">1</div>
+            <div class="step" :class="step >= 2 ? 'active' : ''">2</div>
+            <div class="step" :class="step >= 3 ? 'active' : ''">3</div>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-body p-5">
+                <form method="post" x-data="registrationForm()">
+                    {% csrf_token %}
+
+                    <!-- Step 1: Firm Information -->
+                    <div x-show="currentStep === 1" x-transition>
+                        <h4 class="mb-4">
+                            <i class="fas fa-building text-primary"></i>
+                            Law Firm Information
+                        </h4>
+
+                        <div class="mb-3">
+                            <label class="form-label">Firm Name *</label>
+                            <input type="text" name="name" class="form-control form-control-lg" x-model="firmName"
+                                @input="checkSlug" placeholder="Your Law Firm Name" required>
+                            <div class="small mt-1" :class="slugAvailable ? 'text-success' : 'text-danger'"
+                                x-show="firmName.length >= 3">
+                                <span x-show="slugAvailable">✓ <span x-text="generatedSlug"></span>.yourdomain.com is
+                                    available</span>
+                                <span x-show="!slugAvailable && firmName">✗ This name is already taken</span>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-primary btn-lg w-100" @click="nextStep"
+                            :disabled="!firmName || !slugAvailable">
+                            Continue <i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+
+                    <!-- Step 2: Admin Account -->
+                    <div x-show="currentStep === 2" x-transition>
+                        <h4 class="mb-4">
+                            <i class="fas fa-user-shield text-primary"></i>
+                            Admin Account
+                        </h4>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">First Name *</label>
+                                <input type="text" name="admin_first_name" class="form-control" x-model="firstName"
+                                    required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Last Name *</label>
+                                <input type="text" name="admin_last_name" class="form-control" x-model="lastName"
+                                    required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Email Address *</label>
+                            <input type="email" name="admin_email" class="form-control" x-model="email"
+                                @blur="checkEmail" required>
+                            <div class="small mt-1" :class="emailAvailable ? 'text-success' : 'text-danger'"
+                                x-show="email">
+                                <span x-show="emailAvailable">✓ Email is available</span>
+                                <span x-show="!emailAvailable">✗ Email is already registered</span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Password *</label>
+                                <input type="password" name="admin_password" class="form-control" x-model="password"
+                                    required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Confirm Password *</label>
+                                <input type="password" name="admin_password_confirm" class="form-control"
+                                    x-model="passwordConfirm" required>
+                                <div class="small text-danger mt-1"
+                                    x-show="password && passwordConfirm && password !== passwordConfirm">
+                                    Passwords do not match
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-secondary" @click="prevStep">
+                                <i class="fas fa-arrow-left me-2"></i> Back
+                            </button>
+                            <button type="button" class="btn btn-primary" @click="nextStep"
+                                :disabled="!firstName || !lastName || !email || !emailAvailable || !password || password !== passwordConfirm">
+                                Continue <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Choose Plan -->
+                    <div x-show="currentStep === 3" x-transition>
+                        <h4 class="mb-4">
+                            <i class="fas fa-credit-card text-primary"></i>
+                            Choose Your Plan
+                        </h4>
+
+                        <div class="row mb-4">
+                            <div class="col-md-4 mb-3">
+                                <div class="card plan-card h-100" :class="plan === 'free' ? 'selected' : ''"
+                                    @click="plan = 'free'">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Free</h5>
+                                        <div class="plan-price">$0</div>
+                                        <p class="text-muted">/month</p>
+                                        <ul class="list-unstyled">
+                                            <li>✓ 3 Users</li>
+                                            <li>✓ 10 Cases</li>
+                                            <li>✓ 1GB Storage</li>
+                                            <li>✓ Basic Support</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card plan-card h-100" :class="plan === 'pro' ? 'selected' : ''"
+                                    @click="plan = 'pro'">
+                                    <div class="card-body text-center">
+                                        <span class="badge bg-primary mb-2">Popular</span>
+                                        <h5 class="card-title">Pro</h5>
+                                        <div class="plan-price">$99</div>
+                                        <p class="text-muted">/month</p>
+                                        <ul class="list-unstyled">
+                                            <li>✓ 10 Users</li>
+                                            <li>✓ Unlimited Cases</li>
+                                            <li>✓ 50GB Storage</li>
+                                            <li>✓ Priority Support</li>
+                                            <li>✓ AI Features</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card plan-card h-100" :class="plan === 'enterprise' ? 'selected' : ''"
+                                    @click="plan = 'enterprise'">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Enterprise</h5>
+                                        <div class="plan-price">$299</div>
+                                        <p class="text-muted">/month</p>
+                                        <ul class="list-unstyled">
+                                            <li>✓ Unlimited Users</li>
+                                            <li>✓ Unlimited Cases</li>
+                                            <li>✓ Unlimited Storage</li>
+                                            <li>✓ 24/7 Support</li>
+                                            <li>✓ All AI Features</li>
+                                            <li>✓ Custom Integrations</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="plan" x-model="plan">
+
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="accept_terms" name="accept_terms"
+                                    x-model="acceptTerms" required>
+                                <label class="form-check-label" for="accept_terms">
+                                    I accept the <a href="#" target="_blank">Terms of Service</a>
+                                    and <a href="#" target="_blank">Privacy Policy</a>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-secondary" @click="prevStep">
+                                <i class="fas fa-arrow-left me-2"></i> Back
+                            </button>
+                            <button type="submit" class="btn btn-success btn-lg" :disabled="!acceptTerms || submitting">
+                                <span x-show="!submitting">
+                                    <i class="fas fa-check me-2"></i> Create Account
+                                </span>
+                                <span x-show="submitting">
+                                    <i class="fas fa-spinner fa-spin me-2"></i> Creating...
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <p class="text-muted">
+                Already have an account?
+                <a href="{% url 'accounts:login' %}">Sign in</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function registrationForm() {
+        return {
+            currentStep: 1,
+            firmName: '',
+            generatedSlug: '',
+            slugAvailable: false,
+            firstName: '',
+            lastName: '',
+            email: '',
+            emailAvailable: false,
+            password: '',
+            passwordConfirm: '',
+            plan: 'free',
+            acceptTerms: false,
+            submitting: false,
+
+            nextStep() {
+                if (this.currentStep < 3) {
+                    this.currentStep++;
+                }
+            },
+
+            prevStep() {
+                if (this.currentStep > 1) {
+                    this.currentStep--;
+                }
+            },
+
+            async checkSlug() {
+                if (this.firmName.length < 3) {
+                    this.slugAvailable = false;
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/tenants/api/check-slug/?slug=${encodeURIComponent(this.firmName)}`);
+                    const data = await response.json();
+                    this.slugAvailable = data.available;
+                    this.generatedSlug = data.slug;
+                } catch (e) {
+                    this.slugAvailable = false;
+                }
+            },
+
+            async checkEmail() {
+                if (!this.email) {
+                    this.emailAvailable = false;
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/tenants/api/check-email/?email=${encodeURIComponent(this.email)}`);
+                    const data = await response.json();
+                    this.emailAvailable = data.available;
+                } catch (e) {
+                    this.emailAvailable = false;
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+{% endblock %}

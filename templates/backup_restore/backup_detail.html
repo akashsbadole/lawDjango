@@ -18,9 +18,10 @@
       </a>
       {% endif %}
       {% if backup.status in 'pending,running' %}
-      <a href="{% url 'backup_restore:backup_cancel' backup.pk %}" class="btn btn-sm btn-warning">
+      <!-- Cancel functionality not implemented yet -->
+      <!-- <a href="{% url 'backup_restore:backup_cancel' backup.pk %}" class="btn btn-sm btn-warning">
         <i class="fas fa-stop"></i> Cancel
-      </a>
+      </a> -->
       {% endif %}
       <a href="{% url 'backup_restore:backup_update' backup.pk %}" class="btn btn-sm btn-outline-secondary">
         <i class="fas fa-edit"></i> Edit
@@ -291,7 +292,7 @@
       <div class="card-body">
         <div class="d-grid gap-2">
           {% if backup.status == 'completed' %}
-          <a href="{% url 'backup_restore:restore_wizard' %}?backup_job={{ backup.pk }}" class="btn btn-outline-primary">
+          <a href="{% url 'backup_restore:restore_create' %}?backup_job={{ backup.pk }}" class="btn btn-outline-primary">
             <i class="fas fa-redo"></i> Restore from this backup
           </a>
           <a href="{% url 'backup_restore:backup_verify' backup.pk %}" class="btn btn-outline-info">
@@ -300,9 +301,10 @@
           {% endif %}
           
           {% if backup.status == 'failed' %}
-          <a href="{% url 'backup_restore:backup_retry' backup.pk %}" class="btn btn-outline-warning">
+          <!-- Retry functionality not implemented yet -->
+          <!-- <a href="{% url 'backup_restore:backup_retry' backup.pk %}" class="btn btn-outline-warning">
             <i class="fas fa-redo"></i> Retry Backup
-          </a>
+          </a> -->
           {% endif %}
           
           <a href="{% url 'backup_restore:backup_list' %}" class="btn btn-outline-secondary">

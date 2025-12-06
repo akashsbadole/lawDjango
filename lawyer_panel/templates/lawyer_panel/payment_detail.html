@@ -1,0 +1,164 @@
+{% extends "lawyer_panel/base.html" %}
+{% load static %}
+
+{% block title %}Payment Details - Lawyer Panel{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Payment Details</h1>
+        <a href="{% url 'lawyer_panel:payment_list' %}" class="btn btn-secondary">Back to Payments</a>
+    </div>
+
+    <div class="row">
+        <!-- Payment Details -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Payment Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6 class="font-weight-bold text-success">Amount Paid</h6>
+                            <h3 class="text-success">${{ payment.amount|floatformat:2 }}</h3>
+                        </div>
+                        <div class="col-md-6 text-right">
+                            <h6 class="font-weight-bold">Payment Date</h6>
+                            <p class="h5">{{ payment.payment_date|date:"F d, Y" }}</p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="font-weight-bold">Payment Method:</label>
+                                <p>{{ payment.get_payment_method_display }}</p>
+                            </div>
+
+                            {% if payment.reference %}
+                            <div class="mb-3">
+                                <label class="font-weight-bold">Reference Number:</label>
+                                <p>{{ payment.reference }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="font-weight-bold">Invoice:</label>
+                                <p>
+                                    <a href="{% url 'lawyer_panel:invoice_detail' invoice.pk %}">
+                                        {{ invoice.invoice_number }}
+                                    </a>
+                                </p>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="font-weight-bold">Client:</label>
+                                <p>{{ invoice.client.full_name }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if payment.notes %}
+                    <hr>
+                    <div class="mb-3">
+                        <label class="font-weight-bold">Notes:</label>
+                        <p>{{ payment.notes }}</p>
+                    </div>
+                    {% endif %}
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="font-weight-bold mb-3">Invoice Balance</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td>Invoice Total:</td>
+                                        <td class="text-right">${{ invoice.total_amount|floatformat:2 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>This Payment:</td>
+                                        <td class="text-right text-success">-${{ payment.amount|floatformat:2 }}</td>
+                                    </tr>
+                                    <tr class="font-weight-bold">
+                                        <td>Remaining Balance:</td>
+                                        <td
+                                            class="text-right {% if remaining_balance > 0 %}text-danger{% else %}text-success{% endif %}">
+                                            ${{ remaining_balance|floatformat:2 }}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Information -->
+        <div class="col-lg-4">
+            <!-- Invoice Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Related Invoice</h6>
+                </div>
+                <div class="card-body">
+                    <h6 class="font-weight-bold">{{ invoice.invoice_number }}</h6>
+                    <p class="mb-2"><strong>Client:</strong> {{ invoice.client.full_name }}</p>
+                    <p class="mb-2"><strong>Issue Date:</strong> {{ invoice.issue_date|date:"M d, Y" }}</p>
+                    <p class="mb-2"><strong>Due Date:</strong> {{ invoice.due_date|date:"M d, Y" }}</p>
+                    <p class="mb-2">
+                        <strong>Status:</strong>
+                        <span
+                            class="badge badge-{% if invoice.status == 'paid' %}success{% elif invoice.status == 'sent' %}info{% elif invoice.status == 'overdue' %}danger{% else %}secondary{% endif %}">
+                            {{ invoice.get_status_display }}
+                        </span>
+                    </p>
+                    <hr>
+                    <a href="{% url 'lawyer_panel:invoice_detail' invoice.pk %}" class="btn btn-primary btn-block">
+                        <i class="fas fa-file-invoice"></i> View Invoice
+                    </a>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'lawyer_panel:payment_create' %}?invoice={{ invoice.pk }}"
+                        class="btn btn-success btn-block mb-2">
+                        <i class="fas fa-plus"></i> Record Another Payment
+                    </a>
+                    <a href="#" class="btn btn-info btn-block mb-2">
+                        <i class="fas fa-print"></i> Print Receipt
+                    </a>
+                    <a href="#" class="btn btn-warning btn-block">
+                        <i class="fas fa-edit"></i> Edit Payment
+                    </a>
+                </div>
+            </div>
+
+            <!-- Audit Info -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Audit Information</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><strong>Recorded By:</strong> {{
+                        payment.created_by.get_full_name|default:payment.created_by.email }}</p>
+                    <p class="mb-0"><strong>Recorded On:</strong> {{ payment.created_at|date:"M d, Y g:i A" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

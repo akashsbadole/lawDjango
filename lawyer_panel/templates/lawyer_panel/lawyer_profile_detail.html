@@ -1,0 +1,267 @@
+{% extends "lawyer_panel/base.html" %}
+{% load static %}
+
+{% block title %}{{ lawyer_profile.full_name }} - Lawyer Panel{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ lawyer_profile.full_name }}</h1>
+        <div>
+            <a href="{% url 'lawyer_panel:lawyer_profile_update' lawyer_profile.pk %}"
+                class="btn btn-warning btn-icon-split mr-2">
+                <span class="icon text-white-50">
+                    <i class="fas fa-edit"></i>
+                </span>
+                <span class="text">Edit Profile</span>
+            </a>
+            <a href="{% url 'lawyer_panel:lawyer_profile_list' %}" class="btn btn-secondary">Back to List</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Profile Info -->
+        <div class="col-lg-8">
+            <!-- Professional Information -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Professional Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Email:</strong> {{ lawyer_profile.user.email }}</p>
+                            {% if lawyer_profile.bar_number %}<p><strong>Bar Number:</strong> {{
+                                lawyer_profile.bar_number }}</p>{% endif %}
+                            {% if lawyer_profile.law_school %}<p><strong>Law School:</strong> {{
+                                lawyer_profile.law_school }}</p>{% endif %}
+                            {% if lawyer_profile.graduation_year %}<p><strong>Graduation Year:</strong> {{
+                                lawyer_profile.graduation_year }}</p>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {% if lawyer_profile.experience_level %}<p><strong>Experience Level:</strong> {{
+                                lawyer_profile.get_experience_level_display }}</p>{% endif %}
+                            {% if lawyer_profile.years_of_experience %}<p><strong>Years of Experience:</strong> {{
+                                lawyer_profile.years_of_experience }}</p>{% endif %}
+                            {% if lawyer_profile.website %}<p><strong>Website:</strong> <a
+                                    href="{{ lawyer_profile.website }}" target="_blank">{{ lawyer_profile.website }}</a>
+                            </p>{% endif %}
+                            {% if lawyer_profile.linkedin_profile %}<p><strong>LinkedIn:</strong> <a
+                                    href="{{ lawyer_profile.linkedin_profile }}" target="_blank">View Profile</a></p>{%
+                            endif %}
+                        </div>
+                    </div>
+
+                    {% if lawyer_profile.bio %}
+                    <hr>
+                    <h6 class="font-weight-bold">Biography</h6>
+                    <p>{{ lawyer_profile.bio }}</p>
+                    {% endif %}
+
+                    {% if lawyer_profile.languages %}
+                    <hr>
+                    <p><strong>Languages:</strong> {{ lawyer_profile.languages }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Practice Areas & Specializations -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Practice Areas & Specializations</h6>
+                </div>
+                <div class="card-body">
+                    {% if lawyer_profile.practice_areas.all %}
+                    <h6 class="font-weight-bold">Practice Areas</h6>
+                    <div class="mb-3">
+                        {% for area in lawyer_profile.practice_areas.all %}
+                        <span class="badge badge-primary badge-lg mr-2 mb-2">{{ area.name }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if lawyer_profile.specializations %}
+                    <h6 class="font-weight-bold">Specializations</h6>
+                    <p>{{ lawyer_profile.specializations }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Billing Information -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Billing Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            {% if lawyer_profile.billing_method %}<p><strong>Billing Method:</strong> {{
+                                lawyer_profile.get_billing_method_display }}</p>{% endif %}
+                            {% if lawyer_profile.hourly_rate %}<p><strong>Hourly Rate:</strong> ${{
+                                lawyer_profile.hourly_rate|floatformat:2 }}</p>{% endif %}
+                            {% if lawyer_profile.consultation_fee %}<p><strong>Consultation Fee:</strong> ${{
+                                lawyer_profile.consultation_fee|floatformat:2 }}</p>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {% if lawyer_profile.retainer_fee %}<p><strong>Retainer Fee:</strong> ${{
+                                lawyer_profile.retainer_fee|floatformat:2 }}</p>{% endif %}
+                            {% if lawyer_profile.contingency_percentage %}<p><strong>Contingency:</strong> {{
+                                lawyer_profile.contingency_percentage }}%</p>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Qualifications -->
+            {% if lawyer_profile.qualifications.all %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Qualifications & Certifications</h6>
+                    <a href="{% url 'lawyer_panel:lawyer_qualification_create' lawyer_profile.pk %}"
+                        class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Add
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for qual in lawyer_profile.qualifications.all %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="mb-1">{{ qual.title }}</h6>
+                                    <p class="mb-1"><strong>{{ qual.institution }}</strong> - {{ qual.year_obtained }}
+                                    </p>
+                                    <small class="text-muted">{{ qual.get_qualification_type_display }}</small>
+                                    {% if qual.description %}<p class="mt-2">{{ qual.description }}</p>{% endif %}
+                                </div>
+                                {% if qual.certificate_file %}
+                                <div>
+                                    <a href="{{ qual.certificate_file.url }}" class="btn btn-sm btn-info"
+                                        target="_blank">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Cases -->
+            {% if recent_cases %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Cases</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Case Number</th>
+                                    <th>Title</th>
+                                    <th>Status</th>
+                                    <th>Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for case in recent_cases %}
+                                <tr>
+                                    <td><a href="{% url 'lawyer_panel:case_detail' case.pk %}">{{ case.case_number
+                                            }}</a></td>
+                                    <td>{{ case.title|truncatechars:40 }}</td>
+                                    <td><span
+                                            class="badge badge-{% if case.status == 'open' %}success{% else %}secondary{% endif %}">{{
+                                            case.get_status_display }}</span></td>
+                                    <td>{{ case.updated_at|date:"M d, Y" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Availability Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Availability</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        {% if lawyer_profile.is_available %}
+                        <span class="badge badge-success badge-lg">Available</span>
+                        {% else %}
+                        <span class="badge badge-danger badge-lg">Unavailable</span>
+                        {% endif %}
+                    </div>
+
+                    <h6 class="font-weight-bold">Case Load</h6>
+                    <h3>{{ lawyer_profile.current_case_load }} / {{ lawyer_profile.max_cases }}</h3>
+
+                    <div class="progress mb-3">
+                        <div class="progress-bar {% if lawyer_profile.availability_percentage < 20 %}bg-danger{% elif lawyer_profile.availability_percentage < 50 %}bg-warning{% else %}bg-success{% endif %}"
+                            role="progressbar" style="width: {{ lawyer_profile.current_case_load|floatformat:0 }}%">
+                        </div>
+                    </div>
+
+                    <p class="text-muted small">{{ lawyer_profile.availability_percentage|floatformat:0 }}% capacity
+                        available</p>
+
+                    <a href="{% url 'lawyer_panel:lawyer_availability_update' lawyer_profile.pk %}"
+                        class="btn btn-primary btn-sm btn-block">
+                        <i class="fas fa-edit"></i> Update Availability
+                    </a>
+                    <a href="{% url 'lawyer_panel:lawyer_update_case_load' lawyer_profile.pk %}"
+                        class="btn btn-secondary btn-sm btn-block">
+                        <i class="fas fa-sync"></i> Refresh Case Load
+                    </a>
+                </div>
+            </div>
+
+            <!-- Profile Completion -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Profile Completion</h6>
+                </div>
+                <div class="card-body text-center">
+                    <h3>{{ profile_completion|floatformat:0 }}%</h3>
+                    <div class="progress mb-3">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: {{ profile_completion }}%">
+                        </div>
+                    </div>
+                    <p class="text-muted small">Complete your profile to improve visibility</p>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'lawyer_panel:lawyer_profile_update' lawyer_profile.pk %}"
+                        class="btn btn-warning btn-block mb-2">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </a>
+                    <a href="{% url 'lawyer_panel:lawyer_qualification_create' lawyer_profile.pk %}"
+                        class="btn btn-info btn-block mb-2">
+                        <i class="fas fa-certificate"></i> Add Qualification
+                    </a>
+                    <a href="{% url 'lawyer_panel:practice_area_list' %}" class="btn btn-secondary btn-block">
+                        <i class="fas fa-briefcase"></i> Manage Practice Areas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

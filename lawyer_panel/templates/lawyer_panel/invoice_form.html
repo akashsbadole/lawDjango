@@ -1,0 +1,112 @@
+{% extends "lawyer_panel/base.html" %}
+{% load static %}
+
+{% block title %}{% if object %}Edit Invoice{% else %}Create Invoice{% endif %} - Lawyer Panel{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            {% if object %}Edit Invoice{% else %}Create Invoice{% endif %}
+        </h1>
+        <a href="{% url 'lawyer_panel:invoice_list' %}" class="btn btn-secondary">Back to Invoices</a>
+    </div>
+
+    <!-- Invoice Form -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                {% if object %}Edit Invoice{% else %}Create New Invoice{% endif %}
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="id_client">Client *</label>
+                            <select class="form-control" id="id_client" name="client" required>
+                                <option value="">Select a client</option>
+                                {% for client in clients %}
+                                <option value="{{ client.pk }}" {% if form.client.value==client.pk %}selected{% endif
+                                    %}>
+                                    {{ client.full_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% if form.client.errors %}
+                            <div class="text-danger">{{ form.client.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="id_case">Case (Optional)</label>
+                            <select class="form-control" id="id_case" name="case">
+                                <option value="">Select a case</option>
+                                {% for case in cases %}
+                                <option value="{{ case.pk }}" {% if form.case.value==case.pk %}selected{% endif %}>
+                                    {{ case.case_number }} - {{ case.title }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="id_issue_date">Issue Date *</label>
+                            <input type="date" class="form-control" id="id_issue_date" name="issue_date"
+                                value="{{ form.issue_date.value|date:'Y-m-d' }}" required>
+                            {% if form.issue_date.errors %}
+                            <div class="text-danger">{{ form.issue_date.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="id_due_date">Due Date *</label>
+                            <input type="date" class="form-control" id="id_due_date" name="due_date"
+                                value="{{ form.due_date.value|date:'Y-m-d' }}" required>
+                            {% if form.due_date.errors %}
+                            <div class="text-danger">{{ form.due_date.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="id_tax_rate">Tax Rate (%)</label>
+                            <input type="number" step="0.01" class="form-control" id="id_tax_rate" name="tax_rate"
+                                value="{{ form.tax_rate.value|default:'0.00' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_notes">Notes</label>
+                    <textarea class="form-control" id="id_notes" name="notes"
+                        rows="4">{{ form.notes.value|default:'' }}</textarea>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Note:</strong> After creating the invoice, you can add invoice items manually or use the
+                    "Generate Invoice" feature to automatically include unbilled time entries and expenses.
+                </div>
+
+                <div class="text-right mt-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> {% if object %}Update Invoice{% else %}Create Invoice{% endif %}
+                    </button>
+                    <a href="{% url 'lawyer_panel:invoice_list' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

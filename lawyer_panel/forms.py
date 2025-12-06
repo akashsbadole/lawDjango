@@ -184,7 +184,7 @@ class TimeEntryForm(forms.ModelForm):
         # Set default values
         if not self.instance.pk:
             self.fields['date'].initial = timezone.now().date()
-            self.fields['lawyer'].initial = self.request.user
+            # Note: lawyer field is set in form_valid, not here
             self.fields['rate'].initial = self._get_default_rate()
         
         self.helper = FormHelper()

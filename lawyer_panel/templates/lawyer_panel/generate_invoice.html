@@ -1,0 +1,113 @@
+{% extends "lawyer_panel/base.html" %}
+{% load static %}
+
+{% block title %}Generate Invoice - Lawyer Panel{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Generate Invoice</h1>
+        <a href="{% url 'lawyer_panel:invoice_list' %}" class="btn btn-secondary">Back to Invoices</a>
+    </div>
+
+    <!-- Generate Invoice Form -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Generate Invoice from Unbilled Items</h6>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <strong>How it works:</strong> This feature automatically creates an invoice by including all unbilled
+                time entries and reimbursable expenses for the selected client and case.
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="id_client">Client *</label>
+                            <select class="form-control" id="id_client" name="client" required>
+                                <option value="">Select a client</option>
+                                {% for client in clients %}
+                                <option value="{{ client.pk }}">{{ client.full_name }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Select the client to generate invoice for</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="id_case">Case (Optional)</label>
+                            <select class="form-control" id="id_case" name="case">
+                                <option value="">All cases for this client</option>
+                                {% for case in cases %}
+                                <option value="{{ case.pk }}">{{ case.case_number }} - {{ case.title }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Optionally filter by specific case</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <h6 class="font-weight-bold">What will be included:</h6>
+                        <ul class="list-unstyled ml-3">
+                            <li><i class="fas fa-check text-success"></i> All unbilled time entries (billable only)</li>
+                            <li><i class="fas fa-check text-success"></i> All unbilled expenses (reimbursable only)</li>
+                            <li><i class="fas fa-check text-success"></i> Automatic invoice number generation</li>
+                            <li><i class="fas fa-check text-success"></i> Due date set to 30 days from today</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="text-right mt-4">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fas fa-magic"></i> Generate Invoice
+                    </button>
+                    <a href="{% url 'lawyer_panel:invoice_list' %}" class="btn btn-secondary btn-lg">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Preview Section (Optional) -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Tips</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <i class="fas fa-clock fa-3x text-primary mb-3"></i>
+                        <h6>Time Entries</h6>
+                        <p class="text-muted small">Only billable time entries that haven't been invoiced yet will be
+                            included.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <i class="fas fa-receipt fa-3x text-success mb-3"></i>
+                        <h6>Expenses</h6>
+                        <p class="text-muted small">Only reimbursable expenses that haven't been invoiced yet will be
+                            included.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <i class="fas fa-file-invoice fa-3x text-info mb-3"></i>
+                        <h6>Invoice</h6>
+                        <p class="text-muted small">A new invoice will be created with all items automatically
+                            calculated.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

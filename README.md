@@ -349,9 +349,18 @@ Accountant: joshua.rivera.8@example.com / password123
 
 Assistant: jeffrey.bennett.8@example.com / password123
 
-Verification
-Seed data command successfully creates tenants, users, clients, cases, and billing data
-Lawyers can now log in and access their panel at /lawyer-panel/ without tenant slug requirements
-The middleware properly sets tenant context from session data
-Role-based redirects work correctly for all user types
-The login system is now fully functional with simplified URLs that don't require tenant slugs, while maintaining proper tenant isolation and security.
+---------------
+# 1. Start server
+python manage.py runserver
+
+# 2. Login
+http://localhost:8000/accounts/login/
+
+# 3. Access Lawyer Panel
+http://localhost:8000/lawyer-panel/
+
+# 4. Test new features:
+- Click "Invoices" → Create/Generate invoices
+- Click "Payments" → Record payments
+- Click "Lawyer Profiles" → Manage profiles
+- Click "Practice Areas" → Manage areas

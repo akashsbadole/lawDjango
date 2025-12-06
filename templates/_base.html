@@ -29,6 +29,9 @@
   {% block css %}
   <!-- Premium CSS -->
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  
+  <!-- HTMX and Alpine.js CSS -->
+  <link rel="stylesheet" href="{% static 'css/htmx-alpine.css' %}">
   {% endblock %}
   
   {% block extra_css %}
@@ -46,7 +49,7 @@
   {% endif %}
 </head>
 
-<body>
+<body x-data="app" x-cloak>
   <!-- Navbar -->
   <nav class="navbar">
     <div class="container navbar-content">
@@ -57,9 +60,9 @@
         {% if tenant_settings %}{{ tenant_settings.company_name|default:'Law Firm' }}{% else %}Law Firm{% endif %}
       </a>
       
-      <button class="mobile-toggle" aria-label="Toggle navigation" onclick="toggleMobileNav()">☰</button>
+      <button class="mobile-toggle" aria-label="Toggle navigation" @click="toggleMobileMenu()">☰</button>
       
-      <div class="nav-links" id="navLinks">
+      <div class="nav-links" id="navLinks" :class="{'active': mobileMenuOpen}">
         <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">Home</a>
         <a class="nav-link {% if request.resolver_match.url_name == 'features' %}active{% endif %}" href="{% url 'features' %}">Features</a>
         <a class="nav-link {% if request.resolver_match.url_name == 'pricing' %}active{% endif %}" href="{% url 'pricing' %}">Pricing</a>
@@ -136,10 +139,20 @@
   </footer>
 
   {% block javascript %}
+  <!-- HTMX -->
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+  
+  <!-- Alpine.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  
+  <!-- Custom HTMX and Alpine.js Integration -->
+  <script src="{% static 'js/htmx-alpine.js' %}"></script>
+  
+  <!-- CSRF Token for HTMX -->
+  {% csrf_token %}
   <script>
-    function toggleMobileNav() {
-      document.getElementById('navLinks').classList.toggle('active');
-    }
+    // Make CSRF token available globally for HTMX
+    window.csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
   </script>
   {% endblock javascript %}
   

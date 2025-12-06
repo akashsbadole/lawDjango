@@ -1,0 +1,56 @@
+<!-- HTMX Partial: Case Quick View -->
+<div class="card shadow-sm" x-data="{ expanded: false }">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-briefcase"></i>
+            {{ case.title }}
+        </h5>
+        <button class="btn btn-sm btn-light" @click="expanded = !expanded">
+            <i class="fas" :class="expanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </button>
+    </div>
+    <div class="card-body" x-show="expanded" x-transition>
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Case Number:</strong> {{ case.case_number }}</p>
+                <p><strong>Status:</strong>
+                    <span class="badge 
+                        {% if case.status == 'open' %}bg-success
+                        {% elif case.status == 'closed' %}bg-secondary
+                        {% elif case.status == 'pending' %}bg-warning
+                        {% else %}bg-info{% endif %}">
+                        {{ case.get_status_display }}
+                    </span>
+                </p>
+                <p><strong>Type:</strong> {{ case.get_case_type_display }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Client:</strong> {{ case.client.full_name }}</p>
+                <p><strong>Start Date:</strong> {{ case.start_date|date:"M d, Y" }}</p>
+                {% if case.end_date %}
+                <p><strong>End Date:</strong> {{ case.end_date|date:"M d, Y" }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if case.description %}
+        <div class="mt-3">
+            <strong>Description:</strong>
+            <p class="text-muted">{{ case.description|truncatewords:50 }}</p>
+        </div>
+        {% endif %}
+
+        <div class="mt-3 d-flex gap-2">
+            <a href="{% url 'lawyer_panel:case_detail' case.pk %}" class="btn btn-sm btn-primary">
+                <i class="fas fa-eye"></i> View Details
+            </a>
+            <a href="{% url 'lawyer_panel:case_update' case.pk %}" class="btn btn-sm btn-warning">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <button hx-post="{% url 'lawyer_panel:ajax_toggle_case_status' case.pk %}" hx-swap="none"
+                hx-on::after-request="window.location.reload()" class="btn btn-sm btn-info">
+                <i class="fas fa-sync"></i> Toggle Status
+            </button>
+        </div>
+    </div>
+</div>

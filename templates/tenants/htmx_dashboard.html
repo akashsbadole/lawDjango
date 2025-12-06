@@ -1,0 +1,442 @@
+{% extends "_tenant_base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - {{ user.tenant.name }} - Lithium{% endblock title %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+  <div>
+    <h1 class="h2 mb-0">Dashboard</h1>
+    <p class="text-muted mb-0">Welcome back, {{ user.get_full_name|default:user.email }}!</p>
+  </div>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <button 
+        class="btn btn-primary" 
+        @click="showNotification('Dashboard refreshed!', 'success')"
+        hx-get="{% url 'tenant_app:dashboard_stats' %}"
+        hx-target="#dashboard-stats"
+        hx-swap="innerHTML"
+        hx-indicator=".stats-indicator"
+      >
+        <i class="fas fa-sync-alt me-2"></i>
+        Refresh Stats
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock page_header %}
+
+{% block content %}
+<!-- Stats Section -->
+<div class="row mb-4">
+  <div class="stats-indicator d-none">
+    <div class="spinner-border spinner-border-sm me-2" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    Loading stats...
+  </div>
+  
+  <div id="dashboard-stats" hx-get="{% url 'tenant_app:dashboard_stats' %}" hx-trigger="load">
+    <!-- Stats will be loaded here -->
+    <div class="row">
+      <div class="col-lg-3 col-md-6 mb-4">
+        <div class="stats-card primary">
+          <div class="stats-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="stats-content">
+            <h3 class="stats-number">0</h3>
+            <p class="stats-label">Total Clients</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 mb-4">
+        <div class="stats-card success">
+          <div class="stats-icon">
+            <i class="fas fa-folder-open"></i>
+          </div>
+          <div class="stats-content">
+            <h3 class="stats-number">0</h3>
+            <p class="stats-label">Active Cases</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 mb-4">
+        <div class="stats-card info">
+          <div class="stats-icon">
+            <i class="fas fa-file-invoice-dollar"></i>
+          </div>
+          <div class="stats-content">
+            <h3 class="stats-number">$0</h3>
+            <p class="stats-label">Revenue This Month</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 mb-4">
+        <div class="stats-card warning">
+          <div class="stats-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="stats-content">
+            <h3 class="stats-number">0</h3>
+            <p class="stats-label">Pending Tasks</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Search and Quick Actions -->
+<div class="row mb-4">
+  <div class="col-lg-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0">
+          <i class="fas fa-search me-2"></i>
+          Quick Search
+        </h6>
+      </div>
+      <div class="card-body">
+        {% include "components/search_box.html" with search_url="/api/search/" placeholder="Search clients, cases, documents..." %}
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0">
+          <i class="fas fa-bolt me-2"></i>
+          Quick Actions
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="row g-2">
+          <div class="col-6">
+            <button 
+              class="btn btn-primary w-100 mb-2"
+              @click="ModalController.show('new-client-modal')"
+            >
+              <i class="fas fa-user-plus me-2"></i>
+              New Client
+            </button>
+          </div>
+          <div class="col-6">
+            <button 
+              class="btn btn-success w-100 mb-2"
+              @click="ModalController.show('new-case-modal')"
+            >
+              <i class="fas fa-folder-plus me-2"></i>
+              New Case
+            </button>
+          </div>
+          <div class="col-6">
+            <button 
+              class="btn btn-info w-100 mb-2"
+              @click="ModalController.show('new-invoice-modal')"
+            >
+              <i class="fas fa-file-invoice me-2"></i>
+              New Invoice
+            </button>
+          </div>
+          <div class="col-6">
+            <button 
+              class="btn btn-warning w-100 mb-2"
+              @click="ModalController.show('new-appointment-modal')"
+            >
+              <i class="fas fa-calendar-plus me-2"></i>
+              New Appointment
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs Section -->
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="m-0">
+          <i class="fas fa-chart-line me-2"></i>
+          Dashboard Overview
+        </h6>
+      </div>
+      <div class="card-body">
+        {% include "components/tabs.html" with tabs=dashboard_tabs initial_tab=0 %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modals -->
+{% include "components/modal.html" with modal_id="new-client-modal" title="Add New Client" content="<p>Client form would go here...</p>" %}
+{% include "components/modal.html" with modal_id="new-case-modal" title="Create New Case" content="<p>Case form would go here...</p>" %}
+{% include "components/modal.html" with modal_id="new-invoice-modal" title="Generate Invoice" content="<p>Invoice form would go here...</p>" %}
+{% include "components/modal.html" with modal_id="new-appointment-modal" title="Schedule Appointment" content="<p>Appointment form would go here...</p>" %}
+
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+// Define dashboard tabs data
+window.dashboardTabs = [
+  {
+    title: 'Recent Activity',
+    icon: 'fas fa-stream',
+    content: `
+      <div class="activity-timeline">
+        <div class="activity-item">
+          <div class="activity-content">
+            <h6>New client added</h6>
+            <p class="text-muted small">John Doe was added to your client list</p>
+            <span class="activity-time">2 hours ago</span>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-content">
+            <h6>Case updated</h6>
+            <p class="text-muted small">Case #1234 status changed to "In Progress"</p>
+            <span class="activity-time">4 hours ago</span>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-content">
+            <h6>Invoice generated</h6>
+            <p class="text-muted small">Invoice #5678 created for John Doe</p>
+            <span class="activity-time">1 day ago</span>
+          </div>
+        </div>
+      </div>
+    `
+  },
+  {
+    title: 'Upcoming Events',
+    icon: 'fas fa-calendar',
+    content: `
+      <div class="events-list">
+        <div class="event-item">
+          <div class="event-icon">
+            <i class="fas fa-gavel text-primary"></i>
+          </div>
+          <div class="event-details">
+            <h6>Court Hearing</h6>
+            <p class="text-muted small">Smith vs. Johnson - Case #1234</p>
+            <span class="event-time">Tomorrow, 10:00 AM</span>
+          </div>
+        </div>
+        <div class="event-item">
+          <div class="event-icon">
+            <i class="fas fa-users text-success"></i>
+          </div>
+          <div class="event-details">
+            <h6>Client Meeting</h6>
+            <p class="text-muted small">Initial consultation with Jane Smith</p>
+            <span class="event-time">Dec 8, 2:00 PM</span>
+          </div>
+        </div>
+        <div class="event-item">
+          <div class="event-icon">
+            <i class="fas fa-file-contract text-warning"></i>
+          </div>
+          <div class="event-details">
+            <h6>Document Review</h6>
+            <p class="text-muted small">Review contract for ABC Corp</p>
+            <span class="event-time">Dec 10, 11:00 AM</span>
+          </div>
+        </div>
+      </div>
+    `
+  },
+  {
+    title: 'Performance Metrics',
+    icon: 'fas fa-chart-bar',
+    content: `
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <h6>Cases Won This Month</h6>
+          <div class="metric-value">12</div>
+          <div class="metric-change positive">+15% from last month</div>
+        </div>
+        <div class="metric-card">
+          <h6>Average Case Duration</h6>
+          <div class="metric-value">45 days</div>
+          <div class="metric-change negative">+5 days from last month</div>
+        </div>
+        <div class="metric-card">
+          <h6>Client Satisfaction</h6>
+          <div class="metric-value">4.8/5.0</div>
+          <div class="metric-change positive">+0.2 from last month</div>
+        </div>
+        <div class="metric-card">
+          <h6>Billable Hours</h6>
+          <div class="metric-value">156</div>
+          <div class="metric-change positive">+12% from last month</div>
+        </div>
+      </div>
+    `
+  }
+];
+
+// Initialize dashboard with Alpine.js
+document.addEventListener('alpine:init', () => {
+    Alpine.data('dashboard', () => ({
+        stats: {
+            clients: 0,
+            cases: 0,
+            revenue: 0,
+            tasks: 0
+        },
+        
+        async refreshStats() {
+            try {
+                const response = await htmx.ajax('get', '{% url "tenant_app:dashboard_stats" %}', {});
+                const data = JSON.parse(response.responseText);
+                this.stats = data;
+            } catch (error) {
+                console.error('Failed to refresh stats:', error);
+                this.$dispatch('show-notification', {
+                    message: 'Failed to refresh stats',
+                    type: 'error'
+                });
+            }
+        },
+        
+        formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        }
+    }));
+});
+</script>
+
+<style>
+.activity-timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.activity-item {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.activity-item::before {
+    content: '';
+    position: absolute;
+    left: -25px;
+    top: 5px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--color-primary, #1e3a8a);
+    border: 2px solid white;
+}
+
+.activity-item::after {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 15px;
+    bottom: -20px;
+    width: 2px;
+    background-color: var(--color-border, #e2e8f0);
+}
+
+.activity-content h6 {
+    margin-bottom: 0.5rem;
+    color: var(--color-text, #1e293b);
+}
+
+.activity-time {
+    font-size: 0.75rem;
+    color: var(--color-text-muted, #64748b);
+}
+
+.events-list {
+    space-y: 1rem;
+}
+
+.event-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: var(--radius-md, 0.75rem);
+    transition: background-color 0.2s ease;
+}
+
+.event-item:hover {
+    background-color: var(--color-bg-alt, #f8fafc);
+}
+
+.event-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-bg-alt, #f8fafc);
+}
+
+.event-details {
+    flex: 1;
+}
+
+.event-details h6 {
+    margin-bottom: 0.25rem;
+    color: var(--color-text, #1e293b);
+}
+
+.event-time {
+    font-size: 0.75rem;
+    color: var(--color-text-muted, #64748b);
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.metric-card {
+    background: var(--color-bg-alt, #f8fafc);
+    padding: 1.5rem;
+    border-radius: var(--radius-md, 0.75rem);
+    text-align: center;
+}
+
+.metric-card h6 {
+    margin-bottom: 0.5rem;
+    color: var(--color-text-muted, #64748b);
+    font-weight: 500;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-primary, #1e3a8a);
+    margin-bottom: 0.5rem;
+}
+
+.metric-change {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.metric-change.positive {
+    color: #28a745;
+}
+
+.metric-change.negative {
+    color: #dc3545;
+}
+</style>
+{% endblock %}

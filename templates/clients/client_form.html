@@ -1,8 +1,8 @@
-{% extends "_base.html" %}
+{% extends "_tenant_base.html" %}
 {% load static %}
 {% load crispy_forms_tags %}
 
-{% block title %}{{ title }} - {{ tenant.name }} - Lithium{% endblock title %}
+{% block title %}{{ title }} - {{ user.tenant.name }} - Lithium{% endblock title %}
 
 {% block content %}
 <!-- Enhanced Page Header -->
@@ -18,7 +18,7 @@
   </div>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <a href="{% url 'clients:list' %}" class="btn btn-outline-secondary">
+      <a href="{% url 'lawyer_panel:client_list' %}" class="btn btn-outline-secondary">
         <i class="fas fa-arrow-left me-2"></i> Back to Clients
       </a>
     </div>
@@ -35,8 +35,25 @@
         </h6>
       </div>
       <div class="card-body">
-        <form method="post" novalidate>
+        <form 
+          method="post" 
+          novalidate
+          x-data="{ isSubmitting: false }"
+          @submit="isSubmitting = true"
+          hx-post="{{ request.get_full_path }}"
+          hx-target="#form-messages"
+          hx-swap="innerHTML"
+          hx-indicator=".htmx-indicator"
+        >
           {% csrf_token %}
+          
+          <!-- Loading Indicator -->
+          <div class="htmx-indicator d-none">
+            <div class="spinner-border spinner-border-sm me-2" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            Processing...
+          </div>
           
           <!-- Basic Information Section -->
           <div class="form-section fade-in-up" style="animation-delay: 0.1s;">
@@ -98,15 +115,12 @@
           <!-- Form Actions -->
           <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
             <div class="btn-group">
-              <button type="submit" class="btn btn-primary btn-lg">
-                <i class="fas fa-save me-2"></i>
-                {% if form.instance.pk %}
-                  Update Client
-                {% else %}
-                  Create Client
-                {% endif %}
+              <button type="submit" class="btn btn-primary btn-lg" :disabled="isSubmitting">
+                <i class="fas fa-save me-2" x-show="!isSubmitting"></i>
+                <i class="fas fa-spinner fa-spin me-2" x-show="isSubmitting"></i>
+                {% if form.instance.pk %}Update Client{% else %}Create Client{% endif %}
               </button>
-              <a href="{% url 'clients:list' %}" class="btn btn-outline-secondary btn-lg">
+              <a href="{% url 'lawyer_panel:client_list' %}" class="btn btn-outline-secondary btn-lg">
                 <i class="fas fa-times me-2"></i> Cancel
               </a>
             </div>
@@ -121,6 +135,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Form Messages Container -->
+  <div id="form-messages"></div>
 
   <!-- Sidebar with Enhanced Help Information -->
   <div class="col-lg-4">
@@ -139,7 +156,7 @@
             Basic Information
           </h6>
           <p class="small text-muted">
-            Enter the client's basic contact information. Email is required and must be unique within your firm.
+            Enter client's basic contact information. Email is required and must be unique within your firm.
           </p>
         </div>
         
@@ -226,22 +243,10 @@
 </div>
 {% endblock content %}
 
-{% block javascript %}
+{% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Add form field interactions
-    const formInputs = document.querySelectorAll('input, select, textarea');
-    formInputs.forEach(input => {
-        input.addEventListener('focus', function() {
-            this.closest('.form-group')?.classList.add('focused');
-        });
-        
-        input.addEventListener('blur', function() {
-            this.closest('.form-group')?.classList.remove('focused');
-        });
-    });
-    
-    // Auto-format phone number
+    // Auto-format phone number with Alpine.js integration
     const phoneField = document.getElementById('id_phone');
     if (phoneField) {
         phoneField.addEventListener('input', function(e) {
@@ -261,68 +266,32 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Auto-save draft functionality
-    let autoSaveTimer;
-    const form = document.querySelector('form');
-    const inputs = form.querySelectorAll('input, select, textarea');
-    
-    inputs.forEach(input => {
-        input.addEventListener('input', function() {
-            clearTimeout(autoSaveTimer);
-            autoSaveTimer = setTimeout(function() {
-                // Show auto-save indicator
-                const saveIndicator = document.createElement('div');
-                saveIndicator.className = 'auto-save-indicator';
-                saveIndicator.innerHTML = '<i class="fas fa-save me-2"></i>Draft saved...';
-                saveIndicator.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: #28a745; color: white; padding: 10px 20px; border-radius: 5px; z-index: 9999; animation: fadeInUp 0.3s ease;';
-                document.body.appendChild(saveIndicator);
-                
-                // Remove indicator after 2 seconds
-                setTimeout(() => {
-                    saveIndicator.remove();
-                }, 2000);
-            }, 2000);
-        });
-    });
-    
-    // Form validation enhancement
-    form.addEventListener('submit', function(e) {
-        let isValid = true;
-        const requiredFields = form.querySelectorAll('[required]');
-        
-        requiredFields.forEach(field => {
-            if (!field.value.trim()) {
-                isValid = false;
-                field.classList.add('is-invalid');
-                
-                // Scroll to first invalid field
-                if (isValid === false) {
-                    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    field.focus();
-                }
-            } else {
-                field.classList.remove('is-invalid');
-            }
-        });
-        
-        if (!isValid) {
-            e.preventDefault();
+    // HTMX event handlers for enhanced UX
+    document.body.addEventListener('htmx:afterRequest', function(evt) {
+        const formMessages = document.getElementById('form-messages');
+        if (formMessages && evt.detail.successful) {
+            // Show success message
+            formMessages.innerHTML = `
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <div class="flex-grow-1">
+                            {% if form.instance.pk %}Client updated successfully!{% else %}Client created successfully!{% endif %}
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
             
-            // Show validation message
-            const validationMessage = document.createElement('div');
-            validationMessage.className = 'alert alert-danger fade-in-up';
-            validationMessage.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Please fill in all required fields.';
-            form.insertBefore(validationMessage, form.firstChild);
-            
-            // Remove message after 5 seconds
+            // Auto-redirect after success
             setTimeout(() => {
-                validationMessage.remove();
-            }, 5000);
+                window.location.href = "{% url 'lawyer_panel:client_list' %}";
+            }, 2000);
         }
     });
     
     // Character counter for text areas
-    const textareas = form.querySelectorAll('textarea');
+    const textareas = document.querySelectorAll('textarea');
     textareas.forEach(textarea => {
         const maxLength = textarea.getAttribute('maxlength');
         if (maxLength) {
@@ -345,4 +314,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-{% endblock javascript %}
+{% endblock %}

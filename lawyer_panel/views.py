@@ -5,6 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib import messages
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.decorators.http import require_http_methods
 from django.urls import reverse_lazy
 from django.http import JsonResponse, HttpResponseForbidden, HttpRequest
 from django.db.models import Q, Count, Sum, Avg
@@ -17,7 +18,7 @@ from core.types import TenantHttpRequest
 from clients.models import Client
 from cases.models import Case, CaseEvent
 from documents.models import Document
-from billing.models import TimeEntry, Expense, Invoice, Payment
+from billing.models import TimeEntry, Expense, Invoice, Payment, InvoiceItem
 from .forms import (
     ClientForm, CaseForm, CaseEventForm, DocumentForm,
     TimeEntryForm, ExpenseForm, QuickSearchForm, LawyerProfileForm,
@@ -1102,3 +1103,791 @@ def update_case_load(request: TenantHttpRequest, lawyer_profile_id: int):
     messages.success(request, f'Case load for {lawyer_profile.full_name} has been updated.')
     
     return redirect('lawyer_panel:lawyer_profile_detail', pk=lawyer_profile.pk)
+
+
+# Invoice Views
+
+class InvoiceListView(LawyerPanelRequiredMixin, ListView):
+    """List view for invoices."""
+    model = Invoice
+    template_name = 'lawyer_panel/invoice_list.html'
+    context_object_name = 'invoices'
+    paginate_by = 20
+    
+    def get_queryset(self):
+        queryset = Invoice.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            deleted_at__isnull=True
+        )
+        
+        # Apply filters
+        status_filter = self.request.GET.get('status')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        
+        client_filter = self.request.GET.get('client')
+        if client_filter:
+            queryset = queryset.filter(client_id=client_filter)
+        
+        date_from = self.request.GET.get('date_from')
+        if date_from:
+            queryset = queryset.filter(issue_date__gte=date_from)
+        
+        date_to = self.request.GET.get('date_to')
+        if date_to:
+            queryset = queryset.filter(issue_date__lte=date_to)
+        
+        return queryset.order_by('-issue_date', '-created_at')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'status_choices': Invoice.STATUS_CHOICES,
+            'clients': Client.objects.filter(
+                tenant=self.request.tenant,  # type: ignore
+                deleted_at__isnull=True
+            ),
+            'total_amount': self.get_queryset().aggregate(
+                total=Sum('total_amount')
+            )['total'] or 0,
+        })
+        return context
+
+
+class InvoiceDetailView(LawyerPanelRequiredMixin, DetailView):
+    """Detail view for a specific invoice."""
+    model = Invoice
+    template_name = 'lawyer_panel/invoice_detail.html'
+    context_object_name = 'invoice'
+    
+    def get_queryset(self):
+        return Invoice.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            deleted_at__isnull=True
+        )
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        invoice = self.get_object()
+        
+        context.update({
+            'items': invoice.items.filter(deleted_at__isnull=True),  # type: ignore
+            'payments': invoice.payments.filter(deleted_at__isnull=True),  # type: ignore
+            'total_paid': sum(p.amount for p in invoice.payments.filter(deleted_at__isnull=True)),  # type: ignore
+        })
+        return context
+
+
+class InvoiceCreateView(LawyerPanelRequiredMixin, CreateView):
+    """Create view for new invoices."""
+    model = Invoice
+    template_name = 'lawyer_panel/invoice_form.html'
+    success_url = reverse_lazy('lawyer_panel:invoice_list')
+    fields = ['client', 'case', 'issue_date', 'due_date', 'tax_rate', 'notes']
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Create New Invoice'
+        context['clients'] = Client.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            deleted_at__isnull=True
+        )
+        context['cases'] = Case.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            assigned_lawyers=self.request.user,
+            deleted_at__isnull=True
+        )
+        return context
+    
+    def form_valid(self, form):
+        form.instance.tenant = self.request.tenant  # type: ignore
+        form.instance.created_by = self.request.user
+        
+        # Generate invoice number
+        from datetime import datetime
+        today = datetime.now()
+        invoice_count = Invoice.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            created_at__year=today.year,
+            created_at__month=today.month
+        ).count() + 1
+        form.instance.invoice_number = f"INV-{today.strftime('%Y%m')}-{invoice_count:04d}"
+        
+        messages.success(self.request, f'Invoice "{form.instance.invoice_number}" has been created successfully.')
+        return super().form_valid(form)
+
+
+# Payment Views
+
+class PaymentListView(LawyerPanelRequiredMixin, ListView):
+    """List view for payments."""
+    model = Payment
+    template_name = 'lawyer_panel/payment_list.html'
+    context_object_name = 'payments'
+    paginate_by = 20
+    
+    def get_queryset(self):
+        queryset = Payment.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            deleted_at__isnull=True
+        )
+        
+        # Apply filters
+        invoice_filter = self.request.GET.get('invoice')
+        if invoice_filter:
+            queryset = queryset.filter(invoice_id=invoice_filter)
+        
+        payment_method_filter = self.request.GET.get('payment_method')
+        if payment_method_filter:
+            queryset = queryset.filter(payment_method=payment_method_filter)
+        
+        date_from = self.request.GET.get('date_from')
+        if date_from:
+            queryset = queryset.filter(payment_date__gte=date_from)
+        
+        date_to = self.request.GET.get('date_to')
+        if date_to:
+            queryset = queryset.filter(payment_date__lte=date_to)
+        
+        return queryset.order_by('-payment_date', '-created_at')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'payment_method_choices': Payment.PAYMENT_METHOD_CHOICES,
+            'invoices': Invoice.objects.filter(
+                tenant=self.request.tenant,  # type: ignore
+                deleted_at__isnull=True
+            ),
+            'total_amount': self.get_queryset().aggregate(
+                total=Sum('amount')
+            )['total'] or 0,
+        })
+        return context
+
+
+class PaymentDetailView(LawyerPanelRequiredMixin, DetailView):
+    """Detail view for a specific payment."""
+    model = Payment
+    template_name = 'lawyer_panel/payment_detail.html'
+    context_object_name = 'payment'
+    
+    def get_queryset(self):
+        return Payment.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            deleted_at__isnull=True
+        )
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        payment = self.get_object()
+        
+        context.update({
+            'invoice': payment.invoice,  # type: ignore
+            'remaining_balance': payment.remaining_balance,  # type: ignore
+        })
+        return context
+
+
+class PaymentCreateView(LawyerPanelRequiredMixin, CreateView):
+    """Create view for new payments."""
+    model = Payment
+    template_name = 'lawyer_panel/payment_form.html'
+    success_url = reverse_lazy('lawyer_panel:payment_list')
+    fields = ['invoice', 'amount', 'payment_date', 'payment_method', 'reference', 'notes']
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Record Payment'
+        context['invoices'] = Invoice.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            deleted_at__isnull=True,
+            status__in=['draft', 'sent', 'overdue']
+        )
+        return context
+    
+    def form_valid(self, form):
+        form.instance.tenant = self.request.tenant  # type: ignore
+        form.instance.created_by = self.request.user
+        messages.success(self.request, f'Payment of ${form.instance.amount} has been recorded successfully.')
+        return super().form_valid(form)
+
+
+@login_required
+def generate_invoice(request: TenantHttpRequest):
+    """Generate an invoice from unbilled time entries and expenses."""
+    if not hasattr(request.user, 'role') or request.user.role.lower() not in ['lawyer', 'admin']:  # type: ignore
+        return HttpResponseForbidden()
+    
+    if request.method == 'POST':
+        client_id = request.POST.get('client')
+        case_id = request.POST.get('case')
+        
+        if not client_id:
+            messages.error(request, 'Please select a client.')
+            return redirect('lawyer_panel:generate_invoice')
+        
+        client = get_object_or_404(
+            Client,
+            pk=client_id,
+            tenant=request.tenant,
+            deleted_at__isnull=True
+        )
+        
+        case = None
+        if case_id:
+            case = get_object_or_404(
+                Case,
+                pk=case_id,
+                tenant=request.tenant,
+                deleted_at__isnull=True
+            )
+        
+        # Create invoice
+        from datetime import datetime, timedelta
+        today = datetime.now()
+        due_date = today + timedelta(days=30)
+        
+        invoice_count = Invoice.objects.filter(
+            tenant=request.tenant,
+            created_at__year=today.year,
+            created_at__month=today.month
+        ).count() + 1
+        
+        invoice = Invoice.objects.create(
+            invoice_number=f"INV-{today.strftime('%Y%m')}-{invoice_count:04d}",
+            client=client,
+            case=case,
+            issue_date=today.date(),
+            due_date=due_date.date(),
+            tenant=request.tenant,
+            created_by=request.user
+        )
+        
+        # Add unbilled time entries
+        unbilled_time_entries = TimeEntry.objects.filter(
+            tenant=request.tenant,
+            lawyer=request.user,
+            is_billable=True,
+            deleted_at__isnull=True
+        ).exclude(
+            invoice_items__isnull=False
+        )
+        
+        for time_entry in unbilled_time_entries:
+            InvoiceItem.objects.create(
+                invoice=invoice,
+                description=f"Time entry: {time_entry.description}",
+                quantity=time_entry.hours,
+                rate=time_entry.rate,
+                time_entry=time_entry,
+                tenant=request.tenant
+            )
+        
+        # Add unbilled expenses
+        unbilled_expenses = Expense.objects.filter(
+            tenant=request.tenant,
+            created_by=request.user,
+            is_reimbursable=True,
+            deleted_at__isnull=True
+        ).exclude(
+            invoice_items__isnull=False
+        )
+        
+        for expense in unbilled_expenses:
+            InvoiceItem.objects.create(
+                invoice=invoice,
+                description=f"Expense: {expense.description}",
+                quantity=1,
+                rate=expense.amount,
+                expense=expense,
+                tenant=request.tenant
+            )
+        
+        # Calculate totals
+        invoice.calculate_totals()
+        
+        messages.success(
+            request,
+            f'Invoice {invoice.invoice_number} has been generated with {unbilled_time_entries.count()} time entries and {unbilled_expenses.count()} expenses.'
+        )
+        return redirect('lawyer_panel:invoice_detail', pk=invoice.pk)
+    
+    # GET request
+    context = {
+        'clients': Client.objects.filter(
+            tenant=request.tenant,
+            deleted_at__isnull=True
+        ),
+        'cases': Case.objects.filter(
+            tenant=request.tenant,
+            assigned_lawyers=request.user,
+            deleted_at__isnull=True
+        ),
+        'title': 'Generate Invoice'
+    }
+    
+    return render(request, 'lawyer_panel/generate_invoice.html', context)
+
+
+# ============================================================================
+# DELETE VIEWS - Complete CRUD Implementation
+# ============================================================================
+
+class ClientDeleteView(LawyerPanelRequiredMixin, DeleteView):
+    """Soft delete view for clients."""
+    model = Client
+    template_name = 'lawyer_panel/client_confirm_delete.html'
+    success_url = reverse_lazy('lawyer_panel:client_list')
+    
+    def get_queryset(self):
+        return Client.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            deleted_at__isnull=True
+        )
+    
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.soft_delete()
+        messages.success(request, f'Client "{self.object.full_name}" has been deleted successfully.')
+        return redirect(self.success_url)
+
+
+class CaseDeleteView(LawyerPanelRequiredMixin, DeleteView):
+    """Soft delete view for cases."""
+    model = Case
+    template_name = 'lawyer_panel/case_confirm_delete.html'
+    success_url = reverse_lazy('lawyer_panel:case_list')
+    
+    def get_queryset(self):
+        return Case.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            assigned_lawyers=self.request.user,
+            deleted_at__isnull=True
+        )
+    
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.soft_delete()
+        messages.success(request, f'Case "{self.object.title}" has been deleted successfully.')
+        return redirect(self.success_url)
+
+
+class DocumentDeleteView(LawyerPanelRequiredMixin, DeleteView):
+    """Soft delete view for documents."""
+    model = Document
+    template_name = 'lawyer_panel/document_confirm_delete.html'
+    success_url = reverse_lazy('lawyer_panel:document_list')
+    
+    def get_queryset(self):
+        return Document.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            deleted_at__isnull=True
+        )
+    
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.soft_delete()
+        messages.success(request, f'Document "{self.object.title}" has been deleted successfully.')
+        return redirect(self.success_url)
+
+
+class TimeEntryDeleteView(LawyerPanelRequiredMixin, DeleteView):
+    """Soft delete view for time entries."""
+    model = TimeEntry
+    template_name = 'lawyer_panel/time_entry_confirm_delete.html'
+    success_url = reverse_lazy('lawyer_panel:time_entry_list')
+    
+    def get_queryset(self):
+        return TimeEntry.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            lawyer=self.request.user,
+            deleted_at__isnull=True
+        )
+    
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        # Check if already billed
+        if self.object.is_billed:
+            messages.error(request, 'Cannot delete a time entry that has been billed.')
+            return redirect('lawyer_panel:time_entry_list')
+        self.object.soft_delete()
+        messages.success(request, 'Time entry has been deleted successfully.')
+        return redirect(self.success_url)
+
+
+class ExpenseDeleteView(LawyerPanelRequiredMixin, DeleteView):
+    """Soft delete view for expenses."""
+    model = Expense
+    template_name = 'lawyer_panel/expense_confirm_delete.html'
+    success_url = reverse_lazy('lawyer_panel:expense_list')
+    
+    def get_queryset(self):
+        return Expense.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            created_by=self.request.user,
+            deleted_at__isnull=True
+        )
+    
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        # Check if already billed
+        if self.object.is_billed:
+            messages.error(request, 'Cannot delete an expense that has been billed.')
+            return redirect('lawyer_panel:expense_list')
+        self.object.soft_delete()
+        messages.success(request, 'Expense has been deleted successfully.')
+        return redirect(self.success_url)
+
+
+class InvoiceDeleteView(LawyerPanelRequiredMixin, DeleteView):
+    """Soft delete view for invoices."""
+    model = Invoice
+    template_name = 'lawyer_panel/invoice_confirm_delete.html'
+    success_url = reverse_lazy('lawyer_panel:invoice_list')
+    
+    def get_queryset(self):
+        return Invoice.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            deleted_at__isnull=True
+        )
+    
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        # Only allow deletion of draft invoices
+        if self.object.status != 'draft':
+            messages.error(request, 'Only draft invoices can be deleted.')
+            return redirect('lawyer_panel:invoice_list')
+        self.object.soft_delete()
+        messages.success(request, f'Invoice "{self.object.invoice_number}" has been deleted successfully.')
+        return redirect(self.success_url)
+
+
+class PaymentDeleteView(LawyerPanelRequiredMixin, DeleteView):
+    """Soft delete view for payments."""
+    model = Payment
+    template_name = 'lawyer_panel/payment_confirm_delete.html'
+    success_url = reverse_lazy('lawyer_panel:payment_list')
+    
+    def get_queryset(self):
+        return Payment.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            deleted_at__isnull=True
+        )
+    
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.soft_delete()
+        messages.success(request, f'Payment has been deleted successfully.')
+        return redirect(self.success_url)
+
+
+class LawyerProfileDeleteView(LawyerPanelRequiredMixin, DeleteView):
+    """Soft delete view for lawyer profiles."""
+    model = LawyerProfile
+    template_name = 'lawyer_panel/lawyer_profile_confirm_delete.html'
+    success_url = reverse_lazy('lawyer_panel:lawyer_profile_list')
+    
+    def get_queryset(self):
+        return LawyerProfile.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            deleted_at__isnull=True
+        )
+    
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.soft_delete()
+        messages.success(request, f'Lawyer profile for {self.object.full_name} has been deleted successfully.')
+        return redirect(self.success_url)
+
+
+class PracticeAreaDeleteView(LawyerPanelRequiredMixin, DeleteView):
+    """Delete view for practice areas."""
+    model = PracticeArea
+    template_name = 'lawyer_panel/practice_area_confirm_delete.html'
+    success_url = reverse_lazy('lawyer_panel:practice_area_list')
+    
+    def get_queryset(self):
+        return PracticeArea.objects.filter(tenant=self.request.tenant)  # type: ignore
+    
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        # Check if practice area is in use
+        if self.object.lawyers.exists():
+            messages.error(request, f'Cannot delete practice area "{self.object.name}" because it is assigned to lawyers.')
+            return redirect('lawyer_panel:practice_area_list')
+        self.object.delete()
+        messages.success(request, f'Practice area "{self.object.name}" has been deleted successfully.')
+        return redirect(self.success_url)
+
+
+class LawyerQualificationDeleteView(LawyerPanelRequiredMixin, DeleteView):
+    """Delete view for lawyer qualifications."""
+    model = LawyerQualification
+    template_name = 'lawyer_panel/lawyer_qualification_confirm_delete.html'
+    
+    def get_queryset(self):
+        return LawyerQualification.objects.filter(tenant=self.request.tenant)  # type: ignore
+    
+    def get_success_url(self):
+        return reverse_lazy('lawyer_panel:lawyer_qualification_list', kwargs={
+            'lawyer_profile_id': self.object.lawyer_profile.pk
+        })
+    
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+        messages.success(request, f'Qualification "{self.object.title}" has been deleted successfully.')
+        return redirect(self.get_success_url())
+
+
+# ============================================================================
+# UPDATE VIEWS - Complete CRUD Implementation
+# ============================================================================
+
+class DocumentUpdateView(LawyerPanelRequiredMixin, UpdateView):
+    """Update view for documents."""
+    model = Document
+    form_class = DocumentForm
+    template_name = 'lawyer_panel/document_form.html'
+    success_url = reverse_lazy('lawyer_panel:document_list')
+    
+    def get_queryset(self):
+        return Document.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            deleted_at__isnull=True
+        )
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+    
+    def form_valid(self, form):
+        messages.success(self.request, f'Document "{form.instance.title}" has been updated successfully.')
+        return super().form_valid(form)
+
+
+class TimeEntryUpdateView(LawyerPanelRequiredMixin, UpdateView):
+    """Update view for time entries."""
+    model = TimeEntry
+    form_class = TimeEntryForm
+    template_name = 'lawyer_panel/time_entry_form.html'
+    success_url = reverse_lazy('lawyer_panel:time_entry_list')
+    
+    def get_queryset(self):
+        return TimeEntry.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            lawyer=self.request.user,
+            deleted_at__isnull=True
+        )
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+    
+    def form_valid(self, form):
+        # Check if already billed
+        if self.object.is_billed:
+            messages.error(self.request, 'Cannot edit a time entry that has been billed.')
+            return redirect('lawyer_panel:time_entry_list')
+        messages.success(self.request, 'Time entry has been updated successfully.')
+        return super().form_valid(form)
+
+
+class ExpenseUpdateView(LawyerPanelRequiredMixin, UpdateView):
+    """Update view for expenses."""
+    model = Expense
+    form_class = ExpenseForm
+    template_name = 'lawyer_panel/expense_form.html'
+    success_url = reverse_lazy('lawyer_panel:expense_list')
+    
+    def get_queryset(self):
+        return Expense.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            created_by=self.request.user,
+            deleted_at__isnull=True
+        )
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+    
+    def form_valid(self, form):
+        # Check if already billed
+        if self.object.is_billed:
+            messages.error(self.request, 'Cannot edit an expense that has been billed.')
+            return redirect('lawyer_panel:expense_list')
+        messages.success(self.request, 'Expense has been updated successfully.')
+        return super().form_valid(form)
+
+
+class InvoiceUpdateView(LawyerPanelRequiredMixin, UpdateView):
+    """Update view for invoices."""
+    model = Invoice
+    template_name = 'lawyer_panel/invoice_form.html'
+    fields = ['client', 'case', 'issue_date', 'due_date', 'tax_rate', 'notes', 'status']
+    
+    def get_queryset(self):
+        return Invoice.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            deleted_at__isnull=True
+        )
+    
+    def get_success_url(self):
+        return reverse_lazy('lawyer_panel:invoice_detail', kwargs={'pk': self.object.pk})
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Edit Invoice'
+        context['clients'] = Client.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            deleted_at__isnull=True
+        )
+        context['cases'] = Case.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            assigned_lawyers=self.request.user,
+            deleted_at__isnull=True
+        )
+        return context
+    
+    def form_valid(self, form):
+        messages.success(self.request, f'Invoice "{form.instance.invoice_number}" has been updated successfully.')
+        return super().form_valid(form)
+
+
+class PaymentUpdateView(LawyerPanelRequiredMixin, UpdateView):
+    """Update view for payments."""
+    model = Payment
+    template_name = 'lawyer_panel/payment_form.html'
+    fields = ['invoice', 'amount', 'payment_date', 'payment_method', 'reference', 'notes']
+    
+    def get_queryset(self):
+        return Payment.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            deleted_at__isnull=True
+        )
+    
+    def get_success_url(self):
+        return reverse_lazy('lawyer_panel:payment_detail', kwargs={'pk': self.object.pk})
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Edit Payment'
+        context['invoices'] = Invoice.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            deleted_at__isnull=True
+        )
+        return context
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Payment has been updated successfully.')
+        return super().form_valid(form)
+
+
+class CaseEventUpdateView(LawyerPanelRequiredMixin, UpdateView):
+    """Update view for case events."""
+    model = CaseEvent
+    form_class = CaseEventForm
+    template_name = 'lawyer_panel/case_event_form.html'
+    
+    def get_queryset(self):
+        return CaseEvent.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            case__assigned_lawyers=self.request.user
+        )
+    
+    def get_success_url(self):
+        return reverse_lazy('lawyer_panel:case_detail', kwargs={'pk': self.object.case.pk})
+    
+    def form_valid(self, form):
+        messages.success(self.request, f'Event "{form.instance.title}" has been updated successfully.')
+        return super().form_valid(form)
+
+
+class CaseEventDeleteView(LawyerPanelRequiredMixin, DeleteView):
+    """Delete view for case events."""
+    model = CaseEvent
+    template_name = 'lawyer_panel/case_event_confirm_delete.html'
+    
+    def get_queryset(self):
+        return CaseEvent.objects.filter(
+            tenant=self.request.tenant,  # type: ignore
+            case__assigned_lawyers=self.request.user
+        )
+    
+    def get_success_url(self):
+        return reverse_lazy('lawyer_panel:case_detail', kwargs={'pk': self.object.case.pk})
+    
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+        messages.success(request, f'Event "{self.object.title}" has been deleted successfully.')
+        return redirect(self.get_success_url())
+
+
+# ============================================================================
+# HTMX AJAX VIEWS - Dynamic Interactions
+# ============================================================================
+
+@login_required
+@require_http_methods(["DELETE"])
+def htmx_delete_client(request: TenantHttpRequest, pk: int):
+    """HTMX endpoint for deleting clients."""
+    if not hasattr(request.user, 'role') or request.user.role.lower() not in ['lawyer', 'admin']:  # type: ignore
+        return HttpResponseForbidden()
+    
+    client = get_object_or_404(
+        Client,
+        pk=pk,
+        tenant=request.tenant,
+        deleted_at__isnull=True
+    )
+    
+    client.soft_delete()
+    
+    from django.http import HttpResponse
+    return HttpResponse(
+        status=200,
+        headers={'HX-Trigger': 'clientDeleted'}
+    )
+
+
+@login_required
+def htmx_client_row(request: TenantHttpRequest, pk: int):
+    """HTMX endpoint for rendering a single client row."""
+    if not hasattr(request.user, 'role') or request.user.role.lower() not in ['lawyer', 'admin']:  # type: ignore
+        return HttpResponseForbidden()
+    
+    client = get_object_or_404(
+        Client,
+        pk=pk,
+        tenant=request.tenant,
+        deleted_at__isnull=True
+    )
+    
+    return render(request, 'lawyer_panel/partials/client_row.html', {'client': client})
+
+
+@login_required
+def htmx_case_events(request: TenantHttpRequest, case_id: int):
+    """HTMX endpoint for loading case events."""
+    if not hasattr(request.user, 'role') or request.user.role.lower() not in ['lawyer', 'admin']:  # type: ignore
+        return HttpResponseForbidden()
+    
+    case = get_object_or_404(
+        Case,
+        pk=case_id,
+        tenant=request.tenant,
+        assigned_lawyers=request.user,
+        deleted_at__isnull=True
+    )
+    
+    events = case.events.order_by('-event_date')  # type: ignore
+    
+    return render(request, 'lawyer_panel/partials/case_events.html', {
+        'case': case,
+        'events': events
+    })

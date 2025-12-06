@@ -1,0 +1,109 @@
+{% extends "lawyer_panel/base.html" %}
+{% load static %}
+
+{% block title %}Qualifications - Lawyer Panel{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            {% if lawyer_profile %}Qualifications for {{ lawyer_profile.full_name }}{% else %}All Qualifications{% endif
+            %}
+        </h1>
+        <div>
+            {% if lawyer_profile %}
+            <a href="{% url 'lawyer_panel:lawyer_qualification_create' lawyer_profile.pk %}"
+                class="btn btn-primary btn-icon-split mr-2">
+                <span class="icon text-white-50">
+                    <i class="fas fa-plus"></i>
+                </span>
+                <span class="text">Add Qualification</span>
+            </a>
+            <a href="{% url 'lawyer_panel:lawyer_profile_detail' lawyer_profile.pk %}" class="btn btn-secondary">Back to
+                Profile</a>
+            {% else %}
+            <a href="{% url 'lawyer_panel:lawyer_profile_list' %}" class="btn btn-secondary">Back to Profiles</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Qualifications List -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Qualifications & Certifications</h6>
+        </div>
+        <div class="card-body">
+            {% if qualifications %}
+            <div class="list-group">
+                {% for qual in qualifications %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">{{ qual.title }}</h5>
+                            <p class="mb-1"><strong>{{ qual.institution }}</strong> - {{ qual.year_obtained }}</p>
+                            <p class="mb-1"><span class="badge badge-info">{{ qual.get_qualification_type_display
+                                    }}</span></p>
+                            {% if not lawyer_profile %}
+                            <p class="mb-1"><small class="text-muted">Lawyer: {{ qual.lawyer_profile.full_name
+                                    }}</small></p>
+                            {% endif %}
+                            {% if qual.description %}
+                            <p class="mt-2">{{ qual.description }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="ml-3">
+                            {% if qual.certificate_file %}
+                            <a href="{{ qual.certificate_file.url }}" class="btn btn-sm btn-info mb-2" target="_blank"
+                                title="Download Certificate">
+                                <i class="fas fa-download"></i>
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'lawyer_panel:lawyer_qualification_update' qual.pk %}"
+                                class="btn btn-sm btn-warning" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav aria-label="Qualifications pagination" class="mt-3">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-certificate fa-3x text-gray-300 mb-3"></i>
+                <p class="text-muted">No qualifications found.</p>
+                {% if lawyer_profile %}
+                <a href="{% url 'lawyer_panel:lawyer_qualification_create' lawyer_profile.pk %}"
+                    class="btn btn-primary">Add First Qualification</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

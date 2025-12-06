@@ -424,10 +424,8 @@ class TenantUpdateForm(TenantForm):
         """
         super().__init__(*args, **kwargs)
         
-        # Make slug field readonly if it exists
-        if 'slug' in self.fields:
-            self.fields['slug'].widget.attrs['readonly'] = True
-            self.fields['slug'].help_text = _("Slug cannot be changed after creation.")
+        # Note: slug field is excluded from update form to prevent URL changes
+        # No need to check for slug field since it's excluded from Meta.fields
 
 
 class TenantRegistrationForm(TenantForm):
@@ -576,6 +574,7 @@ class TenantRegistrationForm(TenantForm):
             # Create the admin user
             User = get_user_model()
             admin_user = User.objects.create_user(
+                username=self.cleaned_data['admin_email'],  # username is required
                 email=self.cleaned_data['admin_email'],
                 first_name=self.cleaned_data['admin_first_name'],
                 last_name=self.cleaned_data['admin_last_name'],

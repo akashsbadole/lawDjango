@@ -43,7 +43,7 @@ def has_role(user, role_name):
         return False
     
     roles = get_user_roles(user, user.tenant)
-    return any(role.name == role_name for role in roles)
+    return any(role == role_name for role in roles)
 
 
 @register.simple_tag

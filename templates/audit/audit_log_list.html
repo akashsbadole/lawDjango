@@ -84,7 +84,7 @@
                                         <tr>
                                             <td>{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
                                             <td>{{ log.user.get_full_name|default:log.user.email }}</td>
-                                            <td>{% action_badge log.action %}</td>
+                                            <td>{% get_action_badge log.action %}</td>
                                             <td>{{ log.model_name }}</td>
                                             <td>{{ log.object_id }}</td>
                                             <td>{{ log.ip_address }}</td>
@@ -168,7 +168,7 @@
                     </div>
                     <div class="row mb-3">
                         <div class="col-sm-3"><strong>Action:</strong></div>
-                        <div class="col-sm-9">{% action_badge log.action %}</div>
+                        <div class="col-sm-9">{% get_action_badge log.action %}</div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-sm-3"><strong>Model:</strong></div>
@@ -191,7 +191,7 @@
                         <div class="row mb-3">
                             <div class="col-sm-3"><strong>Changes:</strong></div>
                             <div class="col-sm-9">
-                                {% audit_log_changes log %}
+                                {% get_audit_log_changes log %}
                             </div>
                         </div>
                     {% endif %}

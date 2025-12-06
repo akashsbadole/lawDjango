@@ -1,0 +1,280 @@
+{% load static %}
+<!-- Alpine.js Tabs Component -->
+<div x-data="tabs({{ initial_tab|default:0 }})" class="tabs-component {{ tabs_class|default:'' }}">
+    <!-- Tab Navigation -->
+    <div class="tab-nav {{ nav_class|default:'' }}">
+        <ul class="tab-list">
+            {% for tab in tabs %}
+            <li>
+                <button 
+                    class="tab-button"
+                    :class="{ 'active': activeTab === {{ forloop.counter0 }} }"
+                    @click="setActiveTab({{ forloop.counter0 }})"
+                    type="button"
+                >
+                    {% if tab.icon %}
+                    <i class="{{ tab.icon }} me-2"></i>
+                    {% endif %}
+                    {{ tab.title }}
+                    {% if tab.badge %}
+                    <span class="tab-badge">{{ tab.badge }}</span>
+                    {% endif %}
+                </button>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    
+    <!-- Tab Content -->
+    <div class="tab-content {{ content_class|default:'' }}">
+        {% for tab in tabs %}
+        <div 
+            class="tab-panel"
+            :class="{ 'active': activeTab === {{ forloop.counter0 }} }"
+            x-show="activeTab === {{ forloop.counter0 }}"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 transform translate-x-4"
+            x-transition:enter-end="opacity-100 transform translate-x-0"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100 transform translate-x-0"
+            x-transition:leave-end="opacity-0 transform -translate-x-4"
+        >
+            {% if tab.content %}
+            {{ tab.content }}
+            {% elif tab.template %}
+            {% include tab.template %}
+            {% else %}
+            <p>No content provided for this tab.</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('tabs', (initialTab = 0) => ({
+        activeTab: initialTab,
+        
+        setActiveTab(index) {
+            this.activeTab = index;
+            
+            // Emit custom event
+            this.$dispatch('tab-changed', { 
+                activeTab: index,
+                tabElement: this.$el.querySelectorAll('.tab-panel')[index]
+            });
+            
+            // Update URL hash if enabled
+            {% if update_url|default:'true' %}
+            const tabButtons = this.$el.querySelectorAll('.tab-button');
+            if (tabButtons[index]) {
+                const tabId = tabButtons[index].textContent.trim().toLowerCase().replace(/\s+/g, '-');
+                window.history.pushState({}, '', `#${tabId}`);
+            }
+            {% endif %}
+        },
+        
+        init() {
+            // Check URL hash on initialization
+            {% if update_url|default:'true' %}
+            if (window.location.hash) {
+                const hash = window.location.hash.substring(1);
+                const tabButtons = this.$el.querySelectorAll('.tab-button');
+                
+                tabButtons.forEach((button, index) => {
+                    const buttonId = button.textContent.trim().toLowerCase().replace(/\s+/g, '-');
+                    if (buttonId === hash) {
+                        this.setActiveTab(index);
+                    }
+                });
+            }
+            {% endif %}
+            
+            // Listen for browser back/forward
+            {% if update_url|default:'true' %}
+            window.addEventListener('popstate', () => {
+                if (window.location.hash) {
+                    const hash = window.location.hash.substring(1);
+                    const tabButtons = this.$el.querySelectorAll('.tab-button');
+                    
+                    tabButtons.forEach((button, index) => {
+                        const buttonId = button.textContent.trim().toLowerCase().replace(/\s+/g, '-');
+                        if (buttonId === hash) {
+                            this.activeTab = index;
+                        }
+                    });
+                } else {
+                    this.activeTab = {{ initial_tab|default:0 }};
+                }
+            });
+            {% endif %}
+        }
+    }));
+});
+</script>
+
+<style>
+.tabs-component {
+    width: 100%;
+}
+
+.tab-nav {
+    border-bottom: 1px solid var(--color-border, #e2e8f0);
+    margin-bottom: 1rem;
+    overflow-x: auto;
+}
+
+.tab-list {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    min-width: max-content;
+}
+
+.tab-button {
+    padding: 0.75rem 1rem;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--color-text-muted, #64748b);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+}
+
+.tab-button:hover {
+    color: var(--color-primary, #1e3a8a);
+    background-color: var(--color-bg-alt, #f8fafc);
+}
+
+.tab-button.active {
+    color: var(--color-primary, #1e3a8a);
+    border-bottom-color: var(--color-primary, #1e3a8a);
+    background-color: transparent;
+}
+
+.tab-badge {
+    background-color: var(--color-primary, #1e3a8a);
+    color: white;
+    font-size: 0.75rem;
+    padding: 0.125rem 0.375rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    min-width: 1.25rem;
+    text-align: center;
+}
+
+.tab-content {
+    position: relative;
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+/* Vertical tabs */
+.tabs-component.vertical {
+    display: flex;
+    gap: 1rem;
+}
+
+.tabs-component.vertical .tab-nav {
+    border-bottom: none;
+    border-right: 1px solid var(--color-border, #e2e8f0);
+    margin-bottom: 0;
+    flex-shrink: 0;
+}
+
+.tabs-component.vertical .tab-list {
+    flex-direction: column;
+}
+
+.tabs-component.vertical .tab-button {
+    border-bottom: none;
+    border-right: 2px solid transparent;
+    justify-content: flex-start;
+}
+
+.tabs-component.vertical .tab-button.active {
+    border-bottom: none;
+    border-right-color: var(--color-primary, #1e3a8a);
+}
+
+.tabs-component.vertical .tab-content {
+    flex: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .tab-nav {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .tab-button {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+    }
+    
+    .tabs-component.vertical {
+        flex-direction: column;
+    }
+    
+    .tabs-component.vertical .tab-nav {
+        border-right: none;
+        border-bottom: 1px solid var(--color-border, #e2e8f0);
+        margin-bottom: 1rem;
+    }
+    
+    .tabs-component.vertical .tab-list {
+        flex-direction: row;
+    }
+    
+    .tabs-component.vertical .tab-button {
+        border-bottom: 2px solid transparent;
+        border-right: none;
+        justify-content: center;
+    }
+    
+    .tabs-component.vertical .tab-button.active {
+        border-bottom-color: var(--color-primary, #1e3a8a);
+        border-right: none;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .tab-nav {
+        border-bottom-color: #333;
+    }
+    
+    .tab-button {
+        color: #999;
+    }
+    
+    .tab-button:hover {
+        color: #fff;
+        background-color: #333;
+    }
+    
+    .tab-button.active {
+        color: #fff;
+    }
+    
+    .tabs-component.vertical .tab-nav {
+        border-right-color: #333;
+        border-bottom-color: transparent;
+    }
+}
+</style>

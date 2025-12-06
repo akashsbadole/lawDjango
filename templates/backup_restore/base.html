@@ -5,35 +5,127 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'backup_restore/css/backup_restore.css' %}">
+<style>
+    /* Extra styling to ensure visible design */
+    .page-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 25px;
+    }
+
+    .backup-card {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .section-box {
+        background: #f8f9fc;
+        border-radius: 10px;
+        padding: 30px;
+        text-align: center;
+        margin-bottom: 20px;
+        border: 1px solid #e3e6f0;
+        transition: .3s;
+    }
+
+    .section-box:hover {
+        background: #eef1f7;
+        transform: translateY(-3px);
+    }
+
+    .section-icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+    }
+
+    .upload-box {
+        border: 2px dashed #ced4da;
+        padding: 25px;
+        border-radius: 10px;
+        background: white;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-database me-2"></i>Backup & Restore
-                    </h6>
-                </div>
-                <div class="card-body">
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                    
-                    {% block backup_restore_content %}
-                    {% endblock %}
-                </div>
+
+<div class="container mt-4">
+
+    <!-- Page Heading -->
+    <div class="page-title">
+        <i class="fas fa-database fa-2x text-primary"></i>
+        <h2 class="fw-bold">Backup & Restore</h2>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- CARD -->
+    <div class="card shadow backup-card">
+        <div class="card-body">
+
+            <div class="row">
+
+                <!-- BACKUP SECTION -->
+                <div class="col-md-6">
+                    <div class="section-box">
+                        <div class="section-icon text-primary">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Create Backup</h4>
+                        <p class="text-muted mb-4">
+                            Download a complete backup of your system database.
+                        </p>
+                        <a href="{% url 'backup_restore:backup_create' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-cloud-download-alt me-2"></i>Generate Backup
+                        </a>
+                    </div>
+                </div>
+
+                <!-- RESTORE SECTION -->
+                <div class="col-md-6">
+                    <div class="section-box">
+
+                        <div class="section-icon text-warning">
+                            <i class="fas fa-upload"></i>
+                        </div>
+
+                        <h4 class="fw-bold mb-3">Restore Database</h4>
+                        <p class="text-muted mb-4">
+                            Upload and restore data from a saved backup file.
+                        </p>
+
+                        <form method="post" enctype="multipart/form-data" action="{% url 'backup_restore:restore_create' %}">
+                            {% csrf_token %}
+
+                            <div class="upload-box mb-3">
+                                <label class="form-label fw-bold">Choose Backup File</label>
+                                <input type="file" name="backup_file" class="form-control" required>
+                            </div>
+
+                            <button class="btn btn-warning btn-lg">
+                                <i class="fas fa-cloud-upload-alt me-2"></i>Restore Now
+                            </button>
+
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+
         </div>
     </div>
+
 </div>
+
 {% endblock %}
 
 {% block extra_js %}

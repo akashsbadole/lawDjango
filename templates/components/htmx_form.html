@@ -1,0 +1,77 @@
+{% load static %}
+<!-- HTMX Enhanced Form Component -->
+<form 
+    method="{{ method|default:'POST' }}" 
+    action="{{ action }}"
+    x-data="{ isSubmitting: false }"
+    @submit="isSubmitting = true; htmx.trigger(event, 'submitForm', { form: $el })"
+    hx-post="{{ action }}"
+    hx-target="{{ target|default:'#form-result' }}"
+    hx-swap="{{ swap|default:'innerHTML' }}"
+    hx-indicator="{{ indicator|default:'.htmx-indicator' }}"
+    class="htmx-form {{ form_class|default:'' }}"
+    {{ form_attrs|default:'' }}
+>
+    {% csrf_token %}
+    
+    <!-- Loading Indicator -->
+    <div class="htmx-indicator">
+        <div class="spinner-border spinner-border-sm" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    
+    <!-- Form Content -->
+    <div class="form-content">
+        {% block form_content %}
+        {{ form|default:'' }}
+        {% endblock %}
+    </div>
+    
+    <!-- Form Actions -->
+    <div class="form-actions mt-3">
+        {% block form_actions %}
+        <button 
+            type="submit" 
+            class="btn btn-primary {{ submit_class|default:'' }}"
+            :disabled="isSubmitting"
+            :class="{ 'loading': isSubmitting }"
+        >
+            <span x-show="!isSubmitting">{{ submit_text|default:'Submit' }}</span>
+            <span x-show="isSubmitting">
+                <i class="fas fa-spinner fa-spin me-2"></i>
+                {{ loading_text|default:'Processing...' }}
+            </span>
+        </button>
+        
+        {% if show_cancel|default:True %}
+        <button 
+            type="button" 
+            class="btn btn-secondary {{ cancel_class|default:'' }}"
+            @click="$el.closest('form').reset()"
+            :disabled="isSubmitting"
+        >
+            {{ cancel_text|default:'Cancel' }}
+        </button>
+        {% endif %}
+        {% endblock %}
+    </div>
+    
+    <!-- Error/Success Messages -->
+    <div id="form-result" class="form-result mt-3"></div>
+</form>
+
+<script>
+// Initialize form validation if needed
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('.htmx-form');
+    forms.forEach(form => {
+        form.addEventListener('htmx:afterRequest', function(evt) {
+            const isSubmitting = form._x_dataStack?.[0]?.isSubmitting;
+            if (isSubmitting !== undefined) {
+                form._x_dataStack[0].isSubmitting = false;
+            }
+        });
+    });
+});
+</script>
